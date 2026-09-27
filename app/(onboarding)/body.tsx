@@ -25,8 +25,25 @@ export default function BodyScreen() {
 
   const isImperial = draft.unitSystem === 'imperial';
 
+  // The imperial fields are local text state (so feet/inches can be edited
+  // as two separate boxes), which otherwise goes stale the moment the user
+  // switches units after already entering metric values — resync from the
+  // draft right when the toggle switches to imperial (a plain event handler,
+  // not an effect, so this is a legitimate direct setState rather than one
+  // that fights React's render cycle).
   function setUnitSystem(unitSystem: UnitSystem) {
     update({ unitSystem });
+    if (unitSystem === 'imperial') {
+      setHeightImperialText(
+        draft.heightCm
+          ? (() => {
+              const fi = cmToFeetInches(draft.heightCm);
+              return { feet: String(fi.feet), inches: String(fi.inches) };
+            })()
+          : { feet: '', inches: '' },
+      );
+      setWeightImperialText(draft.weightKg ? String(roundTo(kgToLb(draft.weightKg), 1)) : '');
+    }
   }
 
   function onHeightCmChange(text: string) {

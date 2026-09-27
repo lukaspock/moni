@@ -1,8 +1,7 @@
-import { Button, Host } from '@expo/ui/swift-ui';
-import { buttonStyle, controlSize, disabled, frame } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   applyOnboardingDraftToProfile,
@@ -12,11 +11,13 @@ import {
   signUpWithPassword,
   verifyEmailOtp,
 } from '@/features/auth';
+import { GlassButton } from '@/features/auth/components/GlassButton';
 
 type Mode = 'password' | 'otp';
 
 export default function SignInScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<Mode>('password');
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -101,7 +102,11 @@ export default function SignInScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-system-background"
     >
-      <ScrollView contentContainerClassName="gap-6 px-6 pb-10 pt-16" keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerClassName="gap-6 px-6 pb-10"
+        contentContainerStyle={{ paddingTop: insets.top + 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="gap-2">
           <Text className="text-3xl font-bold text-label">{t('account.auth.signIn.title')}</Text>
           <Text className="text-base text-secondary-label">{t('account.auth.signIn.subtitle')}</Text>
@@ -130,13 +135,11 @@ export default function SignInScreen() {
 
             {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
 
-            <Host style={{ height: 56, width: '100%' }}>
-              <Button
-                label={loading ? '…' : t(isSignUp ? 'account.auth.signIn.signUpCta' : 'account.auth.signIn.signInCta')}
-                onPress={handlePasswordSubmit}
-                modifiers={[buttonStyle('glassProminent'), controlSize('large'), frame({ height: 56 }), disabled(loading)]}
-              />
-            </Host>
+            <GlassButton
+              label={t(isSignUp ? 'account.auth.signIn.signUpCta' : 'account.auth.signIn.signInCta')}
+              onPress={handlePasswordSubmit}
+              loading={loading}
+            />
 
             <Pressable onPress={() => setIsSignUp((v) => !v)} className="items-center py-2">
               <Text className="text-sm text-tint">
@@ -158,13 +161,7 @@ export default function SignInScreen() {
                   className="h-14 rounded-xl border border-separator px-4 text-center text-2xl tracking-widest text-label"
                 />
                 {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-                <Host style={{ height: 56, width: '100%' }}>
-                  <Button
-                    label={loading ? '…' : t('account.auth.signIn.otp.verifyCta')}
-                    onPress={handleVerifyOtp}
-                    modifiers={[buttonStyle('glassProminent'), controlSize('large'), frame({ height: 56 }), disabled(loading)]}
-                  />
-                </Host>
+                <GlassButton label={t('account.auth.signIn.otp.verifyCta')} onPress={handleVerifyOtp} loading={loading} />
                 <Pressable onPress={handleSendOtp} className="items-center py-2">
                   <Text className="text-sm text-tint">{t('account.auth.signIn.otp.resendCta')}</Text>
                 </Pressable>
@@ -172,13 +169,7 @@ export default function SignInScreen() {
             ) : (
               <>
                 {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-                <Host style={{ height: 56, width: '100%' }}>
-                  <Button
-                    label={loading ? '…' : t('account.auth.signIn.otp.sendCta')}
-                    onPress={handleSendOtp}
-                    modifiers={[buttonStyle('glassProminent'), controlSize('large'), frame({ height: 56 }), disabled(loading)]}
-                  />
-                </Host>
+                <GlassButton label={t('account.auth.signIn.otp.sendCta')} onPress={handleSendOtp} loading={loading} />
               </>
             )}
           </View>
@@ -199,8 +190,6 @@ export default function SignInScreen() {
           </Pressable>
           <Text className="text-center text-xs text-tertiary-label">{t('account.auth.signIn.socialComingSoon')}</Text>
         </View>
-
-        {loading ? <ActivityIndicator className="mt-2" /> : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

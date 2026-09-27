@@ -1,5 +1,6 @@
 import { DatePicker, Host } from '@expo/ui/swift-ui';
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useOnboardingStore } from '@/features/auth';
@@ -16,6 +17,17 @@ export default function BirthDateScreen() {
   const { t } = useTranslation();
   const birthDate = useOnboardingStore((s) => s.draft.birthDate);
   const update = useOnboardingStore((s) => s.update);
+
+  // The DatePicker always shows a concrete date (defaulting to
+  // DEFAULT_BIRTH_DATE when nothing was chosen yet) — that shown value must
+  // count as the answer, so write it into the draft on first mount instead
+  // of leaving Continue disabled until the user manually touches the wheel.
+  useEffect(() => {
+    if (!birthDate) {
+      update({ birthDate: toISODate(DEFAULT_BIRTH_DATE) });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount only
+  }, []);
 
   const selected = birthDate ? new Date(`${birthDate}T00:00:00`) : DEFAULT_BIRTH_DATE;
 

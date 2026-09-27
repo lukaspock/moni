@@ -1,14 +1,15 @@
-import { Button, Host } from '@expo/ui/swift-ui';
-import { buttonStyle, controlSize, disabled, frame } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GlassButton } from './GlassButton';
+
 /**
  * Shared chrome for every onboarding screen (PLAN §7.1, §2 "native first"):
- * large title + subtitle, scrollable content, and a full-width glass CTA
- * pinned to the bottom via `@expo/ui/swift-ui` `Button` (`buttonStyle('glassProminent')`
- * is the native Liquid Glass button style, iOS 26+).
+ * large title + subtitle, scrollable content, and a full-width CTA pinned to
+ * the bottom. See `GlassButton.tsx` for why the CTA is a styled Pressable
+ * rather than `@expo/ui`'s native glass `Button` (unreliable single-tap
+ * behavior on-device once this screen re-renders).
  */
 export function OnboardingScreen({
   title,
@@ -44,13 +45,7 @@ export function OnboardingScreen({
         className="border-t border-separator px-6 pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
-        <Host style={{ height: 56, width: '100%' }}>
-          <Button
-            label={continueLabel}
-            onPress={onContinue}
-            modifiers={[buttonStyle('glassProminent'), controlSize('large'), frame({ height: 56 }), disabled(!!continueDisabled)]}
-          />
-        </Host>
+        <GlassButton label={continueLabel} onPress={onContinue} disabled={continueDisabled} />
       </View>
     </View>
   );
