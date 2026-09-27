@@ -1,4 +1,6 @@
 // CONTRACT (owner: `food` agent). Signatures are fixed, implementation is replaced.
+import { useFoodLogsForDate } from './queries';
+
 export type FoodTotals = {
   kcal: number;
   proteinG: number;
@@ -11,9 +13,44 @@ export function useFoodTotals(date: string): {
   totals: FoodTotals;
   isLoading: boolean;
 } {
-  void date;
-  return {
-    totals: { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
-    isLoading: false,
-  };
+  const { logs, isLoading } = useFoodLogsForDate(date);
+  const totals = logs.reduce<FoodTotals>(
+    (acc, log) => ({
+      kcal: acc.kcal + log.kcal,
+      proteinG: acc.proteinG + log.protein_g,
+      carbsG: acc.carbsG + log.carbs_g,
+      fatG: acc.fatG + log.fat_g,
+    }),
+    { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+  );
+  return { totals, isLoading };
 }
+
+// Additional exports (not part of the fixed contract above) used by app/ screens and other
+// food-feature files. Other features should still only import from this barrel.
+export {
+  useFoodLogsForDate,
+  useRecentFoodLogs,
+  useFavoriteMeals,
+  useFoodLogById,
+  useDeleteFoodLog,
+  useSaveFoodDraft,
+  useBumpFavoriteUseCount,
+  useAnalyzeFood,
+  uploadFoodImage,
+  AnalyzeFoodError,
+} from './queries';
+export type {
+  FoodLogRow,
+  FoodItemRow,
+  FavoriteMealRow,
+  FoodLogWithItems,
+  SaveFoodDraftInput,
+  AnalyzeFoodInput,
+  AnalyzeFoodResult,
+} from './queries';
+export { lookupBarcode } from './openFoodFacts';
+export type { OpenFoodFactsProduct } from './openFoodFacts';
+export { useFoodDraftStore } from './draftStore';
+export type { DraftFoodItem, FoodDraftStatus, FoodDraftErrorKind } from './draftStore';
+export { foodKeys } from './keys';

@@ -5,6 +5,8 @@ import {
   estimateOneRepMaxEpley,
   estimateOneRepMaxBrzycki,
   calculateSetVolume,
+  estimatePlannedStrengthKcal,
+  metForIntensity,
   STRENGTH_MET_MIN,
   STRENGTH_MET_MAX,
 } from './met';
@@ -73,5 +75,36 @@ describe('calculateSetVolume', () => {
 
   it('returns 0 for an empty set list', () => {
     expect(calculateSetVolume([])).toBe(0);
+  });
+});
+
+describe('estimatePlannedStrengthKcal', () => {
+  it('matches manual density -> MET -> kcal chain for a 45min default session', () => {
+    const totalSets = 20;
+    const weightKg = 80;
+    const density = calculateSessionDensity(totalSets, 45);
+    const met = estimateStrengthMET(density);
+    const expected = calculateKcalBurned(met, weightKg, 45 / 60);
+    expect(estimatePlannedStrengthKcal(totalSets, weightKg)).toBeCloseTo(expected, 6);
+  });
+
+  it('a denser (more sets in the same time) session burns more', () => {
+    const light = estimatePlannedStrengthKcal(10, 80, 45);
+    const dense = estimatePlannedStrengthKcal(30, 80, 45);
+    expect(dense).toBeGreaterThan(light);
+  });
+
+  it('respects a custom duration', () => {
+    const kcal = estimatePlannedStrengthKcal(20, 80, 60);
+    const density = calculateSessionDensity(20, 60);
+    const met = estimateStrengthMET(density);
+    expect(kcal).toBeCloseTo(calculateKcalBurned(met, 80, 1), 6);
+  });
+});
+
+describe('metForIntensity', () => {
+  it('increases from light to vigorous', () => {
+    expect(metForIntensity('light')).toBeLessThan(metForIntensity('moderate'));
+    expect(metForIntensity('moderate')).toBeLessThan(metForIntensity('vigorous'));
   });
 });

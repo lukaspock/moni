@@ -1,18 +1,13 @@
 /**
- * iOS semantic colors, exposed as NativeWind tokens.
- * This mirrors React Native's `PlatformColor(name)` on iOS — a
- * `{ semantic: [name] }` opaque color object — so these tokens adapt
- * automatically to Light/Dark Mode and Liquid Glass tinting, without
- * hardcoding hex values for chrome/system UI. See PLAN.md §2 ("Farben").
- *
- * We can't `require('react-native')` here: `tailwind.config.js` is loaded
- * by Metro's config step with plain Node (no Babel/Flow transform), and
- * react-native's entry point uses Flow syntax that only Metro can parse.
- * `PlatformColor`'s iOS implementation is just this object literal
- * (react-native/Libraries/StyleSheet/PlatformColorValueTypes.ios.js), so we
- * reproduce it directly instead of importing the package.
+ * iOS semantic colors as NativeWind tokens via NativeWind's `platformColor()`
+ * (compiles to React Native's `PlatformColor(name)`), so they adapt to
+ * Light/Dark Mode and Liquid Glass tinting automatically. See PLAN.md §2.
+ * Note: a hand-built `{ semantic: [...] }` object does NOT work here —
+ * NativeWind needs its own helper to emit PlatformColor at runtime.
  */
-const ios = (name) => ({ semantic: [name] });
+const { platformColor } = require('nativewind/theme');
+
+const ios = (name) => platformColor(name);
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -32,7 +27,7 @@ module.exports = {
         ),
         separator: ios('separator'),
         'opaque-separator': ios('opaqueSeparator'),
-        tint: ios('link'),
+        tint: ios('systemBlue'),
         destructive: ios('systemRed'),
       },
     },

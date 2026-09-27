@@ -1,1 +1,134 @@
-{}
+{
+  "history": {
+    "title": "Verlauf",
+    "empty": "Noch keine Workouts.",
+    "duration": "{{minutes}} Min",
+    "volume": "{{volume}} kg Volumen",
+    "kcal": "{{kcal}} kcal"
+  },
+  "training": {
+    "startWorkout": "Workout starten",
+    "startEmpty": "Leeres Workout",
+    "startFromRoutine": "Aus Routine starten",
+    "routines": "Routinen",
+    "weeklyPlan": "Wochenplan",
+    "noRoutines": "Noch keine Routinen angelegt.",
+    "newRoutine": "Neue Routine",
+    "restDay": "Ruhetag",
+    "freeTraining": "Freies Training",
+    "expectedKcal": "~{{kcal}} kcal",
+    "logCardio": "Cardio/Sport erfassen",
+    "history": "Verlauf"
+  },
+  "weekday": {
+    "0": "Sonntag",
+    "1": "Montag",
+    "2": "Dienstag",
+    "3": "Mittwoch",
+    "4": "Donnerstag",
+    "5": "Freitag",
+    "6": "Samstag"
+  },
+  "weekdayShort": {
+    "0": "So",
+    "1": "Mo",
+    "2": "Di",
+    "3": "Mi",
+    "4": "Do",
+    "5": "Fr",
+    "6": "Sa"
+  },
+  "routine": {
+    "title": "Routine",
+    "namePlaceholder": "z. B. Push Day",
+    "nameLabel": "Name",
+    "exercises": "Übungen",
+    "addExercise": "Übung hinzufügen",
+    "targetSets": "Sätze",
+    "targetReps": "Wdh.",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "deleteConfirmTitle": "Routine löschen?",
+    "deleteConfirmMessage": "Das kann nicht rückgängig gemacht werden.",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "remove": "Entfernen",
+    "empty": "Noch keine Übungen in dieser Routine."
+  },
+  "plan": {
+    "title": "Wochenplan",
+    "day": "Tag {{weekday}}",
+    "assignRoutine": "Routine wählen",
+    "rest": "Ruhetag",
+    "estimatedKcal": "geschätzt ~{{kcal}} kcal"
+  },
+  "category": {
+    "strength": "Kraft",
+    "cardio": "Cardio",
+    "sport": "Sport",
+    "other": "Sonstiges"
+  },
+  "cardio": {
+    "title": "Cardio/Sport erfassen",
+    "exercise": "Übung (optional)",
+    "duration": "Dauer (Min)",
+    "distance": "Distanz (km, optional)",
+    "intensity": "Intensität",
+    "intensityLight": "Locker",
+    "intensityModerate": "Moderat",
+    "intensityVigorous": "Intensiv",
+    "save": "Speichern",
+    "saved": "Gespeichert · ~{{kcal}} kcal verbrannt"
+  },
+  "exercisePicker": {
+    "title": "Übung wählen",
+    "searchPlaceholder": "Übung suchen…",
+    "categoryAll": "Alle",
+    "muscleGroupAll": "Alle Muskelgruppen",
+    "createCustom": "Eigene Übung erstellen",
+    "customName": "Name",
+    "customCategory": "Kategorie",
+    "customTracking": "Tracking-Art",
+    "trackingWeightReps": "Gewicht & Wdh.",
+    "trackingReps": "Nur Wdh.",
+    "trackingDuration": "Dauer",
+    "trackingDistanceDuration": "Distanz & Dauer",
+    "confirm": "Übernehmen ({{count}})",
+    "noResults": "Keine Übungen gefunden."
+  },
+  "active": {
+    "finish": "Fertig",
+    "cancel": "Abbrechen",
+    "cancelConfirmTitle": "Workout abbrechen?",
+    "cancelConfirmMessage": "Der Fortschritt geht verloren.",
+    "addExercise": "Übung hinzufügen",
+    "addSet": "Satz hinzufügen",
+    "set": "Satz {{index}}",
+    "reps": "Wdh.",
+    "weight": "kg",
+    "duration": "Sek.",
+    "distance": "m",
+    "rest": "Pause",
+    "restRemaining": "Pause: {{seconds}}s",
+    "skipRest": "Pause überspringen",
+    "elapsed": "{{time}}",
+    "emptyExercises": "Noch keine Übungen. Tippe auf „Übung hinzufügen“."
+  },
+  "summary": {
+    "title": "Workout beendet",
+    "duration": "Dauer",
+    "volume": "Volumen",
+    "kcalBurned": "Verbrannt",
+    "bonusKcal": "+{{kcal}} kcal zu deinem Tageslimit",
+    "prs": "Neue Bestleistungen",
+    "prNew": "{{kg}} kg geschätztes 1RM (vorher {{previous}} kg)",
+    "prFirst": "{{kg}} kg geschätztes 1RM (erste Aufzeichnung)",
+    "done": "Fertig"
+  },
+  "progress": {
+    "title": "Fortschritt",
+    "oneRepMax": "Geschätztes 1RM",
+    "empty": "Noch keine Daten für diese Übung.",
+    "week": "KW {{week}}"
+  }
+}

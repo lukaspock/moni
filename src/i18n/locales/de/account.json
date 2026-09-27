@@ -1,1 +1,159 @@
-{}
+{
+  "common": {
+    "continue": "Weiter",
+    "back": "Zurück",
+    "next": "Weiter"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Willkommen bei møni",
+      "subtitle": "Ein paar kurze Fragen, damit wir dein tägliches Kalorien- und Makro-Ziel setzen können — an Trainingstagen automatisch angepasst.",
+      "cta": "Loslegen"
+    },
+    "sex": {
+      "title": "Welches Geschlecht hast du?",
+      "subtitle": "Wird für die Kalorienformel (Mifflin-St Jeor) verwendet.",
+      "male": "Männlich",
+      "female": "Weiblich"
+    },
+    "birthDate": {
+      "title": "Wann bist du geboren?",
+      "subtitle": "Wird für die Berechnung deines Alters in der Kalorienformel verwendet.",
+      "label": "Geburtsdatum"
+    },
+    "body": {
+      "title": "Größe & Gewicht",
+      "subtitle": "Werte werden metrisch gespeichert und in deiner bevorzugten Einheit angezeigt.",
+      "unitMetric": "Metrisch",
+      "unitImperial": "Imperial",
+      "heightLabel": "Größe",
+      "weightLabel": "Gewicht"
+    },
+    "activity": {
+      "title": "Alltagsaktivität",
+      "subtitle": "Wie aktiv ist dein Alltag außerhalb von Workouts? Workouts werden separat dazugerechnet.",
+      "sedentary": "Sitzend",
+      "sedentaryDescription": "Schreibtischjob, wenig Bewegung",
+      "light": "Leicht aktiv",
+      "lightDescription": "Manchmal auf den Beinen, leichtes Gehen",
+      "moderate": "Mäßig aktiv",
+      "moderateDescription": "Regelmäßig auf den Beinen, etwas körperliche Arbeit",
+      "active": "Sehr aktiv",
+      "activeDescription": "Körperlich anspruchsvoller Job oder Lebensstil"
+    },
+    "goal": {
+      "title": "Was ist dein Ziel?",
+      "subtitle": "Entscheidet, ob wir auf ein Defizit, Erhaltung oder einen Überschuss abzielen.",
+      "lose": "Abnehmen",
+      "loseDescription": "Moderates Kaloriendefizit",
+      "maintain": "Gewicht halten",
+      "maintainDescription": "Ungefähr beim aktuellen Gewicht bleiben",
+      "gain": "Zunehmen",
+      "gainDescription": "Moderater Kalorienüberschuss"
+    },
+    "rate": {
+      "title": "Wie schnell?",
+      "subtitleLose": "Ziel-Tempo für die Gewichtsabnahme pro Woche.",
+      "subtitleGain": "Ziel-Tempo für die Gewichtszunahme pro Woche.",
+      "subtitleMaintain": "Du hältst dein Gewicht, also gibt es hier kein Tempo einzustellen.",
+      "perWeek": "{{value}} kg / Woche"
+    },
+    "schedule": {
+      "title": "Trainingstage",
+      "subtitle": "Wie oft trainierst du pro Woche und an welchen Tagen?",
+      "workoutsPerWeekLabel": "Workouts pro Woche",
+      "weekdaysLabel": "An welchen Tagen?",
+      "weekday": {
+        "0": "So",
+        "1": "Mo",
+        "2": "Di",
+        "3": "Mi",
+        "4": "Do",
+        "5": "Fr",
+        "6": "Sa"
+      }
+    },
+    "result": {
+      "title": "Deine Tagesziele",
+      "subtitle": "Dein Limit passt sich automatisch an: höher an Trainingstagen, basierend auf deinem tatsächlichen Verbrauch.",
+      "restDay": "Ruhetag",
+      "trainingDay": "Trainingstag",
+      "kcal": "kcal",
+      "protein": "Protein",
+      "carbs": "Kohlenhydrate",
+      "fat": "Fett",
+      "workoutBonus": "+{{value}} kcal vom Training",
+      "explanation": "An Ruhetagen ist dein Limit deine angepasste Erhaltungskalorienzahl. An Trainingstagen kommt ein Teil des Verbrauchs (abhängig vom Eat-Back-Faktor) dazu — hauptsächlich als Kohlenhydrate, da Protein und Fett gleich bleiben.",
+      "guardrailDeficit": "Dein gewünschtes Tempo war steiler als ein sicheres Defizit (max. 25% unter Erhaltung), deshalb haben wir es begrenzt.",
+      "guardrailSurplus": "Dein gewünschtes Tempo war steiler als ein sicherer Überschuss (max. +500 kcal/Tag), deshalb haben wir es begrenzt.",
+      "guardrailMinimum": "Dein Ziel hat das sichere Tagesminimum erreicht, deshalb haben wir es leicht angehoben.",
+      "cta": "Konto erstellen"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Anmelden",
+      "subtitle": "Melde dich an, um deine Ziele zu speichern und loszulegen.",
+      "emailLabel": "E-Mail",
+      "passwordLabel": "Passwort",
+      "signInCta": "Anmelden",
+      "signUpCta": "Konto erstellen",
+      "toggleToSignUp": "Neu hier? Konto erstellen",
+      "toggleToSignIn": "Schon ein Konto? Anmelden",
+      "orDivider": "oder",
+      "otp": {
+        "title": "Mit Code anmelden",
+        "subtitle": "Wir schicken dir einen 6-stelligen Code per E-Mail — kein Passwort, kein Link zum Antippen.",
+        "sendCta": "Code senden",
+        "codeLabel": "6-stelliger Code",
+        "codeSentTo": "Code gesendet an {{email}}",
+        "verifyCta": "Bestätigen & anmelden",
+        "resendCta": "Code erneut senden"
+      },
+      "appleCta": "Mit Apple fortfahren",
+      "googleCta": "Mit Google fortfahren",
+      "socialComingSoon": "Demnächst — benötigt ein Apple Developer-Konto",
+      "errors": {
+        "missingEmail": "Gib deine E-Mail-Adresse ein.",
+        "missingPassword": "Gib dein Passwort ein.",
+        "invalidCode": "Gib den 6-stelligen Code ein.",
+        "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+      }
+    }
+  },
+  "profile": {
+    "sections": {
+      "goals": "Ziel",
+      "body": "Körper",
+      "activity": "Aktivität & Training",
+      "preferences": "Einstellungen",
+      "account": "Konto"
+    },
+    "todayTargets": "Heutiges Ziel",
+    "restDayLimit": "Limit am Ruhetag",
+    "trainingDayLimit": "Limit am Trainingstag (geschätzt)",
+    "sex": "Geschlecht",
+    "birthDate": "Geburtsdatum",
+    "height": "Größe",
+    "weight": "Gewicht",
+    "logWeight": "Gewicht erfassen",
+    "logWeightCta": "Speichern",
+    "weightSaved": "Gewicht gespeichert",
+    "activityLevel": "Alltagsaktivität",
+    "goal": "Ziel",
+    "goalRate": "Tempo",
+    "workoutsPerWeek": "Workouts / Woche",
+    "trainingDays": "Trainingstage",
+    "unitSystem": "Einheiten",
+    "language": "Sprache",
+    "eatBackFactor": "Eat-Back-Faktor",
+    "eatBackFactorDescription": "Wie viel von deinem Trainingsverbrauch zu deinem Limit dazukommt.",
+    "signOut": "Abmelden",
+    "signOutConfirmTitle": "Abmelden?",
+    "signOutConfirmMessage": "Du kannst dich jederzeit wieder anmelden.",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "loading": "Profil wird geladen…",
+    "noProfile": "Noch kein Profil vorhanden."
+  }
+}

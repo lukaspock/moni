@@ -1,1 +1,159 @@
-{}
+{
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to møni",
+      "subtitle": "A few quick questions so we can set your daily calorie and macro targets — adjusted for training days automatically.",
+      "cta": "Get started"
+    },
+    "sex": {
+      "title": "What's your sex?",
+      "subtitle": "Used for the calorie formula (Mifflin-St Jeor).",
+      "male": "Male",
+      "female": "Female"
+    },
+    "birthDate": {
+      "title": "When were you born?",
+      "subtitle": "Used to calculate your age for the calorie formula.",
+      "label": "Birth date"
+    },
+    "body": {
+      "title": "Height & weight",
+      "subtitle": "Values are stored in metric and shown in your preferred unit.",
+      "unitMetric": "Metric",
+      "unitImperial": "Imperial",
+      "heightLabel": "Height",
+      "weightLabel": "Weight"
+    },
+    "activity": {
+      "title": "Everyday activity",
+      "subtitle": "How active is your day outside of workouts? Workouts are added separately.",
+      "sedentary": "Sedentary",
+      "sedentaryDescription": "Desk job, little walking",
+      "light": "Lightly active",
+      "lightDescription": "On your feet sometimes, light walking",
+      "moderate": "Moderately active",
+      "moderateDescription": "Regularly on your feet, some physical work",
+      "active": "Very active",
+      "activeDescription": "Physically demanding job or lifestyle"
+    },
+    "goal": {
+      "title": "What's your goal?",
+      "subtitle": "This decides whether we aim for a deficit, maintenance, or a surplus.",
+      "lose": "Lose weight",
+      "loseDescription": "Gradual calorie deficit",
+      "maintain": "Maintain weight",
+      "maintainDescription": "Stay around your current weight",
+      "gain": "Gain weight",
+      "gainDescription": "Gradual calorie surplus"
+    },
+    "rate": {
+      "title": "How fast?",
+      "subtitleLose": "Target rate of weight loss per week.",
+      "subtitleGain": "Target rate of weight gain per week.",
+      "subtitleMaintain": "You're maintaining, so there's no rate to set.",
+      "perWeek": "{{value}} kg / week"
+    },
+    "schedule": {
+      "title": "Training days",
+      "subtitle": "How many times a week do you train, and on which days?",
+      "workoutsPerWeekLabel": "Workouts per week",
+      "weekdaysLabel": "Which days?",
+      "weekday": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      }
+    },
+    "result": {
+      "title": "Your daily targets",
+      "subtitle": "Your limit adapts automatically: higher on training days, based on what you actually burn.",
+      "restDay": "Rest day",
+      "trainingDay": "Training day",
+      "kcal": "kcal",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "workoutBonus": "+{{value}} kcal from training",
+      "explanation": "On rest days your limit is your adjusted maintenance calories. On training days, we add back a share of what you burn (based on your eat-back factor) — mostly as carbs, since protein and fat stay steady.",
+      "guardrailDeficit": "Your requested pace was steeper than a safe deficit (max 25% below maintenance), so we capped it.",
+      "guardrailSurplus": "Your requested pace was steeper than a safe surplus (max +500 kcal/day), so we capped it.",
+      "guardrailMinimum": "Your target hit the safe daily minimum, so we raised it slightly.",
+      "cta": "Create account"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign in",
+      "subtitle": "Sign in to save your targets and start tracking.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "signInCta": "Sign in",
+      "signUpCta": "Create account",
+      "toggleToSignUp": "New here? Create an account",
+      "toggleToSignIn": "Already have an account? Sign in",
+      "orDivider": "or",
+      "otp": {
+        "title": "Sign in with a code",
+        "subtitle": "We'll email you a 6-digit code — no password, no link to tap.",
+        "sendCta": "Send code",
+        "codeLabel": "6-digit code",
+        "codeSentTo": "Code sent to {{email}}",
+        "verifyCta": "Verify & sign in",
+        "resendCta": "Resend code"
+      },
+      "appleCta": "Continue with Apple",
+      "googleCta": "Continue with Google",
+      "socialComingSoon": "Coming soon — needs an Apple Developer account",
+      "errors": {
+        "missingEmail": "Enter your email address.",
+        "missingPassword": "Enter your password.",
+        "invalidCode": "Enter the 6-digit code.",
+        "generic": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "profile": {
+    "sections": {
+      "goals": "Goal",
+      "body": "Body",
+      "activity": "Activity & training",
+      "preferences": "Preferences",
+      "account": "Account"
+    },
+    "todayTargets": "Today's target",
+    "restDayLimit": "Rest day limit",
+    "trainingDayLimit": "Training day limit (est.)",
+    "sex": "Sex",
+    "birthDate": "Birth date",
+    "height": "Height",
+    "weight": "Weight",
+    "logWeight": "Log weight",
+    "logWeightCta": "Save",
+    "weightSaved": "Weight saved",
+    "activityLevel": "Everyday activity",
+    "goal": "Goal",
+    "goalRate": "Rate",
+    "workoutsPerWeek": "Workouts / week",
+    "trainingDays": "Training days",
+    "unitSystem": "Units",
+    "language": "Language",
+    "eatBackFactor": "Eat-back factor",
+    "eatBackFactorDescription": "How much of your workout burn gets added back to your limit.",
+    "signOut": "Sign out",
+    "signOutConfirmTitle": "Sign out?",
+    "signOutConfirmMessage": "You can sign back in any time.",
+    "save": "Save",
+    "saved": "Saved",
+    "loading": "Loading your profile…",
+    "noProfile": "No profile yet."
+  }
+}

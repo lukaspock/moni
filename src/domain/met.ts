@@ -58,3 +58,40 @@ export interface SetVolumeInput {
 export function calculateSetVolume(sets: SetVolumeInput[]): number {
   return sets.reduce((sum, s) => sum + s.reps * s.weightKg, 0);
 }
+
+/** Assumed length of a "typical" planned strength session when estimating a weekly-plan day's `expected_kcal`. */
+export const TYPICAL_SESSION_DURATION_MINUTES = 45;
+
+/**
+ * Estimated kcal burn for a *planned* strength session, before it's actually
+ * logged (PLAN §6.4/§7.4's `training_plan_days.expected_kcal`). Assumes a
+ * typical session length and derives session density (and therefore MET)
+ * from the routine's total target sets, same model as a completed session.
+ */
+export function estimatePlannedStrengthKcal(
+  totalTargetSets: number,
+  weightKg: number,
+  durationMinutes: number = TYPICAL_SESSION_DURATION_MINUTES,
+): number {
+  const density = calculateSessionDensity(totalTargetSets, durationMinutes);
+  const met = estimateStrengthMET(density);
+  return calculateKcalBurned(met, weightKg, durationMinutes / 60);
+}
+
+/**
+ * §7.4 – Cardio/sport quick-entry MET when no catalog exercise (with its own
+ * `met_value`) is picked: a coarse 3-level intensity the user selects
+ * directly. Values are the "light/moderate/vigorous" tiers of the Compendium
+ * of Physical Activities for generic aerobic exercise.
+ */
+export type CardioIntensity = 'light' | 'moderate' | 'vigorous';
+
+const INTENSITY_MET: Record<CardioIntensity, number> = {
+  light: 4,
+  moderate: 6,
+  vigorous: 9,
+};
+
+export function metForIntensity(intensity: CardioIntensity): number {
+  return INTENSITY_MET[intensity];
+}

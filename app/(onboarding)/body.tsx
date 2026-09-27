@@ -1,0 +1,120 @@
+import { Host, Picker, Text as UIText } from '@expo/ui/swift-ui';
+import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Text, TextInput, View } from 'react-native';
+
+import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg, roundTo, type UnitSystem } from '@/domain';
+import { useOnboardingStore } from '@/features/auth';
+import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
+
+export default function BodyScreen() {
+  const { t } = useTranslation();
+  const draft = useOnboardingStore((s) => s.draft);
+  const update = useOnboardingStore((s) => s.update);
+
+  const [heightImperialText, setHeightImperialText] = useState(() => {
+    if (!draft.heightCm) return { feet: '', inches: '' };
+    const fi = cmToFeetInches(draft.heightCm);
+    return { feet: String(fi.feet), inches: String(fi.inches) };
+  });
+  const [weightImperialText, setWeightImperialText] = useState(() =>
+    draft.weightKg ? String(roundTo(kgToLb(draft.weightKg), 1)) : '',
+  );
+
+  const isImperial = draft.unitSystem === 'imperial';
+
+  function setUnitSystem(unitSystem: UnitSystem) {
+    update({ unitSystem });
+  }
+
+  function onHeightCmChange(text: string) {
+    const value = Number(text.replace(',', '.'));
+    update({ heightCm: text.trim() === '' || Number.isNaN(value) ? null : value });
+  }
+
+  function onHeightImperialChange(feetText: string, inchesText: string) {
+    setHeightImperialText({ feet: feetText, inches: inchesText });
+    const feet = Number(feetText);
+    const inches = Number(inchesText || '0');
+    if (feetText.trim() === '' || Number.isNaN(feet) || Number.isNaN(inches)) {
+      update({ heightCm: null });
+      return;
+    }
+    update({ heightCm: roundTo(feetInchesToCm(feet, inches), 1) });
+  }
+
+  function onWeightKgChange(text: string) {
+    const value = Number(text.replace(',', '.'));
+    update({ weightKg: text.trim() === '' || Number.isNaN(value) ? null : value });
+  }
+
+  function onWeightImperialChange(text: string) {
+    setWeightImperialText(text);
+    const lb = Number(text.replace(',', '.'));
+    update({ weightKg: text.trim() === '' || Number.isNaN(lb) ? null : roundTo(lbToKg(lb), 1) });
+  }
+
+  return (
+    <OnboardingScreen
+      title={t('account.onboarding.body.title')}
+      subtitle={t('account.onboarding.body.subtitle')}
+      continueLabel={t('account.common.continue')}
+      continueDisabled={!draft.heightCm || !draft.weightKg}
+      onContinue={() => router.push('/(onboarding)/activity')}
+    >
+      <Host matchContents>
+        <Picker
+          selection={draft.unitSystem}
+          onSelectionChange={(v) => setUnitSystem(v as UnitSystem)}
+          modifiers={[pickerStyle('segmented')]}
+        >
+          <UIText modifiers={[tag('metric')]}>{t('account.onboarding.body.unitMetric')}</UIText>
+          <UIText modifiers={[tag('imperial')]}>{t('account.onboarding.body.unitImperial')}</UIText>
+        </Picker>
+      </Host>
+
+      <View className="gap-2">
+        <Text className="text-sm font-medium text-secondary-label">{t('account.onboarding.body.heightLabel')}</Text>
+        {isImperial ? (
+          <View className="flex-row gap-3">
+            <TextInput
+              value={heightImperialText.feet}
+              onChangeText={(txt) => onHeightImperialChange(txt, heightImperialText.inches)}
+              keyboardType="number-pad"
+              placeholder="ft"
+              className="h-14 flex-1 rounded-xl border border-separator px-4 text-lg text-label"
+            />
+            <TextInput
+              value={heightImperialText.inches}
+              onChangeText={(txt) => onHeightImperialChange(heightImperialText.feet, txt)}
+              keyboardType="number-pad"
+              placeholder="in"
+              className="h-14 flex-1 rounded-xl border border-separator px-4 text-lg text-label"
+            />
+          </View>
+        ) : (
+          <TextInput
+            value={draft.heightCm != null ? String(draft.heightCm) : ''}
+            onChangeText={onHeightCmChange}
+            keyboardType="decimal-pad"
+            placeholder="cm"
+            className="h-14 rounded-xl border border-separator px-4 text-lg text-label"
+          />
+        )}
+      </View>
+
+      <View className="gap-2">
+        <Text className="text-sm font-medium text-secondary-label">{t('account.onboarding.body.weightLabel')}</Text>
+        <TextInput
+          value={isImperial ? weightImperialText : draft.weightKg != null ? String(draft.weightKg) : ''}
+          onChangeText={isImperial ? onWeightImperialChange : onWeightKgChange}
+          keyboardType="decimal-pad"
+          placeholder={isImperial ? 'lb' : 'kg'}
+          className="h-14 rounded-xl border border-separator px-4 text-lg text-label"
+        />
+      </View>
+    </OnboardingScreen>
+  );
+}
