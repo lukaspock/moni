@@ -19,7 +19,7 @@ iOS deployment target **26** (via `expo-build-properties`). Platform: iOS only.
 
 ## Infrastructure
 - **GitHub**: `lukaspock/moeni` (private). Default branch `main`.
-- **Supabase**: project ref `ehjqlatmgvytnzftmkgg` (URL `https://ehjqlatmgvytnzftmkgg.supabase.co`), configured as the project MCP in `.mcp.json`. The owner must authenticate the MCP once with `claude /mcp`.
+- **Supabase**: region `eu-west-1` (Ireland; EU, not Frankfurt as in PLAN), project ref `ehjqlatmgvytnzftmkgg` (URL `https://ehjqlatmgvytnzftmkgg.supabase.co`), configured as the project MCP in `.mcp.json`. The owner must authenticate the MCP once with `claude /mcp`.
 - Secrets (Gemini key, RevenueCat secret, service role) **only** as Supabase secrets, never in the client or the repo. Client env lives in `.env` (gitignored) with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`; template in `.env.example`.
 
 ## Folder structure
@@ -79,7 +79,15 @@ npx expo run:ios                # local dev build (simulator)
 npm test                        # Jest (domain logic)
 npm run lint && npm run typecheck
 ```
-Supabase migrations/types/functions currently run through the Supabase MCP (`apply_migration`, `generate_typescript_types`, `deploy_edge_function`). The Supabase CLI is not installed yet.
+Supabase via **CLI** (installed, logged in, linked to `ehjqlatmgvytnzftmkgg`):
+```bash
+supabase db push --linked --dry-run          # ALWAYS preview first
+supabase db push --linked                    # apply migrations
+supabase gen types typescript --linked > src/types/database.ts && npx prettier --write src/types/database.ts
+supabase db advisors --linked                # must return "No issues found" after every migration
+supabase functions deploy --project-ref ehjqlatmgvytnzftmkgg --use-api
+```
+New migrations: always as a new file `supabase/migrations/<timestamp>_<name>.sql`, never edit an applied migration.
 `.npmrc` sets `legacy-peer-deps=true` — required on this SDK 57 / React 19 combo (`npm install`/`npm ci` ERESOLVE otherwise on a transitive `react-dom` peer nothing here actually uses).
 
 ## iOS build (important)
@@ -87,6 +95,13 @@ Supabase migrations/types/functions currently run through the Supabase MCP (`app
 - Start with a UTF-8 locale: `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo run:ios`
 - Xcode 27 / iOS 27 SDK requires the UIScene life cycle. Expo SDK 57's template does not have it yet → local config plugin `plugins/withSceneLifecycle.js` (uses `EXExpoAppSceneDelegate`). **Remove it once we upgrade to SDK 58.**
 - `react-native-mmkv` v4 needs `react-native-nitro-modules` (installed).
+
+## Feature architecture
+- Features live in `src/features/<feature>/`. **`index.ts` is the public contract** (hooks + types); other features import only from there. Contract signatures only change after coordinating with the lead.
+- Data: TanStack Query directly against Supabase (typed client `src/lib/supabase.ts`). Workouts additionally offline via MMKV + outbox (`src/lib/outbox.ts`).
+- Dates as local `YYYY-MM-DD` strings (`src/lib/date.ts`).
+- i18n per feature: `src/i18n/locales/<lang>/<feature>.json` → `t('<feature>.…')`. Base texts (common, tabs) in `<lang>.json`. Exercise names: `t('exercise.<key>')`.
+- Modal routes are registered centrally in `app/_layout.tsx` (log-food, barcode-scanner, food-review, exercise-picker, workout/*).
 
 ## CI/CD (GitHub Actions)
 | Workflow | Trigger | What it does |

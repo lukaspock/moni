@@ -30,6 +30,20 @@ const config: ExpoConfig = {
     'expo-localization',
     './plugins/withSceneLifecycle',
     [
+      'expo-camera',
+      {
+        cameraPermission:
+          'møni uses the camera to photograph meals and scan barcodes.',
+        recordAudioAndroid: false,
+      },
+    ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'møni lets you pick a meal photo from your library.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         image: './assets/splash-icon.png',

@@ -1,10 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
+import type { Database } from '../types/database';
 import { supabaseAuthStorage } from './storage';
 
-// TODO(lead): once `src/types/database.ts` is regenerated from real
-// migrations (`supabase gen types` via the Supabase MCP), parametrize this
-// client as `createClient<Database>(...)` for typed table access.
+// `Database` is generated: `supabase gen types typescript --linked > src/types/database.ts`
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,7 +14,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: supabaseAuthStorage,
     autoRefreshToken: true,
