@@ -54,18 +54,18 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@react-native/jest-preset": "^0.86.3",
-    "@types/jest": "29.5.14",
+    "@babel/core": "^8.0.6",
+    "@react-native/jest-preset": "^0.87.1",
+    "@types/jest": "30.0.0",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "^57.0.13",
     "eslint": "^10.11.0",
     "eslint-config-expo": "~57.0.2",
-    "jest": "~29.7.0",
+    "jest": "~30.5.2",
     "jest-expo": "~57.0.5",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "tailwindcss": "^3.4.19",
-    "typescript": "~6.0.3"
+    "tailwindcss": "^4.3.3",
+    "typescript": "~7.0.2"
   }
 }
