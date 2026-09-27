@@ -1,0 +1,31 @@
+{
+  "common": {
+    "appName": "møni",
+    "loading": "Loading…",
+    "comingSoon": "Coming soon",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "tabs": {
+    "today": "Today",
+    "training": "Training",
+    "insights": "Insights",
+    "profile": "Profile"
+  },
+  "today": {
+    "title": "Today",
+    "placeholder": "Your daily overview will appear here."
+  },
+  "training": {
+    "title": "Training",
+    "placeholder": "Your routines and workouts will appear here."
+  },
+  "insights": {
+    "title": "Insights",
+    "placeholder": "Your trends and analysis will appear here."
+  },
+  "profile": {
+    "title": "Profile",
+    "placeholder": "Profile, goals and settings will appear here."
+  }
+}
