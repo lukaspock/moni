@@ -44,7 +44,7 @@ jobs:
       - name: Deno typecheck
         working-directory: supabase/functions
         run: deno check */index.ts
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: latest
       - name: Apply migrations + seed on a local Postgres
