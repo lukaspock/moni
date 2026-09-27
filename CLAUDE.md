@@ -82,6 +82,12 @@ npm run lint && npm run typecheck
 Supabase migrations/types/functions currently run through the Supabase MCP (`apply_migration`, `generate_typescript_types`, `deploy_edge_function`). The Supabase CLI is not installed yet.
 `.npmrc` sets `legacy-peer-deps=true` — required on this SDK 57 / React 19 combo (`npm install`/`npm ci` ERESOLVE otherwise on a transitive `react-dom` peer nothing here actually uses).
 
+## iOS build (important)
+- **Real project path is `~/Documents/moeni`** (ASCII). `~/Documents/møni` is only a symlink. CocoaPods/Ruby fails on the "ø" in the path, so always build from `moeni`.
+- Start with a UTF-8 locale: `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo run:ios`
+- Xcode 27 / iOS 27 SDK requires the UIScene life cycle. Expo SDK 57's template does not have it yet → local config plugin `plugins/withSceneLifecycle.js` (uses `EXExpoAppSceneDelegate`). **Remove it once we upgrade to SDK 58.**
+- `react-native-mmkv` v4 needs `react-native-nitro-modules` (installed).
+
 ## CI/CD (GitHub Actions)
 | Workflow | Trigger | What it does |
 |---|---|---|
@@ -99,3 +105,4 @@ Rules: CI must stay green before merging. **Migrations go through exactly one pa
 - [x] Git + GitHub repo (github.com/lukaspock/moeni, private)
 - [x] Expo scaffold (Phase 0): SDK 57 (expo 57.0.25, RN 0.86.3, React 19.2.3), expo-router + NativeTabs, NativeWind v4.2 + Tailwind v3.4, i18n (DE/EN), Supabase client, ESLint/Prettier/Jest all green. See DEVLOG log entry for details/deviations.
 - [x] GitHub Actions (CI, Supabase deploy, EAS build, Dependabot) – deploy/EAS still need secrets
+- [x] First dev build running in the simulator (iPhone 18 Pro, 2026-09-27)

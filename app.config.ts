@@ -28,6 +28,7 @@ const config: ExpoConfig = {
       },
     ],
     'expo-localization',
+    './plugins/withSceneLifecycle',
     [
       'expo-splash-screen',
       {
