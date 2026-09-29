@@ -48,11 +48,18 @@ export async function signOut(): Promise<void> {
 // --- Additional auth actions used by app/(auth)/sign-in.tsx --------------
 // Not part of the fixed useSession/signOut contract; free to extend.
 
-/** Returns the resulting user id (email confirmation may leave `session` null — caller decides what to do). */
-export async function signUpWithPassword(email: string, password: string): Promise<string | null> {
+/**
+ * `needsEmailConfirmation` = the project requires confirming the email first
+ * (Supabase returns a user but no session) — the caller should say so and
+ * switch to sign-in.
+ */
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+): Promise<{ userId: string | null; needsEmailConfirmation: boolean }> {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
-  return data.user?.id ?? null;
+  return { userId: data.user?.id ?? null, needsEmailConfirmation: !!data.user && !data.session };
 }
 
 export async function signInWithPassword(email: string, password: string): Promise<string | null> {
@@ -81,5 +88,7 @@ export function isAuthError(error: unknown): error is AuthError {
   return !!error && typeof error === 'object' && 'status' in (error as object) && 'message' in (error as object);
 }
 
-export { useOnboardingStore, type OnboardingDraft } from './onboardingStore';
-export { applyOnboardingDraftToProfile } from './applyOnboardingDraft';
+export { useOnboardingStore, isDraftComplete, type OnboardingDraft } from './onboardingStore';
+export { applyOnboardingDraftToProfile, type ApplyDraftResult } from './applyOnboardingDraft';
+export { isProfileComplete } from './profileStatus';
+export { formatWeight, greetingPeriod, type GreetingPeriod } from './format';

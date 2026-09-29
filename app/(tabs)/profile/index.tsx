@@ -5,38 +5,70 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
 import { roundTo } from '@/domain';
 import { signOut, useSession } from '@/features/auth';
 import { useHealthSettings } from '@/features/health';
+import { PersonalSection } from '@/features/auth/components/PersonalSection';
 import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
 import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
 import i18n, { fallbackLanguage, supportedLanguages } from '@/i18n';
 
-const ACTIVITY_LEVELS: ActivityLevel[] = ['sedentary', 'light', 'moderate', 'active'];
+const ACTIVITY_LEVELS: ActivityLevel[] = [
+  'sedentary',
+  'light',
+  'moderate',
+  'active',
+];
 const GOALS: Goal[] = ['lose', 'maintain', 'gain'];
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 function SectionHeader({ label }: { label: string }) {
-  return <Text className="px-1 pb-1 pt-5 text-sm font-semibold uppercase text-secondary-label">{label}</Text>;
+  return (
+    <Text className="text-secondary-label px-1 pb-1 pt-5 text-sm font-semibold uppercase">
+      {label}
+    </Text>
+  );
 }
 
 function SectionBody({ children }: { children: React.ReactNode }) {
-  return <View className="gap-px overflow-hidden rounded-xl bg-secondary-system-background">{children}</View>;
+  return (
+    <View className="bg-secondary-system-background gap-px overflow-hidden rounded-xl">
+      {children}
+    </View>
+  );
 }
 
-function Row({ label, value, onPress }: { label: string; value?: string; onPress?: () => void }) {
+function Row({
+  label,
+  value,
+  onPress,
+}: {
+  label: string;
+  value?: string;
+  onPress?: () => void;
+}) {
   const Wrapper = onPress ? Pressable : View;
   return (
     <Wrapper
       onPress={onPress}
-      className="min-h-12 flex-row items-center justify-between bg-secondary-system-background px-4 py-3"
+      className="bg-secondary-system-background min-h-12 flex-row items-center justify-between px-4 py-3"
     >
-      <Text className="text-base text-label">{label}</Text>
-      {value ? <Text className="text-base text-secondary-label">{value}</Text> : null}
+      <Text className="text-label text-base">{label}</Text>
+      {value ? (
+        <Text className="text-secondary-label text-base">{value}</Text>
+      ) : null}
     </Wrapper>
   );
 }
@@ -54,7 +86,10 @@ export default function ProfileScreen() {
 
   async function updateProfile(patch: Partial<Profile>) {
     if (!userId) return;
-    const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+    const { error } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', userId);
     if (error) {
       Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
       return;
@@ -64,41 +99,62 @@ export default function ProfileScreen() {
 
   async function toggleWeekday(day: number, current: number[]) {
     void Haptics.selectionAsync();
-    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort();
+    const next = current.includes(day)
+      ? current.filter((d) => d !== day)
+      : [...current, day].sort();
 
     if (!userId) return;
     // Keep training_plan_days consistent with the plain weekday toggle: this
     // mirrors applyOnboardingDraft.ts's upsert/cleanup, kept lightweight here.
     if (current.includes(day)) {
-      await supabase.from('training_plan_days').delete().eq('user_id', userId).eq('weekday', day);
+      await supabase
+        .from('training_plan_days')
+        .delete()
+        .eq('user_id', userId)
+        .eq('weekday', day);
     } else {
-      await supabase.from('training_plan_days').upsert(
-        { user_id: userId, weekday: day, routine_id: null, expected_kcal: null },
-        { onConflict: 'user_id,weekday' },
-      );
+      await supabase
+        .from('training_plan_days')
+        .upsert(
+          {
+            user_id: userId,
+            weekday: day,
+            routine_id: null,
+            expected_kcal: null,
+          },
+          { onConflict: 'user_id,weekday' },
+        );
     }
     void queryClient.invalidateQueries({ queryKey: ['plannedDay'] });
     setTrainingWeekdaysLocal(next);
   }
 
-  const [trainingWeekdaysLocal, setTrainingWeekdaysLocal] = useState<number[]>([]);
+  const [trainingWeekdaysLocal, setTrainingWeekdaysLocal] = useState<number[]>(
+    [],
+  );
   useEffect(() => {
     if (!userId) return;
     supabase
       .from('training_plan_days')
       .select('weekday')
       .eq('user_id', userId)
-      .then(({ data }) => setTrainingWeekdaysLocal((data ?? []).map((r) => r.weekday)));
+      .then(({ data }) =>
+        setTrainingWeekdaysLocal((data ?? []).map((r) => r.weekday)),
+      );
   }, [userId]);
 
   async function handleLogWeight() {
     const value = Number(weightInput.replace(',', '.'));
-    if (!userId || !weightInput.trim() || Number.isNaN(value) || value <= 0) return;
+    if (!userId || !weightInput.trim() || Number.isNaN(value) || value <= 0)
+      return;
     setSavingWeight(true);
     const today = toISODate();
     const { error } = await supabase
       .from('weight_logs')
-      .upsert({ user_id: userId, date: today, weight_kg: value, source: 'manual' }, { onConflict: 'user_id,date' });
+      .upsert(
+        { user_id: userId, date: today, weight_kg: value, source: 'manual' },
+        { onConflict: 'user_id,date' },
+      );
     setSavingWeight(false);
     if (error) {
       Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
@@ -110,10 +166,18 @@ export default function ProfileScreen() {
   }
 
   function handleSignOut() {
-    Alert.alert(t('account.profile.signOutConfirmTitle'), t('account.profile.signOutConfirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('account.profile.signOut'), style: 'destructive', onPress: () => void signOut() },
-    ]);
+    Alert.alert(
+      t('account.profile.signOutConfirmTitle'),
+      t('account.profile.signOutConfirmMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('account.profile.signOut'),
+          style: 'destructive',
+          onPress: () => void signOut(),
+        },
+      ],
+    );
   }
 
   const weekdayLabels: Record<number, string> = {
@@ -128,46 +192,68 @@ export default function ProfileScreen() {
 
   if (isLoading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-system-background">
+      <View className="bg-system-background flex-1 items-center justify-center">
         <ActivityIndicator />
-        <Text className="mt-3 text-base text-secondary-label">{t('account.profile.loading')}</Text>
+        <Text className="text-secondary-label mt-3 text-base">
+          {t('account.profile.loading')}
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-system-background" contentContainerClassName="px-4 pb-12">
+    <ScrollView
+      className="bg-system-background flex-1"
+      contentContainerClassName="px-4 pb-12"
+    >
       {/* Today's target */}
       <SectionHeader label={t('account.profile.todayTargets')} />
       <SectionBody>
         <Row
-          label={targets?.isTrainingDay ? t('account.profile.trainingDayLimit') : t('account.profile.restDayLimit')}
+          label={
+            targets?.isTrainingDay
+              ? t('account.profile.trainingDayLimit')
+              : t('account.profile.restDayLimit')
+          }
           value={targets ? `${Math.round(targets.totalKcal)} kcal` : '—'}
         />
         {targets ? (
-          <Row label={t('account.onboarding.result.protein')} value={`${Math.round(targets.proteinG)} g`} />
+          <Row
+            label={t('account.onboarding.result.protein')}
+            value={`${Math.round(targets.proteinG)} g`}
+          />
         ) : null}
       </SectionBody>
+
+      {/* Personal (onboarding v2: name, motivation, diet, experience, goal weight, reminders) */}
+      <PersonalSection key={profile.id} profile={profile} />
 
       {/* Body / weight */}
       <SectionHeader label={t('account.profile.sections.body')} />
       <SectionBody>
-        <Row label={t('account.profile.height')} value={profile.height_cm ? `${profile.height_cm} cm` : '—'} />
-        <View className="flex-row items-center gap-3 bg-secondary-system-background px-4 py-3">
-          <Text className="flex-1 text-base text-label">{t('account.profile.logWeight')}</Text>
+        <Row
+          label={t('account.profile.height')}
+          value={profile.height_cm ? `${profile.height_cm} cm` : '—'}
+        />
+        <View className="bg-secondary-system-background flex-row items-center gap-3 px-4 py-3">
+          <Text className="text-label flex-1 text-base">
+            {t('account.profile.logWeight')}
+          </Text>
           <TextInput
             value={weightInput}
             onChangeText={setWeightInput}
             placeholder="kg"
             keyboardType="decimal-pad"
-            className="h-10 w-24 rounded-lg border border-separator px-3 text-base text-label"
+            className="border-separator text-label h-10 w-24 rounded-lg border px-3 text-base"
           />
           <Pressable
             disabled={savingWeight}
             onPress={handleLogWeight}
-            className="h-10 items-center justify-center rounded-lg bg-tint px-3"
+            className="bg-tint h-10 items-center justify-center rounded-lg px-3"
           >
-            <Text className="text-sm font-semibold text-system-background">{t('account.profile.logWeightCta')}</Text>
+            <Text className="text-system-background text-sm font-semibold">
+              {t('account.profile.logWeightCta')}
+            </Text>
           </Pressable>
         </View>
       </SectionBody>
@@ -191,10 +277,12 @@ export default function ProfileScreen() {
           </Host>
         </View>
         {profile.goal && profile.goal !== 'maintain' ? (
-          <View className="gap-2 bg-secondary-system-background px-4 py-3">
-            <Text className="text-base text-label">
+          <View className="bg-secondary-system-background gap-2 px-4 py-3">
+            <Text className="text-label text-base">
               {t('account.profile.goalRate')}:{' '}
-              {t('account.onboarding.rate.perWeek', { value: roundTo(profile.goal_rate_kg_per_week ?? 0, 2) })}
+              {t('account.onboarding.rate.perWeek', {
+                value: roundTo(profile.goal_rate_kg_per_week ?? 0, 2),
+              })}
             </Text>
             <Host style={{ width: '100%', height: 44 }}>
               <Slider
@@ -206,7 +294,10 @@ export default function ProfileScreen() {
                   if (editing) return;
                 }}
                 onValueChange={(value) =>
-                  updateProfile({ goal_rate_kg_per_week: profile.goal === 'lose' ? -value : value })
+                  updateProfile({
+                    goal_rate_kg_per_week:
+                      profile.goal === 'lose' ? -value : value,
+                  })
                 }
               />
             </Host>
@@ -221,7 +312,9 @@ export default function ProfileScreen() {
           <Host matchContents>
             <Picker
               selection={profile.activity_level ?? 'moderate'}
-              onSelectionChange={(v) => updateProfile({ activity_level: v as ActivityLevel })}
+              onSelectionChange={(v) =>
+                updateProfile({ activity_level: v as ActivityLevel })
+              }
               modifiers={[pickerStyle('segmented')]}
             >
               {ACTIVITY_LEVELS.map((level) => (
@@ -232,8 +325,10 @@ export default function ProfileScreen() {
             </Picker>
           </Host>
         </View>
-        <View className="gap-2 bg-secondary-system-background px-4 py-3">
-          <Text className="text-sm font-medium text-secondary-label">{t('account.profile.trainingDays')}</Text>
+        <View className="bg-secondary-system-background gap-2 px-4 py-3">
+          <Text className="text-secondary-label text-sm font-medium">
+            {t('account.profile.trainingDays')}
+          </Text>
           <View className="flex-row justify-between gap-2">
             {WEEKDAYS.map((day) => {
               const selected = trainingWeekdaysLocal.includes(day);
@@ -242,10 +337,14 @@ export default function ProfileScreen() {
                   key={day}
                   onPress={() => toggleWeekday(day, trainingWeekdaysLocal)}
                   className={`h-11 flex-1 items-center justify-center rounded-xl border ${
-                    selected ? 'border-tint bg-tint' : 'border-separator bg-system-background'
+                    selected
+                      ? 'border-tint bg-tint'
+                      : 'border-separator bg-system-background'
                   }`}
                 >
-                  <Text className={`text-xs font-semibold ${selected ? 'text-system-background' : 'text-label'}`}>
+                  <Text
+                    className={`text-xs font-semibold ${selected ? 'text-system-background' : 'text-label'}`}
+                  >
                     {weekdayLabels[day]}
                   </Text>
                 </Pressable>
@@ -259,20 +358,30 @@ export default function ProfileScreen() {
       <SectionHeader label={t('account.profile.sections.preferences')} />
       <SectionBody>
         <View className="bg-secondary-system-background px-4 py-3">
-          <Text className="pb-2 text-sm font-medium text-secondary-label">{t('account.profile.unitSystem')}</Text>
+          <Text className="text-secondary-label pb-2 text-sm font-medium">
+            {t('account.profile.unitSystem')}
+          </Text>
           <Host matchContents>
             <Picker
               selection={profile.unit_system}
-              onSelectionChange={(v) => updateProfile({ unit_system: v as UnitSystem })}
+              onSelectionChange={(v) =>
+                updateProfile({ unit_system: v as UnitSystem })
+              }
               modifiers={[pickerStyle('segmented')]}
             >
-              <UIText modifiers={[tag('metric')]}>{t('account.onboarding.body.unitMetric')}</UIText>
-              <UIText modifiers={[tag('imperial')]}>{t('account.onboarding.body.unitImperial')}</UIText>
+              <UIText modifiers={[tag('metric')]}>
+                {t('account.onboarding.body.unitMetric')}
+              </UIText>
+              <UIText modifiers={[tag('imperial')]}>
+                {t('account.onboarding.body.unitImperial')}
+              </UIText>
             </Picker>
           </Host>
         </View>
         <View className="bg-secondary-system-background px-4 py-3">
-          <Text className="pb-2 text-sm font-medium text-secondary-label">{t('account.profile.language')}</Text>
+          <Text className="text-secondary-label pb-2 text-sm font-medium">
+            {t('account.profile.language')}
+          </Text>
           <Host matchContents>
             <Picker
               selection={profile.locale ?? fallbackLanguage}
@@ -290,24 +399,33 @@ export default function ProfileScreen() {
             </Picker>
           </Host>
         </View>
-        <View className="gap-2 bg-secondary-system-background px-4 py-3">
-          <Text className="text-base text-label">
-            {t('account.profile.eatBackFactor')}: {Math.round(profile.eat_back_factor * 100)}%
+        <View className="bg-secondary-system-background gap-2 px-4 py-3">
+          <Text className="text-label text-base">
+            {t('account.profile.eatBackFactor')}:{' '}
+            {Math.round(profile.eat_back_factor * 100)}%
           </Text>
-          <Text className="text-xs text-secondary-label">{t('account.profile.eatBackFactorDescription')}</Text>
+          <Text className="text-secondary-label text-xs">
+            {t('account.profile.eatBackFactorDescription')}
+          </Text>
           <Host style={{ width: '100%', height: 44 }}>
             <Slider
               value={profile.eat_back_factor}
               min={0}
               max={1}
               step={0.05}
-              onValueChange={(value) => updateProfile({ eat_back_factor: roundTo(value, 2) })}
+              onValueChange={(value) =>
+                updateProfile({ eat_back_factor: roundTo(value, 2) })
+              }
             />
           </Host>
         </View>
         <Row
           label={t('health.settings.rowLabel')}
-          value={healthEnabled ? t('health.settings.statusOn') : t('health.settings.statusOff')}
+          value={
+            healthEnabled
+              ? t('health.settings.statusOn')
+              : t('health.settings.statusOff')
+          }
           onPress={() => router.push('/profile/health')}
         />
       </SectionBody>
@@ -315,11 +433,15 @@ export default function ProfileScreen() {
       {/* Account */}
       <SectionHeader label={t('account.profile.sections.account')} />
       <SectionBody>
-        <Pressable onPress={handleSignOut} className="min-h-12 items-center justify-center bg-secondary-system-background px-4 py-3">
-          <Text className="text-base font-semibold text-destructive">{t('account.profile.signOut')}</Text>
+        <Pressable
+          onPress={handleSignOut}
+          className="bg-secondary-system-background min-h-12 items-center justify-center px-4 py-3"
+        >
+          <Text className="text-destructive text-base font-semibold">
+            {t('account.profile.signOut')}
+          </Text>
         </Pressable>
       </SectionBody>
     </ScrollView>
   );
 }
-

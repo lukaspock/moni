@@ -11,7 +11,8 @@ import { MacroBar } from '@/components/charts/MacroBar';
 import { FloatingActionButton } from '@/components/glass/FloatingActionButton';
 import type { FoodLogWithItems } from '@/features/food';
 import { useDeleteFoodLog, useFoodLogsForDate, useFoodTotals } from '@/features/food';
-import { useDailyTargets } from '@/features/targets';
+import { useDailyTargets, useProfile } from '@/features/targets';
+import { greetingPeriod, type GreetingPeriod } from '@/features/auth';
 import { usePlannedDay, useWorkoutsForDate } from '@/features/workout';
 import { addDays, toISODate } from '@/lib/date';
 import type { MealType } from '@/domain';
@@ -23,6 +24,7 @@ export default function TodayScreen() {
   const [date, setDate] = useState(() => toISODate());
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
+  const { profile } = useProfile();
   const { totals } = useFoodTotals(date);
   const { logs } = useFoodLogsForDate(date);
   const { plannedDay } = usePlannedDay(date);
@@ -75,6 +77,14 @@ export default function TodayScreen() {
 
   const hasTrainingToday = !!plannedDay || workouts.length > 0;
 
+  // Personal greeting (onboarding v2 display_name).
+  const displayName = profile?.display_name?.trim() ?? '';
+  const greetings: Record<GreetingPeriod, string> = {
+    morning: t('account.greeting.morning', { name: displayName }),
+    afternoon: t('account.greeting.afternoon', { name: displayName }),
+    evening: t('account.greeting.evening', { name: displayName }),
+  };
+
   return (
     <>
       <Stack.Screen
@@ -106,6 +116,9 @@ export default function TodayScreen() {
             contentContainerClassName="gap-6 px-4 pb-32 pt-4"
             showsVerticalScrollIndicator={false}
           >
+            {isToday && displayName ? (
+              <Text className="text-center text-xl font-semibold text-label">{greetings[greetingPeriod()]}</Text>
+            ) : null}
             <Text className="text-center text-sm font-medium text-secondary-label">
               {isToday ? t('food.dashboard.today') : dateLabel}
             </Text>

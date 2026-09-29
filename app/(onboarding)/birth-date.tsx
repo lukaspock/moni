@@ -1,11 +1,15 @@
 import { DatePicker, Host } from '@expo/ui/swift-ui';
-import { router } from 'expo-router';
+import { datePickerStyle } from '@expo/ui/swift-ui/modifiers';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 
+import { ageFromBirthDate } from '@/domain';
 import { useOnboardingStore } from '@/features/auth';
-import { toISODate } from '@/lib/date';
+import { CountUpText } from '@/features/auth/components/CountUpText';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
+import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
+import { toISODate } from '@/lib/date';
 
 const MIN_BIRTH_DATE = new Date(1920, 0, 1);
 const MAX_BIRTH_DATE = new Date();
@@ -17,6 +21,7 @@ export default function BirthDateScreen() {
   const { t } = useTranslation();
   const birthDate = useOnboardingStore((s) => s.draft.birthDate);
   const update = useOnboardingStore((s) => s.update);
+  const { goNext } = useOnboardingNavigation('birth-date');
 
   // The DatePicker always shows a concrete date (defaulting to
   // DEFAULT_BIRTH_DATE when nothing was chosen yet) — that shown value must
@@ -30,6 +35,7 @@ export default function BirthDateScreen() {
   }, []);
 
   const selected = birthDate ? new Date(`${birthDate}T00:00:00`) : DEFAULT_BIRTH_DATE;
+  const age = ageFromBirthDate(selected);
 
   return (
     <OnboardingScreen
@@ -37,14 +43,23 @@ export default function BirthDateScreen() {
       subtitle={t('account.onboarding.birthDate.subtitle')}
       continueLabel={t('account.common.continue')}
       continueDisabled={!birthDate}
-      onContinue={() => router.push('/(onboarding)/body')}
+      onContinue={() => goNext()}
     >
-      <Host matchContents>
+      <View className="items-center py-2">
+        <CountUpText
+          value={age}
+          duration={250}
+          format={(v) => t('account.onboarding.birthDate.age', { value: Math.round(v) })}
+          className="text-4xl font-bold text-tint"
+        />
+      </View>
+      <Host matchContents style={{ alignSelf: 'center' }}>
         <DatePicker
           title={t('account.onboarding.birthDate.label')}
           selection={selected}
           displayedComponents={['date']}
           range={{ start: MIN_BIRTH_DATE, end: MAX_BIRTH_DATE }}
+          modifiers={[datePickerStyle('wheel')]}
           onDateChange={(date) => update({ birthDate: toISODate(date) })}
         />
       </Host>

@@ -3,42 +3,112 @@ import '../src/i18n';
 // Starts the offline outbox (NetInfo + foreground triggers) at app launch.
 import '../src/lib/outbox';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { useOnboardingStore, useSession } from '../src/features/auth';
+import {
+  applyOnboardingDraftToProfile,
+  isDraftComplete,
+  isProfileComplete,
+  signOut,
+  useOnboardingStore,
+  useSession,
+} from '../src/features/auth';
+import { ApplyingProfileScreen } from '../src/features/auth/components/ApplyingProfileScreen';
+import { useProfile } from '../src/features/targets';
 
 const queryClient = new QueryClient();
 
+type ApplyPhase = 'idle' | 'applying' | 'failed';
+
 /**
- * Auth gate (Sprint 1, `account`): no session & onboarding not finished ->
- * (onboarding); onboarding finished but no session -> (auth)/sign-in;
- * session -> (tabs). `Stack.Protected` (expo-router ~57) swaps the branch
- * declaratively instead of imperative redirects.
+ * Auth gate (`account` → `onboarding` v2). `Stack.Protected` (expo-router ~57)
+ * swaps the branch declaratively instead of imperative redirects:
+ *
+ * - signed out, setup not finished, not "I already have an account" → (onboarding)
+ * - signed out, setup finished OR returning user → (auth)/sign-in
+ * - signed in + finished draft not yet written → write it (never over an
+ *   existing complete profile — see `applyOnboardingDraftToProfile`), showing
+ *   a small "setting up your plan" screen, then →
+ * - signed in + complete profile → (tabs)
+ * - signed in + no/incomplete profile and no draft to apply (new account via
+ *   the returning-user path, or a second account on this device) → (onboarding)
  */
 function RootNavigator() {
-  const { session, isLoading: sessionLoading } = useSession();
+  const client = useQueryClient();
+  const { session, userId, isLoading: sessionLoading } = useSession();
+  const { profile, isLoading: profileLoading, isError: profileError } = useProfile();
   const onboardingCompleted = useOnboardingStore((s) => s.completed);
+  const wantsSignIn = useOnboardingStore((s) => s.wantsSignIn);
+  const appliedToProfile = useOnboardingStore((s) => s.appliedToProfile);
+  const draftComplete = useOnboardingStore((s) => isDraftComplete(s.draft));
 
-  if (sessionLoading) {
-    // Avoid flashing (onboarding) or (auth) before we know if a session exists.
+  const [applyPhase, setApplyPhase] = useState<ApplyPhase>('idle');
+  const [applyAttempt, setApplyAttempt] = useState(0);
+
+  const hasSession = !!session;
+  const draftReady = onboardingCompleted && !appliedToProfile && draftComplete;
+
+  useEffect(() => {
+    if (!userId || !draftReady) return;
+    let cancelled = false;
+    const run = async () => {
+      setApplyPhase('applying');
+      try {
+        await applyOnboardingDraftToProfile(userId);
+        // Keep the "applying" screen up until the fresh profile is in the cache,
+        // otherwise the gate would briefly see "no profile" and flash onboarding.
+        await client.refetchQueries({ queryKey: ['profile', userId] });
+        void client.invalidateQueries();
+        if (!cancelled) setApplyPhase('idle');
+      } catch (error) {
+        console.warn('[gate] applying onboarding draft failed', error);
+        if (!cancelled) setApplyPhase('failed');
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, draftReady, applyAttempt, client]);
+
+  if (sessionLoading || (hasSession && profileLoading)) {
+    // Avoid flashing (onboarding) or (auth) before we know where the user belongs.
     return null;
   }
 
-  const hasSession = !!session;
+  // Profile fetch failed (e.g. offline cold start): don't bounce an existing
+  // user into onboarding — fall back to the tabs like before v2.
+  const profileComplete = isProfileComplete(profile) || (profileError && !profile && !draftReady);
+
+  if (hasSession && !profileComplete && (draftReady || applyPhase !== 'idle')) {
+    return (
+      <ApplyingProfileScreen
+        failed={applyPhase === 'failed'}
+        onRetry={() => setApplyAttempt((n) => n + 1)}
+        onSignOut={() => {
+          setApplyPhase('idle');
+          void signOut();
+        }}
+      />
+    );
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={hasSession}>
+      <Stack.Protected guard={hasSession && profileComplete}>
         <Stack.Screen name="(tabs)" />
       </Stack.Protected>
-      <Stack.Protected guard={!hasSession && !onboardingCompleted}>
+      <Stack.Protected
+        guard={(!hasSession && !onboardingCompleted && !wantsSignIn) || (hasSession && !profileComplete)}
+      >
         <Stack.Screen name="(onboarding)" />
       </Stack.Protected>
-      <Stack.Protected guard={!hasSession && onboardingCompleted}>
+      <Stack.Protected guard={!hasSession && (onboardingCompleted || wantsSignIn)}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
       <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
