@@ -118,8 +118,18 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
     if (kg !== profile.target_weight_kg) void save({ target_weight_kg: kg });
   }
 
+  // The native Toggle keeps its own visual state: if the store value doesn't
+  // change (permission denied → stays false), SwiftUI would leave the switch
+  // "on". Show the requested value while the permission prompt is up, then
+  // remount the Toggle (key bump) so it re-syncs to the real store value.
+  const [pendingReminders, setPendingReminders] = useState<boolean | null>(null);
+  const [reminderToggleKey, setReminderToggleKey] = useState(0);
+
   async function toggleReminders(value: boolean) {
+    setPendingReminders(value);
     const enabled = await reminders.setEnabled(value);
+    setPendingReminders(null);
+    if (enabled !== value) setReminderToggleKey((k) => k + 1);
     if (value && !enabled) Alert.alert(t('account.profile.personal.remindersDenied'));
   }
 
@@ -201,7 +211,11 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
         </Row>
         <Row label={t('account.profile.personal.reminders')}>
           <Host matchContents>
-            <Toggle isOn={reminders.enabled} onIsOnChange={(v) => void toggleReminders(v)} />
+            <Toggle
+              key={reminderToggleKey}
+              isOn={pendingReminders ?? reminders.enabled}
+              onIsOnChange={(v) => void toggleReminders(v)}
+            />
           </Host>
         </Row>
       </View>

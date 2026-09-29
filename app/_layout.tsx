@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -19,7 +20,11 @@ import {
   useSession,
 } from '../src/features/auth';
 import { ApplyingProfileScreen } from '../src/features/auth/components/ApplyingProfileScreen';
+import { initNotifications } from '../src/features/notifications';
 import { useProfile } from '../src/features/targets';
+
+// Foreground notification handler + re-localizing reminders on language change.
+initNotifications();
 
 const queryClient = new QueryClient();
 
@@ -78,7 +83,12 @@ function RootNavigator() {
 
   if (sessionLoading || (hasSession && profileLoading)) {
     // Avoid flashing (onboarding) or (auth) before we know where the user belongs.
-    return null;
+    // `useProfile` retries only once, so an offline start falls through to the tabs quickly.
+    return (
+      <View className="flex-1 items-center justify-center bg-system-background">
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   // Profile fetch failed (e.g. offline cold start): don't bounce an existing

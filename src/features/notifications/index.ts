@@ -111,3 +111,35 @@ export function useMealReminders(): { enabled: boolean; setEnabled: (value: bool
   }, []);
   return { enabled, setEnabled };
 }
+
+let initialized = false;
+
+/**
+ * App-wide notification setup — call once from the root layout. Idempotent.
+ * - Foreground handler: without it iOS drops local notifications while møni is open.
+ * - Re-localizes scheduled meal reminders whenever the app language changes.
+ */
+export function initNotifications(): void {
+  if (initialized) return;
+  initialized = true;
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
+  i18n.on('languageChanged', () => {
+    if (!useReminderStore.getState().enabled) return;
+    void (async () => {
+      try {
+        if ((await getReminderPermission()) === 'granted') await scheduleMealReminders();
+      } catch (e) {
+        console.warn('[notifications] failed to re-localize meal reminders', e);
+      }
+    })();
+  });
+}
