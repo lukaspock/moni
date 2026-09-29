@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '@/lib/supabase';
+import { localDayBoundsUtc } from '@/lib/date';
 import { storage } from '@/lib/storage';
 import { enqueueUpsert, pendingUpsertsForTable, subscribeOutbox } from '@/lib/outbox';
 import { useSession } from '@/features/auth';
@@ -274,14 +275,14 @@ export function useWorkoutsForDateImpl(
 
     async function load() {
       setIsLoading(true);
-      const dayStart = `${date}T00:00:00.000Z`;
-      const dayEnd = `${date}T23:59:59.999Z`;
+      // Local-day bounds (not UTC) so late-evening workouts stay on their local date.
+      const { start: dayStart, end: dayEnd } = localDayBoundsUtc(date);
       const { data } = await supabase
         .from('workouts')
         .select('id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid')
         .eq('user_id', uid)
         .gte('started_at', dayStart)
-        .lte('started_at', dayEnd)
+        .lt('started_at', dayEnd)
         .order('started_at', { ascending: true });
 
       const serverRows = data ?? [];
