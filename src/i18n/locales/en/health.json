@@ -1,0 +1,29 @@
+{
+  "badge": "Apple Health",
+  "settings": {
+    "title": "Apple Health",
+    "rowLabel": "Apple Health",
+    "statusOn": "On",
+    "statusOff": "Off",
+    "intro": "Connect møni with Apple Health: workouts (e.g. from your Apple Watch) and your weight are imported automatically, and your møni workouts are saved to Health.",
+    "connect": "Connect Apple Health",
+    "reconnect": "Request permissions again",
+    "unavailable": "Apple Health isn't available on this device.",
+    "denied": "That didn't work. You can change permissions anytime in the Health app under Profile → Apps → møni.",
+    "sections": {
+      "sync": "Sync",
+      "data": "Data"
+    },
+    "enabled": "Sync with Apple Health",
+    "writeNutrition": "Write nutrition to Health",
+    "writeNutritionHint": "Saves calories, protein, carbs and fat of your meals to Health. Edits and deletions are applied too.",
+    "syncNow": "Sync now",
+    "syncing": "Syncing …",
+    "lastSynced": "Last synced: {{time}}",
+    "neverSynced": "Not synced yet",
+    "reads": "møni reads: workouts, active energy and weight.",
+    "writes": "møni writes: your workouts and, if enabled, your nutrition.",
+    "bonusHint": "Workouts from Health count toward your workout bonus. If a Health workout overlaps one recorded in møni, it isn't counted twice — møni just takes over the measured calories.",
+    "permissionsHint": "For privacy, Apple Health doesn't tell apps whether read access was granted. If data is missing, check the permissions in the Health app."
+  }
+}

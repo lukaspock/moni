@@ -6,6 +6,7 @@
 import * as Crypto from 'expo-crypto';
 
 import { enqueueUpsert } from '@/lib/outbox';
+import { exportWorkoutToHealth } from '@/features/health';
 import { calculateKcalBurned, metForIntensity, type CardioIntensity } from '@/domain/met';
 import type { Exercise, WorkoutCategory } from './types';
 
@@ -44,6 +45,8 @@ export function logCardioWorkout(input: LogCardioInput): LogCardioResult {
     kcal_source: 'met',
     notes: input.notes ?? null,
   });
+  // Apple Health write-back (fire-and-forget; no-op unless enabled in settings, never blocks this offline flow).
+  void exportWorkoutToHealth({ workoutId, category: input.category, startedAt: startedAt.toISOString(), endedAt: endedAt.toISOString(), kcalBurned });
 
   if (input.exercise) {
     const setId = Crypto.randomUUID();

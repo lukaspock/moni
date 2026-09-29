@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { storage } from '@/lib/storage';
 import { enqueueUpsert, pendingUpsertsForTable, subscribeOutbox } from '@/lib/outbox';
 import { useSession } from '@/features/auth';
+import { exportWorkoutToHealth } from '@/features/health';
 import {
   calculateKcalBurned,
   calculateSessionDensity,
@@ -147,6 +148,8 @@ export function finishActiveWorkout(opts: {
     kcal_burned: kcalBurned,
     kcal_source: 'met',
   });
+  // Apple Health write-back (fire-and-forget; no-op unless enabled in settings, never blocks this offline flow).
+  void exportWorkoutToHealth({ workoutId: session.workoutId, category: session.category, startedAt: session.startedAt, endedAt: endedAt.toISOString(), kcalBurned });
 
   // Queue every set that has any data entered (not just untouched placeholders).
   for (const exercise of session.exercises) {
@@ -222,8 +225,10 @@ function rowToSummary(row: {
   ended_at: string | null;
   category: string;
   kcal_burned: number | null;
+  healthkit_uuid?: string | null;
 }, routineNameById: Map<string, string>, routineId: string | null): WorkoutSummary {
   return {
+    isFromHealth: !!row.healthkit_uuid,
     id: row.id,
     startedAt: row.started_at,
     endedAt: row.ended_at,
@@ -273,7 +278,7 @@ export function useWorkoutsForDateImpl(
       const dayEnd = `${date}T23:59:59.999Z`;
       const { data } = await supabase
         .from('workouts')
-        .select('id, started_at, ended_at, category, kcal_burned, routine_id')
+        .select('id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid')
         .eq('user_id', uid)
         .gte('started_at', dayStart)
         .lte('started_at', dayEnd)
@@ -297,6 +302,7 @@ export function useWorkoutsForDateImpl(
           category: p.category as string,
           kcal_burned: (p.kcal_burned as number) ?? null,
           routine_id: (p.routine_id as string) ?? null,
+          healthkit_uuid: (p.healthkit_uuid as string) ?? null,
         }));
 
       const allRows = [...serverRows, ...pendingRows];
@@ -346,7 +352,7 @@ export function useWorkoutHistoryImpl(
       setIsLoading(true);
       const { data } = await supabase
         .from('workouts')
-        .select('id, started_at, ended_at, category, kcal_burned, routine_id')
+        .select('id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid')
         .eq('user_id', uid)
         .order('started_at', { ascending: false })
         .limit(limit);
@@ -362,6 +368,7 @@ export function useWorkoutHistoryImpl(
           category: p.category as string,
           kcal_burned: (p.kcal_burned as number) ?? null,
           routine_id: (p.routine_id as string) ?? null,
+          healthkit_uuid: (p.healthkit_uuid as string) ?? null,
         }));
 
       const allRows = [...serverRows, ...pendingRows].sort((a, b) => (a.started_at < b.started_at ? 1 : -1));

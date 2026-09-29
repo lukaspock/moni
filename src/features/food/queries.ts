@@ -2,6 +2,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth';
+import { deleteFoodLogFromHealth, exportFoodLogToHealth } from '@/features/health';
 import { supabase } from '@/lib/supabase';
 import type { Database, Json } from '@/types/database';
 
@@ -117,11 +118,13 @@ export function useDeleteFoodLog() {
       const { error } = await supabase.from('food_logs').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       void queryClient.invalidateQueries({ queryKey: foodKeys.all });
       void queryClient.invalidateQueries({ queryKey: ['targets'] });
       void queryClient.invalidateQueries({ queryKey: ['workout'] });
       void (userId && null);
+      // Apple Health: remove this log's nutrition samples (fire-and-forget; no-op unless "write nutrition" is on).
+      void deleteFoodLogFromHealth(id);
     },
   });
 }
@@ -227,6 +230,9 @@ export function useSaveFoodDraft() {
         });
         if (favError) throw favError;
       }
+
+      // Apple Health: write/replace kcal + macros (fire-and-forget; no-op unless "write nutrition" is on).
+      void exportFoodLogToHealth({ id: input.id, loggedAt: input.loggedAt, title: logPayload.title, kcal: logPayload.kcal, proteinG: logPayload.protein_g, carbsG: logPayload.carbs_g, fatG: logPayload.fat_g });
 
       return input.id;
     },

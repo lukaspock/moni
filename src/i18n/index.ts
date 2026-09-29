@@ -6,11 +6,13 @@ import de from './locales/de.json';
 import deAccount from './locales/de/account.json';
 import deExercise from './locales/de/exercise.json';
 import deFood from './locales/de/food.json';
+import deHealth from './locales/de/health.json';
 import deWorkout from './locales/de/workout.json';
 import en from './locales/en.json';
 import enAccount from './locales/en/account.json';
 import enExercise from './locales/en/exercise.json';
 import enFood from './locales/en/food.json';
+import enHealth from './locales/en/health.json';
 import enWorkout from './locales/en/workout.json';
 
 /**
@@ -24,6 +26,7 @@ export const deTranslation = {
   account: deAccount,
   exercise: deExercise,
   food: deFood,
+  health: deHealth,
   workout: deWorkout,
 };
 
@@ -32,6 +35,7 @@ const enTranslation = {
   account: enAccount,
   exercise: enExercise,
   food: enFood,
+  health: enHealth,
   workout: enWorkout,
 };
 
