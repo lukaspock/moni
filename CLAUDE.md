@@ -12,6 +12,7 @@ An iOS fitness-lifestyle app that connects workout tracking and calorie tracking
 | `PLAN.md` | Product and technical plan (spec). Read it before starting on a feature. |
 | `CLAUDE.md` | How we work: stack, structure, conventions, commands, setup status. |
 | `DEVLOG.md` | Checklist + log. **Every agent** ticks off its tasks there and appends a log line. |
+| `docs/` | Owner-facing reports in German (e.g. `docs/sprint-2.md`: sprint summary, merge order, iPhone setup, open bugs, owner to-dos). One file per sprint. |
 
 ## Stack (short)
 Expo SDK 57 (`expo` 57.0.25, RN 0.86.3, React 19.2.3; Dev Build via EAS, **not Expo Go**) · TypeScript strict · expo-router (`NativeTabs` from `expo-router/unstable-native-tabs`, Native Stack) · NativeWind v4.2 **+ Tailwind v3.4** (v4 not yet supported by this NativeWind line, see DEVLOG open items) — layout only · expo-glass-effect / @expo/ui/swift-ui / expo-symbols (native Liquid Glass) · Supabase (Auth, Postgres + RLS, Storage, Edge Functions/Deno, pg_cron) · TanStack Query · Zustand · react-native-mmkv v4 (`createMMKV()` factory API) · react-hook-form + zod · i18next · victory-native / Skia · RevenueCat · HealthKit (`@kingstinct/react-native-healthkit` v16, Nitro-based) · expo-notifications · Jest (`jest-expo`).
@@ -159,3 +160,4 @@ Rules: CI must stay green before merging. **Migrations go through exactly one pa
 - [x] Expo scaffold (Phase 0): SDK 57 (expo 57.0.25, RN 0.86.3, React 19.2.3), expo-router + NativeTabs, NativeWind v4.2 + Tailwind v3.4, i18n (DE/EN), Supabase client, ESLint/Prettier/Jest all green. See DEVLOG log entry for details/deviations.
 - [x] GitHub Actions (CI, Supabase deploy, EAS build, Dependabot) – deploy/EAS still need secrets
 - [x] First dev build running in the simulator (iPhone 18 Pro, 2026-09-27)
+- [x] Dev build installed on the owner's iPhone 15 via free personal team (2026-09-29, local `integration/sprint-2`; see "iOS build" above)
