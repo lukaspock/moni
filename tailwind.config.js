@@ -8,6 +8,7 @@
 const { platformColor } = require('nativewind/theme');
 
 const ios = (name) => platformColor(name);
+const brand = require('./theme.config.js');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -27,8 +28,9 @@ module.exports = {
         ),
         separator: ios('separator'),
         'opaque-separator': ios('opaqueSeparator'),
-        tint: ios('systemBlue'),
-        destructive: ios('systemRed'),
+        tint: ios(brand.accent.platform),
+        bonus: ios(brand.bonus.platform),
+        destructive: ios(brand.danger.platform),
       },
     },
   },

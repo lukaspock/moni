@@ -1,16 +1,19 @@
 import { PlatformColor, Text, View } from 'react-native';
 
+import { themeColor } from '@/theme/colors';
+
 export interface MacroBarProps {
   label: string;
   gramsEaten: number;
   gramsTarget: number;
   /** Protein is visually highlighted per PLAN §7.6. */
   highlighted?: boolean;
-  color?: 'blue' | 'orange' | 'purple';
+  /** `accent` follows the brand color in theme.config.js. */
+  color?: 'accent' | 'orange' | 'purple';
 }
 
 const TINTS: Record<NonNullable<MacroBarProps['color']>, string | ReturnType<typeof PlatformColor>> = {
-  blue: PlatformColor('systemBlue'),
+  accent: themeColor('accent'),
   orange: PlatformColor('systemOrange'),
   purple: PlatformColor('systemPurple'),
 };
@@ -21,7 +24,7 @@ export function MacroBar({
   gramsEaten,
   gramsTarget,
   highlighted = false,
-  color = 'blue',
+  color = 'accent',
 }: MacroBarProps) {
   const fraction = gramsTarget > 0 ? Math.min(gramsEaten / gramsTarget, 1) : 0;
   const isOver = gramsTarget > 0 && gramsEaten > gramsTarget;
@@ -42,7 +45,7 @@ export function MacroBar({
         <View
           style={{
             width: `${fraction * 100}%`,
-            backgroundColor: isOver ? PlatformColor('systemRed') : TINTS[color],
+            backgroundColor: isOver ? themeColor('danger') : TINTS[color],
           }}
           className="h-full rounded-full"
         />

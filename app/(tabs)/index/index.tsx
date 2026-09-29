@@ -157,7 +157,7 @@ export default function TodayScreen() {
                     label={t('food.dashboard.fat')}
                     gramsEaten={totals.fatG}
                     gramsTarget={targets?.fatG ?? 0}
-                    color="blue"
+                    color="accent"
                   />
                 </View>
               </>

@@ -1,11 +1,13 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTranslation } from 'react-i18next';
 
+import { themeColor } from '@/theme/colors';
+
 export default function TabsLayout() {
   const { t } = useTranslation();
 
   return (
-    <NativeTabs>
+    <NativeTabs tintColor={themeColor('accent')}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{t('tabs.today')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

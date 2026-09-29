@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { themeColor } from '@/theme/colors';
 
 import {
   estimateExpectedKcalForRoutine,
@@ -125,7 +126,7 @@ export default function TrainingScreen() {
                 ])
               }
             >
-              <SymbolView name="trash" size={18} tintColor="systemRed" />
+              <SymbolView name="trash" size={18} tintColor={themeColor('danger')} />
             </Pressable>
           </View>
         ))}

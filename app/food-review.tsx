@@ -17,6 +17,7 @@ import { Host, Picker, Slider, Text as SwiftUIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { themeColor } from '@/theme/colors';
 
 import type { MealType } from '@/domain';
 import { sumFoodItems } from '@/domain';
@@ -291,7 +292,11 @@ export default function FoodReviewScreen() {
 
             <View className="flex-row items-center justify-between rounded-2xl bg-secondary-system-background p-4">
               <Text className="text-base text-label">{t('food.review.saveAsFavorite')}</Text>
-              <Switch value={draft.saveAsFavorite} onValueChange={setSaveAsFavorite} />
+              <Switch
+                value={draft.saveAsFavorite}
+                onValueChange={setSaveAsFavorite}
+                trackColor={{ true: themeColor('accent') }}
+              />
             </View>
           </ScrollView>
         )}
@@ -325,7 +330,7 @@ function IngredientRow({
           className="flex-1 text-base font-medium text-label"
         />
         <Pressable onPress={onDelete} hitSlop={8}>
-          <SymbolView name="minus.circle.fill" size={20} tintColor="#FF3B30" />
+          <SymbolView name="minus.circle.fill" size={20} tintColor={themeColor('danger')} />
         </Pressable>
       </View>
       <View className="flex-row flex-wrap gap-2">

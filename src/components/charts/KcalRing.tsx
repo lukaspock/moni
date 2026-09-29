@@ -8,6 +8,8 @@ import {
   type SkPath,
 } from '@shopify/react-native-skia';
 
+import { useThemeHex } from '@/theme/colors';
+
 const START_ANGLE = -90;
 const STROKE_WIDTH = 16;
 const OVERFLOW_STROKE_WIDTH = 6;
@@ -48,12 +50,12 @@ export function KcalRing({
   const isOver = eatenKcal > totalKcal;
 
   // Skia's Canvas paints need concrete color values, not RN's `PlatformColor`
-  // opaque handles, so these mirror the iOS system colors directly (no
-  // automatic dark-mode adaptation on the canvas itself — a known limitation).
+  // opaque handles — `useThemeHex` resolves the brand hex (theme.config.js)
+  // for the current color scheme.
   const trackColor = 'rgba(120,120,128,0.3)';
-  const baseFillColor = '#007AFF';
-  const bonusFillColor = '#34C759';
-  const overColor = '#FF3B30';
+  const baseFillColor = useThemeHex('accent');
+  const bonusFillColor = useThemeHex('bonus');
+  const overColor = useThemeHex('danger');
 
   const baseFraction = Math.min(baseKcal / totalKcal, 1);
   const bonusFraction = Math.max(1 - baseFraction, 0);

@@ -29,6 +29,20 @@ const config: ExpoConfig = {
     ],
     'expo-localization',
     './plugins/withSceneLifecycle',
+    // Brand accent from theme.config.js → iOS AccentColor (default tint for native controls).
+    './plugins/withAccentColor',
+    [
+      '@kingstinct/react-native-healthkit',
+      {
+        NSHealthShareUsageDescription:
+          'møni reads your workouts, active energy and body weight from Apple Health to adjust your daily calorie limit.',
+        NSHealthUpdateUsageDescription:
+          'møni saves your logged workouts and nutrition (calories and macros) to Apple Health.',
+        // PLAN §7.5: import on app start/foreground only — no background delivery.
+        background: false,
+      },
+    ],
+    'expo-notifications',
     [
       'expo-camera',
       {

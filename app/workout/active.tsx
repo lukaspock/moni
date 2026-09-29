@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-nativ
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { themeColor } from '@/theme/colors';
 import { GlassView } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 
@@ -284,7 +285,7 @@ function SetRow({
         <SymbolView
           name={completed ? 'checkmark.circle.fill' : 'circle'}
           size={26}
-          tintColor={completed ? undefined : 'secondaryLabel'}
+          tintColor={completed ? themeColor('accent') : 'secondaryLabel'}
         />
       </Pressable>
       <Pressable onPress={() => removeSet(exerciseId, set.id)}>

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { themeColor } from '@/theme/colors';
 
 import {
   exerciseDisplayName,
@@ -105,7 +106,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
                 <SymbolView name="chevron.down" size={14} tintColor="secondaryLabel" />
               </Pressable>
               <Pressable onPress={() => removeExercise(index)} className="px-1">
-                <SymbolView name="trash" size={14} tintColor="systemRed" />
+                <SymbolView name="trash" size={14} tintColor={themeColor('danger')} />
               </Pressable>
             </View>
             <View className="flex-row gap-3">

@@ -270,13 +270,19 @@ export type Database = {
           activity_level: string | null;
           birth_date: string | null;
           created_at: string;
+          diet: string | null;
+          display_name: string | null;
           eat_back_factor: number;
           goal: string | null;
           goal_rate_kg_per_week: number | null;
+          health_disclaimer_accepted_at: string | null;
           height_cm: number | null;
           id: string;
           locale: string;
+          motivation: string | null;
           sex: string | null;
+          target_weight_kg: number | null;
+          training_experience: string | null;
           unit_system: string;
           updated_at: string;
           workouts_per_week: number | null;
@@ -285,13 +291,19 @@ export type Database = {
           activity_level?: string | null;
           birth_date?: string | null;
           created_at?: string;
+          diet?: string | null;
+          display_name?: string | null;
           eat_back_factor?: number;
           goal?: string | null;
           goal_rate_kg_per_week?: number | null;
+          health_disclaimer_accepted_at?: string | null;
           height_cm?: number | null;
           id: string;
           locale?: string;
+          motivation?: string | null;
           sex?: string | null;
+          target_weight_kg?: number | null;
+          training_experience?: string | null;
           unit_system?: string;
           updated_at?: string;
           workouts_per_week?: number | null;
@@ -300,13 +312,19 @@ export type Database = {
           activity_level?: string | null;
           birth_date?: string | null;
           created_at?: string;
+          diet?: string | null;
+          display_name?: string | null;
           eat_back_factor?: number;
           goal?: string | null;
           goal_rate_kg_per_week?: number | null;
+          health_disclaimer_accepted_at?: string | null;
           height_cm?: number | null;
           id?: string;
           locale?: string;
+          motivation?: string | null;
           sex?: string | null;
+          target_weight_kg?: number | null;
+          training_experience?: string | null;
           unit_system?: string;
           updated_at?: string;
           workouts_per_week?: number | null;
@@ -442,6 +460,7 @@ export type Database = {
         Row: {
           created_at: string;
           date: string;
+          healthkit_uuid: string | null;
           id: string;
           source: string;
           user_id: string;
@@ -450,6 +469,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           date: string;
+          healthkit_uuid?: string | null;
           id?: string;
           source?: string;
           user_id: string;
@@ -458,6 +478,7 @@ export type Database = {
         Update: {
           created_at?: string;
           date?: string;
+          healthkit_uuid?: string | null;
           id?: string;
           source?: string;
           user_id?: string;

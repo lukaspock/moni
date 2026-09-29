@@ -3,6 +3,7 @@ import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { themeColor } from '@/theme/colors';
 
 import {
   allMuscleGroups,
@@ -138,7 +139,7 @@ export default function ExercisePickerScreen() {
                 <SymbolView
                   name={selected ? 'checkmark.circle.fill' : 'circle'}
                   size={22}
-                  tintColor={selected ? undefined : 'secondaryLabel'}
+                  tintColor={selected ? themeColor('accent') : 'secondaryLabel'}
                 />
               )}
             </Pressable>
