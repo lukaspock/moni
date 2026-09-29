@@ -1,11 +1,11 @@
 import { Host, Stepper } from '@expo/ui/swift-ui';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
 import { useOnboardingStore } from '@/features/auth';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
+import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
@@ -13,6 +13,7 @@ export default function ScheduleScreen() {
   const { t } = useTranslation();
   const draft = useOnboardingStore((s) => s.draft);
   const update = useOnboardingStore((s) => s.update);
+  const { goNext } = useOnboardingNavigation('schedule');
 
   const targetCount = draft.workoutsPerWeek;
 
@@ -51,7 +52,7 @@ export default function ScheduleScreen() {
       subtitle={t('account.onboarding.schedule.subtitle')}
       continueLabel={t('account.common.continue')}
       continueDisabled={!canContinue}
-      onContinue={() => router.push('/(onboarding)/result')}
+      onContinue={() => goNext()}
     >
       <Host matchContents>
         <Stepper

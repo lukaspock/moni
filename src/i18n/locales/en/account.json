@@ -2,36 +2,76 @@
   "common": {
     "continue": "Continue",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "skip": "Skip",
+    "notNow": "Not now",
+    "decrease": "Decrease",
+    "increase": "Increase"
+  },
+  "greeting": {
+    "morning": "Good morning, {{name}}",
+    "afternoon": "Hi {{name}}",
+    "evening": "Good evening, {{name}}"
   },
   "onboarding": {
+    "progressLabel": "Setup progress",
     "welcome": {
-      "title": "Welcome to møni",
-      "subtitle": "A few quick questions so we can set your daily calorie and macro targets — adjusted for training days automatically.",
-      "cta": "Get started"
+      "eyebrow": "Welcome to møni",
+      "title": "Your calories, in sync with your training",
+      "subtitle": "A few quick questions and we'll build a plan that fits you. Takes about two minutes.",
+      "value1Title": "Snap it, done",
+      "value1Body": "Log meals by photo, text or barcode — AI does the counting.",
+      "value2Title": "Train more, eat more",
+      "value2Body": "Your daily limit grows with every workout.",
+      "value3Title": "Adapts to you",
+      "value3Body": "Your plan learns from your real progress.",
+      "cta": "Let's go",
+      "haveAccount": "I already have an account"
+    },
+    "name": {
+      "title": "First things first — what should we call you?",
+      "subtitle": "Your first name is perfect. We'll use it to make møni feel like yours.",
+      "placeholder": "Your first name",
+      "greeting": "Nice to meet you, {{name}}! 👋"
+    },
+    "motivation": {
+      "title": "What's driving you, {{name}}?",
+      "titleNoName": "What's driving you?",
+      "subtitle": "Pick the one that matters most — we'll keep it in mind.",
+      "health": "Feel healthier",
+      "healthDescription": "Invest in your long-term health",
+      "look": "Look better",
+      "lookDescription": "Feel good in your own skin",
+      "performance": "Perform better",
+      "performanceDescription": "Stronger, faster, fitter",
+      "energy": "More energy",
+      "energyDescription": "No more afternoon slump",
+      "confidence": "More confidence",
+      "confidenceDescription": "Trust your body again"
     },
     "sex": {
       "title": "What's your sex?",
-      "subtitle": "Used for the calorie formula (Mifflin-St Jeor).",
+      "subtitle": "Needed for an accurate calorie formula (Mifflin-St Jeor).",
       "male": "Male",
       "female": "Female"
     },
     "birthDate": {
-      "title": "When were you born?",
-      "subtitle": "Used to calculate your age for the calorie formula.",
-      "label": "Birth date"
+      "title": "When's your birthday?",
+      "subtitle": "Your metabolism changes with age, so this makes your numbers more precise.",
+      "label": "Birth date",
+      "age": "You're {{value}}"
     },
     "body": {
       "title": "Height & weight",
-      "subtitle": "Values are stored in metric and shown in your preferred unit.",
+      "subtitle": "Your starting point. It stays private — promise.",
       "unitMetric": "Metric",
       "unitImperial": "Imperial",
       "heightLabel": "Height",
-      "weightLabel": "Weight"
+      "weightLabel": "Current weight"
     },
     "activity": {
-      "title": "Everyday activity",
-      "subtitle": "How active is your day outside of workouts? Workouts are added separately.",
+      "title": "How active is your everyday life?",
+      "subtitle": "Outside of workouts — we count those separately, so nothing gets counted twice.",
       "sedentary": "Sedentary",
       "sedentaryDescription": "Desk job, little walking",
       "light": "Lightly active",
@@ -42,25 +82,59 @@
       "activeDescription": "Physically demanding job or lifestyle"
     },
     "goal": {
-      "title": "What's your goal?",
+      "title": "What do you want to achieve?",
       "subtitle": "This decides whether we aim for a deficit, maintenance, or a surplus.",
       "lose": "Lose weight",
       "loseDescription": "Gradual calorie deficit",
       "maintain": "Maintain weight",
       "maintainDescription": "Stay around your current weight",
       "gain": "Gain weight",
-      "gainDescription": "Gradual calorie surplus"
+      "gainDescription": "Gradual calorie surplus, ideal for building muscle"
+    },
+    "targetWeight": {
+      "title": "What's your goal weight?",
+      "subtitle": "Pick a target that feels good — you can change it any time.",
+      "current": "Now: {{value}}",
+      "difference": "{{value}} to go",
+      "healthyRange": "Healthy range for your height: {{min}} – {{max}}",
+      "projection": "At your current pace you'll get there around {{date}}.",
+      "warnUnderweight": "That's below a healthy BMI of 18.5. A slightly higher target is kinder to your body.",
+      "warnTooLow": "That target is too low to be healthy for your height.",
+      "noRange": "You're already at the lower end of a healthy weight for your height. Maybe “Maintain” is the better goal?"
     },
     "rate": {
-      "title": "How fast?",
-      "subtitleLose": "Target rate of weight loss per week.",
-      "subtitleGain": "Target rate of weight gain per week.",
+      "title": "How fast do you want to go?",
+      "subtitleLose": "Target weight loss per week.",
+      "subtitleGain": "Target weight gain per week.",
       "subtitleMaintain": "You're maintaining, so there's no rate to set.",
-      "perWeek": "{{value}} kg / week"
+      "perWeek": "{{value}} kg / week",
+      "perWeekFormatted": "{{value}} / week",
+      "paceGentle": "Gentle",
+      "paceBalanced": "Balanced · recommended",
+      "paceAggressive": "Ambitious",
+      "paceGentleHint": "Easy to stick with. Slow and steady wins.",
+      "paceBalancedHint": "The sweet spot between progress and staying power.",
+      "paceAggressiveHint": "Hard to sustain and you risk losing muscle. We'd suggest going a bit slower.",
+      "dailyTarget": "Your daily target",
+      "kcalPerDay": "kcal / day",
+      "deficit": "{{value}} kcal below your maintenance",
+      "surplus": "{{value}} kcal above your maintenance",
+      "reachBy": "Goal reached around",
+      "capped": "For your safety we cap this at about {{value}} per week."
+    },
+    "experience": {
+      "title": "How much training experience do you have?",
+      "subtitle": "So we can pitch things at the right level.",
+      "beginner": "Just starting out",
+      "beginnerDescription": "New to it, or back after a long break",
+      "intermediate": "Some experience",
+      "intermediateDescription": "Training regularly for a few months",
+      "advanced": "Seasoned",
+      "advancedDescription": "Training consistently for years"
     },
     "schedule": {
       "title": "Training days",
-      "subtitle": "How many times a week do you train, and on which days?",
+      "subtitle": "How many times a week do you train, and on which days? On those days your limit goes up.",
       "workoutsPerWeekLabel": "Workouts per week",
       "weekdaysLabel": "Which days?",
       "weekday": {
@@ -73,9 +147,53 @@
         "6": "Sat"
       }
     },
+    "diet": {
+      "title": "How do you eat?",
+      "subtitle": "Helps us make suggestions that fit your plate.",
+      "omnivore": "A bit of everything",
+      "omnivoreDescription": "No restrictions",
+      "flexitarian": "Flexitarian",
+      "flexitarianDescription": "Mostly plant-based, meat now and then",
+      "pescetarian": "Pescetarian",
+      "pescetarianDescription": "Fish yes, meat no",
+      "vegetarian": "Vegetarian",
+      "vegetarianDescription": "No meat or fish",
+      "vegan": "Vegan",
+      "veganDescription": "Fully plant-based"
+    },
+    "disclaimer": {
+      "title": "One important note",
+      "subtitle": "Before we crunch your numbers:",
+      "point1": "møni gives estimates and general guidance — not medical advice.",
+      "point2": "If you're pregnant, have a medical condition or a history of eating disorders, please talk to a doctor before changing your diet.",
+      "point3": "We never go below safe calorie minimums and we cap aggressive deficits.",
+      "accept": "I've read and understood this",
+      "cta": "Accept & continue"
+    },
+    "calculating": {
+      "title": "Crafting your plan, {{name}}…",
+      "titleNoName": "Crafting your plan…",
+      "step1": "Calculating your metabolism",
+      "step2": "Factoring in your everyday activity",
+      "step3": "Planning your training days",
+      "step4": "Balancing your macros",
+      "done": "Your plan is ready!"
+    },
     "result": {
-      "title": "Your daily targets",
+      "title": "{{name}}, your plan is ready 🎉",
+      "titleNoName": "Your plan is ready 🎉",
       "subtitle": "Your limit adapts automatically: higher on training days, based on what you actually burn.",
+      "motivation": {
+        "health": "Built to help you feel healthier, day by day.",
+        "look": "Built to help you feel great in your own skin.",
+        "performance": "Built to fuel your performance.",
+        "energy": "Built to keep your energy up all day.",
+        "confidence": "Built to help you trust your body again."
+      },
+      "projectionTitle": "Your projection",
+      "projectionReach": "{{target}} around {{date}}",
+      "projectionMaintain": "Steady around {{value}}",
+      "projectionNote": "An estimate based on your pace. Your plan adapts as you log your weight.",
       "restDay": "Rest day",
       "trainingDay": "Training day",
       "kcal": "kcal",
@@ -83,21 +201,49 @@
       "carbs": "Carbs",
       "fat": "Fat",
       "workoutBonus": "+{{value}} kcal from training",
-      "explanation": "On rest days your limit is your adjusted maintenance calories. On training days, we add back a share of what you burn (based on your eat-back factor) — mostly as carbs, since protein and fat stay steady.",
+      "explanation": "On rest days your limit is your adjusted maintenance calories. On training days, we add back a share of what you burn — mostly as carbs, since protein and fat stay steady.",
       "guardrailDeficit": "Your requested pace was steeper than a safe deficit (max 25% below maintenance), so we capped it.",
       "guardrailSurplus": "Your requested pace was steeper than a safe surplus (max +500 kcal/day), so we capped it.",
       "guardrailMinimum": "Your target hit the safe daily minimum, so we raised it slightly.",
-      "cta": "Create account"
+      "cta": "Continue"
+    },
+    "health": {
+      "title": "Connect Apple Health",
+      "subtitle": "møni works even better with Health:",
+      "benefit1": "Import workouts from your Apple Watch and other apps",
+      "benefit2": "Keep your weight in sync automatically",
+      "benefit3": "More accurate calories burned on training days",
+      "privacy": "You decide exactly what møni may read and write. Change it any time in Settings.",
+      "cta": "Connect Apple Health",
+      "later": "Not now",
+      "denied": "No problem — you can connect Health later in your profile."
+    },
+    "notifications": {
+      "title": "Gentle reminders?",
+      "subtitle": "A friendly nudge at mealtimes makes logging a habit. Max. 3 a day, off with one tap.",
+      "previewApp": "møni",
+      "previewNow": "now",
+      "cta": "Turn on reminders",
+      "later": "Not now",
+      "denied": "Okay! You can turn reminders on later in your profile."
     }
   },
   "auth": {
     "signIn": {
       "title": "Sign in",
       "subtitle": "Sign in to save your targets and start tracking.",
+      "signUpTitle": "Almost there, {{name}}!",
+      "signUpTitleNoName": "Almost there!",
+      "signUpSubtitle": "Create your free account so your plan is saved safely.",
+      "signInTitle": "Welcome back",
+      "signInSubtitle": "Sign in to pick up where you left off.",
       "emailLabel": "Email",
       "passwordLabel": "Password",
       "signInCta": "Sign in",
       "signUpCta": "Create account",
+      "haveAccount": "I already have an account",
+      "createInstead": "Create a new account instead",
+      "newHere": "New here? Set up møni",
       "toggleToSignUp": "New here? Create an account",
       "toggleToSignIn": "Already have an account? Sign in",
       "orDivider": "or",
@@ -110,24 +256,44 @@
         "verifyCta": "Verify & sign in",
         "resendCta": "Resend code"
       },
+      "usePassword": "Use a password instead",
       "appleCta": "Continue with Apple",
       "googleCta": "Continue with Google",
       "socialComingSoon": "Coming soon — needs an Apple Developer account",
+      "checkEmail": "Check your inbox to confirm your email, then sign in.",
       "errors": {
         "missingEmail": "Enter your email address.",
         "missingPassword": "Enter your password.",
         "invalidCode": "Enter the 6-digit code.",
         "generic": "Something went wrong. Please try again."
       }
+    },
+    "applying": {
+      "title": "Setting up your plan…",
+      "error": "We couldn't save your plan. Check your connection and try again.",
+      "retry": "Try again",
+      "signOut": "Sign out"
     }
   },
   "profile": {
     "sections": {
+      "personal": "Personal",
       "goals": "Goal",
       "body": "Body",
       "activity": "Activity & training",
       "preferences": "Preferences",
       "account": "Account"
+    },
+    "personal": {
+      "name": "Name",
+      "namePlaceholder": "Your first name",
+      "motivation": "Motivation",
+      "diet": "Diet",
+      "experience": "Training experience",
+      "targetWeight": "Goal weight",
+      "notSet": "Not set",
+      "reminders": "Meal reminders",
+      "remindersDenied": "Notifications are turned off for møni. You can allow them in the iOS Settings app."
     },
     "todayTargets": "Today's target",
     "restDayLimit": "Rest day limit",
