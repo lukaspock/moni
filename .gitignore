@@ -15,3 +15,4 @@ coverage/
 supabase/.temp/
 supabase/.branches/
 expo-env.d.ts
+.claude/worktrees/
