@@ -114,10 +114,18 @@ New migrations: always as a new file `supabase/migrations/<timestamp>_<name>.sql
 ## CI/CD (GitHub Actions)
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `ci.yml` | push to main, every PR | App: `npm ci` → typecheck → lint → jest (+ expo-doctor, non-blocking). Supabase: deno lint/check of functions, migrations + seed against a local Postgres (`supabase db reset --local`), `supabase db lint` |
-| `supabase-deploy.yml` | push to main under `supabase/**`, manual | `supabase db push --include-seed` + `functions deploy`. **Only active** when the repo variable `SUPABASE_DEPLOY_ENABLED=true`. Needs secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, variable `SUPABASE_PROJECT_REF`, environment `production` |
-| `eas-build.yml` | manual only | iOS build via EAS (profile selectable, optional TestFlight submit). Needs secret `EXPO_TOKEN` + linked EAS project |
-| `dependabot.yml` | weekly | Actions + npm (Expo/RN packages excluded → `npx expo install --fix`) |
+| `ci.yml` | push to `main`, every PR (any base branch — stacked PRs included) | `changes` (path detection) → App: `npm ci` → typecheck → lint → jest (+ expo-doctor, non-blocking). Supabase: deno lint/check of functions, migrations + seed against a local Postgres (`supabase db reset --local`), `supabase db lint` → `CI OK` (aggregate) |
+| `supabase-deploy.yml` | push to `main` under `supabase/**`, manual | `supabase db push --include-seed` + `functions deploy`. **Only active** when the repo variable `SUPABASE_DEPLOY_ENABLED=true` and the ref is `main` (a manual run from another branch is skipped). Needs secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, variable `SUPABASE_PROJECT_REF`, environment `production` |
+| `eas-build.yml` | manual only (`workflow_dispatch`) | iOS build via EAS (profile selectable, optional TestFlight submit). Needs secret `EXPO_TOKEN` + linked EAS project |
+| `dependabot.yml` | weekly | Actions (grouped into one PR) + npm. Ignored: Expo/RN-managed packages (`expo*`, `*-expo`, `babel-preset-expo`, `react-native*`, `@react-native/*`, `react`, `react-dom` → `npx expo install --fix`) and **majors** of `tailwindcss` (NativeWind 4.2 needs v3), `typescript` (typescript-eslint doesn't support TS 7), `@babel/core`, `jest`, `@types/jest` (follow the Expo SDK) |
+| `pull_request_template.md` | every PR | Summary + checklist (typecheck/lint/test, simulator, migrations+advisors, i18n de+en, CLAUDE/DEVLOG) |
+
+Pipeline conventions:
+- **Triggers**: no other events (no `push` on feature branches → no duplicate runs for PR branches). Don't restrict `pull_request` by base branch.
+- **Docs-only changes**: deliberately *no* workflow-level `paths`/`paths-ignore` (a workflow skipped by path never reports, which blocks required checks). Instead the `changes` job (`dorny/paths-filter`) skips `app` on PRs touching only `*.md`/`docs/**`/`LICENSE`/`supabase/**`, and skips `supabase` on PRs touching only docs/`app/`/`src/`/`assets/`. Skipped jobs count as success. Pushes to `main` always run everything.
+- **Required check**: only `CI OK` (aggregates `changes`/`app`/`supabase`, fails on any failure/cancel) — so job renames or new jobs don't require branch-protection edits.
+- **Concurrency**: superseded PR runs are cancelled (group per PR number); `main` runs and deploys are never cancelled (deploys serialized in one group).
+- **Hardening**: top-level `permissions: contents: read` (only `changes` adds `pull-requests: read`), `timeout-minutes` on every job, actions pinned to major tags (checkout/setup-node v7, setup-cli v3, setup-deno v2, expo-github-action v9, paths-filter v4), npm cache via `setup-node`, Deno module cache via `setup-deno cache: true`. `npm ci` picks up `.npmrc` (`legacy-peer-deps=true`) automatically. Supabase CLI still uses `version: latest`. Validate workflow edits with `actionlint` before pushing.
 
 Rules: CI must stay green before merging. **Migrations go through exactly one path**: once the deploy workflow is active, only via `supabase/migrations/*.sql` + deploy, never directly via MCP `apply_migration` (otherwise the migration history drifts). App secrets (Gemini etc.) are **not** in GitHub; they live only as Supabase secrets.
 

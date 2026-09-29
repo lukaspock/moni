@@ -4,16 +4,36 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns: ['*']
+
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    # Expo pins compatible versions; bump SDK deps with `npx expo install --fix` instead.
     ignore:
+      # Expo pins compatible versions; bump SDK deps with `npx expo install --fix` instead.
       - dependency-name: 'expo*'
+      - dependency-name: '*-expo'
+      - dependency-name: 'babel-preset-expo'
       - dependency-name: 'react-native*'
+      - dependency-name: '@react-native/*'
       - dependency-name: 'react'
       - dependency-name: 'react-dom'
+      # NativeWind 4.2 only supports Tailwind v3 (v4 breaks Metro / expo-doctor).
+      - dependency-name: 'tailwindcss'
+        update-types: ['version-update:semver-major']
+      # typescript-eslint (via eslint-config-expo) does not support TS 7 yet.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+      # Toolchain majors follow the Expo SDK (jest-expo / babel-preset-expo), not Dependabot.
+      - dependency-name: '@babel/core'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'jest'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/jest'
+        update-types: ['version-update:semver-major']
     groups:
       dev-dependencies:
         dependency-type: development

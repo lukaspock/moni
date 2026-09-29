@@ -1,6 +1,6 @@
 name: EAS build
 
-# Manual iOS builds via EAS. Required secret: EXPO_TOKEN.
+# Manual iOS builds via EAS (workflow_dispatch only). Required secret: EXPO_TOKEN.
 on:
   workflow_dispatch:
     inputs:
@@ -14,26 +14,35 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: eas-build-${{ github.ref }}-${{ inputs.profile }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PROFILE: ${{ inputs.profile }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         with:
           eas-version: latest
+          packager: npm
           token: ${{ secrets.EXPO_TOKEN }}
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
+      # --no-wait: the build itself runs on EAS; this job only queues it.
       - name: Build
-        run: eas build --platform ios --profile "${{ inputs.profile }}" --non-interactive --no-wait
         if: ${{ !(inputs.submit && inputs.profile == 'production') }}
+        run: eas build --platform ios --profile "$PROFILE" --non-interactive --no-wait
       - name: Build + submit to TestFlight
-        run: eas build --platform ios --profile production --non-interactive --no-wait --auto-submit
         if: ${{ inputs.submit && inputs.profile == 'production' }}
+        run: eas build --platform ios --profile production --non-interactive --no-wait --auto-submit

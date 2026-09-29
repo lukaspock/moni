@@ -1,6 +1,7 @@
 name: Supabase deploy
 
 # Pushes migrations and Edge Functions to the hosted project.
+# Triggers: push to main touching supabase/**, or manual run.
 # Enabled only when the repo variable SUPABASE_DEPLOY_ENABLED is "true".
 # Required secrets: SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD. Variable: SUPABASE_PROJECT_REF.
 on:
@@ -10,6 +11,7 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Deploys are serialized and never cancelled mid-migration.
   group: supabase-deploy
   cancel-in-progress: false
 
@@ -18,16 +20,17 @@ permissions:
 
 jobs:
   deploy:
-    if: vars.SUPABASE_DEPLOY_ENABLED == 'true'
+    if: vars.SUPABASE_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: production
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
         with:
           version: latest
       - run: supabase link --project-ref "$PROJECT_REF"
