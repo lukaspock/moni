@@ -11,6 +11,8 @@ export type WorkoutSummary = {
   category: 'strength' | 'cardio' | 'sport' | 'other';
   kcalBurned: number | null;
   routineName: string | null;
+  /** Linked to an Apple Health workout (imported, or its kcal measured by Health). Optional, additive. */
+  isFromHealth?: boolean;
 };
 
 export type PlannedDay = {

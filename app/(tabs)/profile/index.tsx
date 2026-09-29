@@ -1,6 +1,7 @@
 import { Host, Picker, Slider, Text as UIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View 
 import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
 import { roundTo } from '@/domain';
 import { signOut, useSession } from '@/features/auth';
+import { useHealthSettings } from '@/features/health';
 import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
 import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
@@ -45,6 +47,7 @@ export default function ProfileScreen() {
   const { profile, isLoading } = useProfile();
   const { targets } = useDailyTargets(toISODate());
   const queryClient = useQueryClient();
+  const { enabled: healthEnabled } = useHealthSettings();
 
   const [weightInput, setWeightInput] = useState('');
   const [savingWeight, setSavingWeight] = useState(false);
@@ -302,6 +305,11 @@ export default function ProfileScreen() {
             />
           </Host>
         </View>
+        <Row
+          label={t('health.settings.rowLabel')}
+          value={healthEnabled ? t('health.settings.statusOn') : t('health.settings.statusOff')}
+          onPress={() => router.push('/profile/health')}
+        />
       </SectionBody>
 
       {/* Account */}

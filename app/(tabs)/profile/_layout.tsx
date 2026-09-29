@@ -10,6 +10,7 @@ export default function ProfileStackLayout() {
         name="index"
         options={{ title: t('profile.title'), headerLargeTitle: true }}
       />
+      <Stack.Screen name="health" options={{ title: t('health.settings.title') }} />
     </Stack>
   );
 }

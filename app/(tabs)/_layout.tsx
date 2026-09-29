@@ -1,10 +1,13 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTranslation } from 'react-i18next';
 
+import { useHealthAutoSync } from '@/features/health';
 import { themeColor } from '@/theme/colors';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  // Apple Health import on mount + foreground (throttled; no-op unless enabled & signed in).
+  useHealthAutoSync();
 
   return (
     <NativeTabs tintColor={themeColor('accent')}>

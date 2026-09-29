@@ -44,6 +44,9 @@ function HistoryRow({ workout }: { workout: WorkoutSummary }) {
         {workout.kcalBurned !== null && (
           <Text className="text-xs text-secondary-label">{t('workout.history.kcal', { kcal: workout.kcalBurned })}</Text>
         )}
+        {workout.isFromHealth ? (
+          <Text className="text-xs font-medium text-tint">{t('health.badge')}</Text>
+        ) : null}
       </View>
     </View>
   );
