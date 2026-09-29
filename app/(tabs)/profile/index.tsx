@@ -16,11 +16,16 @@ import {
 } from 'react-native';
 
 import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
-import { roundTo } from '@/domain';
+import { cmToFeetInches, lbToKg, roundTo } from '@/domain';
 import { signOut, useSession } from '@/features/auth';
 import { useHealthSettings } from '@/features/health';
 import { PersonalSection } from '@/features/auth/components/PersonalSection';
-import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
+import {
+  logManualWeight,
+  useDailyTargets,
+  useProfile,
+  type Profile,
+} from '@/features/targets';
 import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
 import i18n, { fallbackLanguage, supportedLanguages } from '@/i18n';
@@ -83,6 +88,7 @@ export default function ProfileScreen() {
 
   const [weightInput, setWeightInput] = useState('');
   const [savingWeight, setSavingWeight] = useState(false);
+  const isImperial = profile?.unit_system === 'imperial';
 
   async function updateProfile(patch: Partial<Profile>) {
     if (!userId) return;
@@ -147,18 +153,18 @@ export default function ProfileScreen() {
     const value = Number(weightInput.replace(',', '.'));
     if (!userId || !weightInput.trim() || Number.isNaN(value) || value <= 0)
       return;
+    const kg = roundTo(isImperial ? lbToKg(value) : value, 2);
     setSavingWeight(true);
-    const today = toISODate();
-    const { error } = await supabase
-      .from('weight_logs')
-      .upsert(
-        { user_id: userId, date: today, weight_kg: value, source: 'manual' },
-        { onConflict: 'user_id,date' },
+    try {
+      await logManualWeight(userId, kg);
+    } catch (error) {
+      Alert.alert(
+        t('account.auth.signIn.errors.generic'),
+        error instanceof Error ? error.message : String(error),
       );
-    setSavingWeight(false);
-    if (error) {
-      Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
       return;
+    } finally {
+      setSavingWeight(false);
     }
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setWeightInput('');
@@ -233,7 +239,13 @@ export default function ProfileScreen() {
       <SectionBody>
         <Row
           label={t('account.profile.height')}
-          value={profile.height_cm ? `${profile.height_cm} cm` : '—'}
+          value={
+            !profile.height_cm
+              ? '—'
+              : isImperial
+                ? `${cmToFeetInches(profile.height_cm).feet}' ${cmToFeetInches(profile.height_cm).inches}"`
+                : `${profile.height_cm} cm`
+          }
         />
         <View className="bg-secondary-system-background flex-row items-center gap-3 px-4 py-3">
           <Text className="text-label flex-1 text-base">
@@ -242,7 +254,7 @@ export default function ProfileScreen() {
           <TextInput
             value={weightInput}
             onChangeText={setWeightInput}
-            placeholder="kg"
+            placeholder={isImperial ? 'lb' : 'kg'}
             keyboardType="decimal-pad"
             className="border-separator text-label h-10 w-24 rounded-lg border px-3 text-base"
           />

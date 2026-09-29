@@ -48,6 +48,10 @@ export function useProfile(): { profile: Profile | null; isLoading: boolean; isE
       return data;
     },
     enabled: !!userId,
+    // The auth gate waits on this query: fail fast (1 retry, ~0.8 s) instead of
+    // TanStack's default 3 retries with backoff (~7 s blank screen when offline).
+    retry: 1,
+    retryDelay: 800,
   });
 
   return { profile: query.data ?? null, isLoading: !!userId && query.isLoading, isError: query.isError };
@@ -64,6 +68,8 @@ function useLatestWeightKg(userId: string | null, date: string) {
         .eq('user_id', userId!)
         .lte('date', date)
         .order('date', { ascending: false })
+        // several rows per day are legit (Health scale + manual) → newest wins
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
@@ -71,6 +77,31 @@ function useLatestWeightKg(userId: string | null, date: string) {
     },
     enabled: !!userId,
   });
+}
+
+/**
+ * Logs today's manual weight. There is intentionally no unique `(user_id, date)`
+ * constraint (Apple Health can import several weights per day), so this
+ * updates the user's existing *manual* row for `date` if there is one and
+ * inserts otherwise. `created_at` is bumped so the value counts as the latest.
+ */
+export async function logManualWeight(userId: string, weightKg: number, date: string = toISODate()): Promise<void> {
+  const { data: existing, error: selectError } = await supabase
+    .from('weight_logs')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('date', date)
+    .eq('source', 'manual')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (selectError) throw selectError;
+
+  const now = new Date().toISOString();
+  const { error } = existing
+    ? await supabase.from('weight_logs').update({ weight_kg: weightKg, created_at: now }).eq('id', existing.id)
+    : await supabase.from('weight_logs').insert({ user_id: userId, date, weight_kg: weightKg, source: 'manual' });
+  if (error) throw error;
 }
 
 /**
