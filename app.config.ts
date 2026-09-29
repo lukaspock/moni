@@ -14,6 +14,10 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: 'app.moeni',
     supportsTablet: false,
+    // Device builds: set APPLE_TEAM_ID in your shell/.env (never commit a team id).
+    ...(process.env.APPLE_TEAM_ID
+      ? { appleTeamId: process.env.APPLE_TEAM_ID }
+      : {}),
   },
   plugins: [
     'expo-router',
@@ -42,6 +46,8 @@ const config: ExpoConfig = {
         background: false,
       },
     ],
+    // Must stay BEFORE 'expo-notifications' (mods run in reverse order) — see plugin header.
+    './plugins/withoutPushEntitlement',
     'expo-notifications',
     [
       'expo-camera',

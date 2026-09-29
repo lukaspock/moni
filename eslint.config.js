@@ -22,6 +22,8 @@ module.exports = defineConfig([
       'android/*',
       'node_modules/*',
       'coverage/*',
+      // Agent git worktrees (other branches' checkouts), not this tree's code.
+      '.claude/**',
       // Deno edge functions (owned by `backend`): different runtime/module
       // resolution (URL imports), not part of this Expo app's lint scope.
       'supabase/**',

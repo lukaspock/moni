@@ -6,4 +6,7 @@ module.exports = {
     '**/?(*.)+(spec|test).[jt]s?(x)',
     '<rootDir>/src/domain/**/*.test.ts',
   ],
+  // Agent git worktrees live under .claude/worktrees — other branches' checkouts.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'],
+  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
 };

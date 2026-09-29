@@ -96,6 +96,15 @@ New migrations: always as a new file `supabase/migrations/<timestamp>_<name>.sql
 - Start with a UTF-8 locale: `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo run:ios`
 - Xcode 27 / iOS 27 SDK requires the UIScene life cycle. Expo SDK 57's template does not have it yet → local config plugin `plugins/withSceneLifecycle.js` (uses `EXExpoAppSceneDelegate`). **Remove it once we upgrade to SDK 58.**
 - `react-native-mmkv` v4 needs `react-native-nitro-modules` (installed).
+- The generated Xcode project/scheme is named **`mni`** (the "ø" is stripped): `ios/mni.xcworkspace`, scheme `mni`.
+- **Physical device on a free Apple ID (personal team)**: `plugins/withoutPushEntitlement.js` strips `aps-environment` (personal teams can't sign Push; we only use local notifications — remove the plugin once we have a paid account + remote push). HealthKit signs fine. Team id comes from env, never commit it:
+  ```bash
+  export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 APPLE_TEAM_ID=<team id>   # defaults read com.apple.dt.Xcode IDEProvisioningTeamByIdentifier
+  npx expo prebuild --platform ios --clean
+  xcodebuild -workspace ios/mni.xcworkspace -scheme mni -configuration Debug -destination id=<UDID> -derivedDataPath ios/build/device -allowProvisioningUpdates DEVELOPMENT_TEAM=$APPLE_TEAM_ID build
+  xcrun devicectl device install app --device <UDID> ios/build/device/Build/Products/Debug-iphoneos/mni.app
+  ```
+  First launch: on the phone, Settings → General → VPN & Device Management → trust the developer app. Free-team profiles expire after 7 days → rebuild/reinstall. Then `npx expo start --dev-client` (phone + Mac on the same Wi-Fi) and scan the QR code.
 
 ## Theme / brand colors
 - **Brand colors live in `theme.config.js`** (root, CommonJS): `accent` (mint, `systemMint`), `bonus` (orange, workout-bonus segment), `danger` (red). Each has an iOS semantic `platform` name + `light`/`dark` hex. Changing that file alone re-colors the app:
