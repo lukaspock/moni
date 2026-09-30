@@ -10,3 +10,4 @@ export * from './mealType';
 export * from './food';
 export * from './onboarding';
 export * from './projection';
+export * from './weightTrend';
