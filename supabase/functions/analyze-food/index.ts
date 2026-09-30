@@ -46,6 +46,24 @@ interface RequestBody {
   image_path?: string;
   text?: string;
   locale?: string;
+  /** "meal" (default): photo/text meal estimate. "label": read a packaged-food nutrition table. */
+  mode?: "meal" | "label";
+}
+
+// Nutrition-label mode result (per 100 g is what the client scales; per-serving is informational).
+interface LabelMacros {
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
+interface LabelResult {
+  product_name: string | null;
+  serving_size_g: number | null;
+  per_100g: LabelMacros | null;
+  per_serving: LabelMacros | null;
+  confidence: number;
 }
 
 // Minimal shape of the Gemini generateContent response we actually read.
@@ -87,6 +105,30 @@ const GEMINI_RESPONSE_SCHEMA = {
   required: ["title", "items", "confidence"],
 };
 
+const LABEL_MACROS_SCHEMA = {
+  type: "OBJECT",
+  nullable: true,
+  properties: {
+    kcal: { type: "NUMBER" },
+    protein_g: { type: "NUMBER" },
+    carbs_g: { type: "NUMBER" },
+    fat_g: { type: "NUMBER" },
+  },
+  required: ["kcal", "protein_g", "carbs_g", "fat_g"],
+};
+
+const GEMINI_LABEL_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    product_name: { type: "STRING", nullable: true },
+    serving_size_g: { type: "NUMBER", nullable: true },
+    per_100g: LABEL_MACROS_SCHEMA,
+    per_serving: LABEL_MACROS_SCHEMA,
+    confidence: { type: "NUMBER" },
+  },
+  required: ["confidence"],
+};
+
 Deno.serve(async (req: Request) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -114,6 +156,11 @@ Deno.serve(async (req: Request) => {
   }
 
   const { image_path, text, locale = "en" } = body;
+  const mode = body.mode === "label" ? "label" : "meal";
+
+  if (mode === "label" && !image_path) {
+    return jsonResponse({ error: "label_requires_image" }, { status: 400 });
+  }
 
   if (!image_path && !text?.trim()) {
     return jsonResponse({ error: "image_path_or_text_required" }, { status: 400 });
@@ -185,7 +232,10 @@ Deno.serve(async (req: Request) => {
     };
   }
 
-  const prompt = buildPrompt({ locale, hasImage: !!imagePart, text });
+  const prompt =
+    mode === "label"
+      ? buildLabelPrompt(locale)
+      : buildPrompt({ locale, hasImage: !!imagePart, text });
 
   const parts: unknown[] = [{ text: prompt }];
   if (imagePart) parts.push(imagePart);
@@ -203,7 +253,7 @@ Deno.serve(async (req: Request) => {
         contents: [{ role: "user", parts }],
         generationConfig: {
           responseMimeType: "application/json",
-          responseSchema: GEMINI_RESPONSE_SCHEMA,
+          responseSchema: mode === "label" ? GEMINI_LABEL_SCHEMA : GEMINI_RESPONSE_SCHEMA,
           temperature: 0.2,
         },
       }),
@@ -229,7 +279,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "ai_empty_response" }, { status: 502 });
   }
 
-  let parsed: AnalyzeFoodResult;
+  let parsed: AnalyzeFoodResult | LabelResult;
   try {
     parsed = JSON.parse(rawText);
   } catch {
@@ -237,7 +287,17 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "ai_invalid_response" }, { status: 502 });
   }
 
-  const result = plausibilizeAndRound(parsed);
+  // Label mode: a table that could not be read is reported as 422 and does NOT consume quota.
+  let result: PlausibilizedResult | { mode: "label"; label: LabelResult };
+  if (mode === "label") {
+    const label = normalizeLabel(parsed as LabelResult);
+    if (!label) {
+      return jsonResponse({ error: "label_not_readable" }, { status: 422 });
+    }
+    result = { mode: "label", label };
+  } else {
+    result = plausibilizeAndRound(parsed as AnalyzeFoodResult);
+  }
 
   // 4. Increment ai_usage (service role RPC, security definer — see migration 007).
   const { error: incrementError } = await serviceClient.rpc("increment_ai_usage", {
@@ -277,6 +337,69 @@ function buildPrompt(opts: { locale: string; hasImage: boolean; text?: string })
     "Respond ONLY with JSON matching the provided schema. Do not include markdown fences.",
   ];
   return base.join(" ");
+}
+
+function buildLabelPrompt(locale: string): string {
+  return [
+    "You read the nutrition facts table on the attached photo of a food package.",
+    "Extract energy in kcal (if only kJ is shown, convert: kcal = kJ / 4.184), protein, " +
+      "carbohydrates (total, not just sugars) and fat (total) in grams.",
+    "Fill per_100g with the values per 100 g (or per 100 ml) when the table has that column. " +
+      "Fill per_serving with the values per serving when that column exists, and " +
+      "serving_size_g with the serving weight in grams (ml counts as g). " +
+      "Use null for a column that is not on the label; never invent numbers.",
+    `product_name: the product name printed on the package, in its original language (user locale: ${locale}), or null.`,
+    "confidence between 0 and 1 reflects how legible the table is. If no nutrition table is visible, " +
+      "return null for both columns and confidence 0.",
+    "Respond ONLY with JSON matching the provided schema. Do not include markdown fences.",
+  ].join(" ");
+}
+
+/**
+ * Validates and completes a label read. Derives per_100g from per_serving when only the
+ * serving column was readable (needs serving_size_g), applies the same kcal-vs-macros
+ * plausibility correction as meals, and returns null when no usable numbers were found.
+ */
+function normalizeLabel(raw: LabelResult): LabelResult | null {
+  const servingG =
+    raw.serving_size_g && raw.serving_size_g > 0 ? round(raw.serving_size_g, 1) : null;
+
+  const clean = (m: LabelMacros | null | undefined): LabelMacros | null => {
+    if (!m) return null;
+    const protein_g = Math.max(0, round(m.protein_g, 1));
+    const carbs_g = Math.max(0, round(m.carbs_g, 1));
+    const fat_g = Math.max(0, round(m.fat_g, 1));
+    const macroKcal = 4 * protein_g + 4 * carbs_g + 9 * fat_g;
+    const reported = Math.max(0, m.kcal ?? 0);
+    const kcal =
+      macroKcal > 0 && Math.abs(reported - macroKcal) / macroKcal > 0.15
+        ? round(macroKcal, 0)
+        : round(reported, 0);
+    if (kcal === 0 && protein_g === 0 && carbs_g === 0 && fat_g === 0) return null;
+    return { kcal, protein_g, carbs_g, fat_g };
+  };
+
+  let per100 = clean(raw.per_100g);
+  const perServing = clean(raw.per_serving);
+
+  if (!per100 && perServing && servingG) {
+    const f = 100 / servingG;
+    per100 = {
+      kcal: round(perServing.kcal * f, 0),
+      protein_g: round(perServing.protein_g * f, 1),
+      carbs_g: round(perServing.carbs_g * f, 1),
+      fat_g: round(perServing.fat_g * f, 1),
+    };
+  }
+  if (!per100) return null;
+
+  return {
+    product_name: raw.product_name?.trim() || null,
+    serving_size_g: servingG,
+    per_100g: per100,
+    per_serving: perServing,
+    confidence: round(clamp(raw.confidence ?? 0.5, 0, 1), 2),
+  };
 }
 
 interface PlausibilizedResult extends AnalyzeFoodResult {

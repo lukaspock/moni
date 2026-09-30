@@ -126,7 +126,7 @@ function RootNavigator() {
         name="log-food"
         options={{
           presentation: 'formSheet',
-          sheetAllowedDetents: [0.5, 1],
+          sheetAllowedDetents: [0.75, 1],
           sheetGrabberVisible: true,
         }}
       />

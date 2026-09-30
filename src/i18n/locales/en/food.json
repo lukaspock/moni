@@ -49,7 +49,12 @@
     "permissionDeniedBody": "møni needs access to your camera or photo library to log a meal by photo.",
     "analyzeErrorTitle": "Couldn't analyze that",
     "analyzeErrorBody": "Something went wrong while analyzing your meal. You can try again or enter it manually.",
-    "enterManually": "Enter manually"
+    "enterManually": "Enter manually",
+    "label": "Nutrition label",
+    "quickLogAs": "Quick log · {{meal}}",
+    "loggedTimes": "Logged {{count}}× · {{kcal}} kcal",
+    "logNow": "Log now",
+    "quickLogError": "The meal could not be saved. Please try again."
   },
   "barcode": {
     "permissionBody": "møni needs camera access to scan a barcode.",
@@ -60,7 +65,15 @@
     "hint": "Point the camera at a barcode",
     "per100g": "{{kcal}} kcal · P {{protein}}g · C {{carbs}}g · F {{fat}}g per 100g",
     "quantity": "Quantity",
-    "use": "Use"
+    "use": "Use",
+    "itemsAdded": "{{count}} items · {{kcal}} kcal",
+    "serving": "1 serving ({{grams}} g)",
+    "addAndScan": "Scan next",
+    "addAndReview": "Done",
+    "scanLabelInstead": "Scan nutrition label",
+    "scanAgain": "Scan again",
+    "modeBarcode": "Barcode",
+    "modeLabel": "Label"
   },
   "review": {
     "title": "Review",
@@ -79,11 +92,43 @@
     "noItemsBody": "Add at least one ingredient before saving.",
     "saveErrorTitle": "Couldn't save",
     "ingredientNamePlaceholder": "Ingredient",
-    "grams": "g"
+    "grams": "g",
+    "limitReachedBody": "You have used all free AI analyses for today. Log your food manually, by barcode or from your favorites, or get Premium.",
+    "getPremium": "Get Premium",
+    "saveWithKcal": "Save · {{kcal}} kcal"
   },
   "paywall": {
     "title": "Daily limit reached",
     "body": "You've used all your free AI analyses for today. Upgrade to møni Premium for unlimited AI food analysis, or log food manually, via barcode, or from your favorites.",
     "close": "Close"
+  },
+  "label": {
+    "unnamed": "Product",
+    "reading": "Reading the table…",
+    "hint": "Photograph the nutrition table on the package",
+    "capture": "Take photo",
+    "retake": "Retake photo"
+  },
+  "problem": {
+    "notFound": {
+      "title": "Product not found",
+      "body": "This barcode is not in Open Food Facts. Photograph the nutrition table and møni will read it for you."
+    },
+    "incomplete": {
+      "title": "No nutrition data",
+      "body": "This product has no nutrition values on record. Photograph the nutrition table on the package."
+    },
+    "offline": {
+      "title": "No connection",
+      "body": "Product lookup is not reachable right now. Try again or enter the values manually."
+    },
+    "labelUnreadable": {
+      "title": "Could not read the table",
+      "body": "No nutrition values were recognized. Hold the camera straight, close and well lit. This attempt does not count toward your limit."
+    },
+    "labelError": {
+      "title": "Analysis failed",
+      "body": "The nutrition table could not be analyzed. Please try again."
+    }
   }
 }
