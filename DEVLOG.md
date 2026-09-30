@@ -199,3 +199,15 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - Premium gating, weight quick-log constraint bug, merged-then-deleted kcal, UTC day bounds → see "Sprint 2 QA" above.
 - 2026-09-30 · targets-backend · Phase 6 backend: `recompute-targets` implemented (28-day window, EMA trend, observed/blended TDEE, ±150/week + 0.75–1.3×formula + 1200 floor clamps, no-op with reason on insufficient data, idempotent per Monday week, cron all-users + per-user JWT mode). Domain: `summarizeAdaptiveWindow`, `clampToSafetyBand`, `weekStartOf` etc. in `src/domain/adaptive.ts`, `recomputeSchedule.ts`; `_shared/adaptive.ts` now a verbatim copy with a sync test. Migration `20260930120000_tdee_estimates_explain` (reason_code, weekly_change_kcal, weight_trend_kg) pushed, advisors: only the pre-existing Auth leaked-password warning; types regenerated; function deployed. Client: `useAdaptiveTdee()` + `useRecomputeTargetsIfDue()` exported from `@/features/targets`, `useDailyTargets` uses blended TDEE (and triggers the recompute). Open: Vault secret `service_role_key` is missing on the live project (cron is a no-op until set); deno not installed locally so the function was not `deno check`ed; not exercised end-to-end with real data.
 - 2026-09-30 · lead · Integrated phase 6 branches + QA fixes (cherry-picked, prettier re-run), deployed analyze-food + recompute-targets, Release device build (Release-iphoneos, no Metro) installed on the owner's iPhone, moeni.ipa on Desktop for AltStore/SideStore.
+
+## Sprint 3 – UI bugs from owner testing + follow-ups (see `docs/sprint-3.md`, READ FIRST)
+
+- [ ] `lead` bring everything up to date first: merge `integration/sprint-2` into `main`, push, CI green, clean up old worktrees
+- [ ] `ui-fixes` BUG-A: "+" (log food) FAB is hidden under the native Liquid Glass tab bar → make it part of the tab bar/nav bar
+- [ ] `ui-fixes` BUG-B: Today header title is always "Today" regardless of selected day → dynamic title (Today/Yesterday/Tomorrow/weekday+date)
+- [ ] `ui-fixes` BUG-C: app CRASHES when swiping left/right on Today to change day (suspected: `Gesture.Fling().onEnd(setState)` runs as UI-thread worklet, missing `.runOnJS(true)`; verify with a crash log and record the real cause)
+- [ ] `food-followups` L1 quick-log always logs to today, not the viewed day
+- [ ] `food-followups` L2 label photos never deleted from storage
+- [ ] `food-followups` L3 label scans stored with `source='barcode'` → add `'label'` (new migration)
+
+- 2026-09-30 · lead · Owner feedback after first device test: documented BUG-A/B/C and follow-ups L1–L3 in `docs/sprint-3.md` before starting work.
