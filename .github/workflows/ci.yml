@@ -1,28 +1,74 @@
 name: CI
 
+# Runs ONLY on push to main and on pull requests (any base branch, so stacked
+# PRs onto feature branches are checked too).
+#
+# Docs-only changes: no workflow-level `paths`/`paths-ignore` filter, because a
+# workflow skipped by path never reports its checks and would block a required
+# status check forever. Instead the `changes` job decides per job, skipped jobs
+# count as success, and `ci-ok` is the single aggregate check to require in
+# branch protection. Pushes to main always run everything.
 on:
   push:
     branches: [main]
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # One run per PR (superseded PR runs are cancelled); main runs are never cancelled.
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      app: ${{ github.event_name == 'push' || steps.filter.outputs.app == 'true' }}
+      supabase: ${{ github.event_name == 'push' || steps.filter.outputs.supabase == 'true' }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          # every pattern must match -> "any file that is not docs-only"
+          predicate-quantifier: every
+          filters: |
+            app:
+              - '**'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!LICENSE'
+              - '!supabase/**'
+            supabase:
+              - '**'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!LICENSE'
+              - '!app/**'
+              - '!src/**'
+              - '!assets/**'
+
   app:
     name: App (typecheck, lint, format, test)
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      # .npmrc (legacy-peer-deps=true) is picked up by `npm ci` automatically.
+      - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
@@ -33,19 +79,24 @@ jobs:
 
   supabase:
     name: Supabase (functions + migrations)
+    needs: changes
+    if: needs.changes.outputs.supabase == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+          cache: true
+          cache-hash: ${{ hashFiles('supabase/functions/**/*.ts', 'supabase/functions/**/deno.json*') }}
       - name: Deno lint
         working-directory: supabase/functions
         run: deno lint
       - name: Deno typecheck
         working-directory: supabase/functions
-        run: deno check */index.ts
-      - uses: supabase/setup-cli@v1
+        run: deno check ./*/index.ts
+      - uses: supabase/setup-cli@v3
         with:
           version: latest
       - name: Apply migrations + seed on a local Postgres
@@ -54,3 +105,18 @@ jobs:
           supabase db reset --local
       - name: Lint schema
         run: supabase db lint --local --level warning --fail-on error
+
+  ci-ok:
+    # Single required status check for branch protection.
+    name: CI OK
+    needs: [changes, app, supabase]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "changes=${{ needs.changes.result }} app=${{ needs.app.result }} supabase=${{ needs.supabase.result }}"
+          exit 1
+      - run: echo "All required jobs passed or were skipped (docs-only)."
