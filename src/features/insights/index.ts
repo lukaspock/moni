@@ -9,5 +9,10 @@ export {
   weightLogsKey,
   type WeightEntry,
 } from './weight';
-export { useDailySummaries, useExerciseTrends, SUMMARY_DAYS, type ExerciseTrend } from './summary';
+export {
+  useDailySummaries,
+  useExerciseTrends,
+  SUMMARY_DAYS,
+  type ExerciseTrend,
+} from './summary';
 export { useWeightInput, type WeightInput } from './weightInput';

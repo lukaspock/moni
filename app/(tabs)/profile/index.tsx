@@ -119,17 +119,15 @@ export default function ProfileScreen() {
         .eq('user_id', userId)
         .eq('weekday', day);
     } else {
-      await supabase
-        .from('training_plan_days')
-        .upsert(
-          {
-            user_id: userId,
-            weekday: day,
-            routine_id: null,
-            expected_kcal: null,
-          },
-          { onConflict: 'user_id,weekday' },
-        );
+      await supabase.from('training_plan_days').upsert(
+        {
+          user_id: userId,
+          weekday: day,
+          routine_id: null,
+          expected_kcal: null,
+        },
+        { onConflict: 'user_id,weekday' },
+      );
     }
     void queryClient.invalidateQueries({ queryKey: ['plannedDay'] });
     setTrainingWeekdaysLocal(next);

@@ -2,12 +2,20 @@ import { Stack, usePathname } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isHealthAvailable } from '@/features/health';
 import { useOnboardingStore } from '@/features/auth';
-import { isOnboardingStep, onboardingProgress } from '@/features/auth/onboardingFlow';
+import {
+  isOnboardingStep,
+  onboardingProgress,
+} from '@/features/auth/onboardingFlow';
 
 /** Height of the native navigation bar (iOS 26, non-large title). */
 const NAV_BAR_HEIGHT = 44;
@@ -28,14 +36,22 @@ function OnboardingProgressBar() {
 
   const step = pathname.split('/').filter(Boolean).pop() ?? '';
   const visible = isOnboardingStep(step) && step !== 'calculating';
-  const progress = onboardingProgress(step, { goal, healthAvailable: isHealthAvailable() });
+  const progress = onboardingProgress(step, {
+    goal,
+    healthAvailable: isHealthAvailable(),
+  });
 
   const width = useSharedValue(progress);
   useEffect(() => {
-    width.value = withTiming(progress, { duration: 280, easing: Easing.out(Easing.cubic) });
+    width.value = withTiming(progress, {
+      duration: 280,
+      easing: Easing.out(Easing.cubic),
+    });
   }, [progress, width]);
 
-  const fillStyle = useAnimatedStyle(() => ({ width: `${width.value * 100}%` }));
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${width.value * 100}%`,
+  }));
 
   if (!visible) return null;
 
@@ -52,9 +68,12 @@ function OnboardingProgressBar() {
         left: BAR_SIDE_INSET,
         right: BAR_SIDE_INSET,
       }}
-      className="h-1.5 overflow-hidden rounded-full bg-secondary-system-background"
+      className="bg-secondary-system-background h-1.5 overflow-hidden rounded-full"
     >
-      <Animated.View style={fillStyle} className="h-full rounded-full bg-tint" />
+      <Animated.View
+        style={fillStyle}
+        className="bg-tint h-full rounded-full"
+      />
     </View>
   );
 }
@@ -66,7 +85,7 @@ function OnboardingProgressBar() {
  */
 export default function OnboardingLayout() {
   return (
-    <View className="flex-1 bg-system-background">
+    <View className="bg-system-background flex-1">
       <Stack
         screenOptions={{
           headerShown: true,
@@ -77,9 +96,18 @@ export default function OnboardingLayout() {
           animation: 'slide_from_right',
         }}
       >
-        <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name="calculating" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name="result" options={{ headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen
+          name="index"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="calculating"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="result"
+          options={{ headerBackVisible: false, gestureEnabled: false }}
+        />
       </Stack>
       <OnboardingProgressBar />
     </View>

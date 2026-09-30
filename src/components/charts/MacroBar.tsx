@@ -12,7 +12,10 @@ export interface MacroBarProps {
   color?: 'accent' | 'orange' | 'purple';
 }
 
-const TINTS: Record<NonNullable<MacroBarProps['color']>, string | ReturnType<typeof PlatformColor>> = {
+const TINTS: Record<
+  NonNullable<MacroBarProps['color']>,
+  string | ReturnType<typeof PlatformColor>
+> = {
   accent: themeColor('accent'),
   orange: PlatformColor('systemOrange'),
   purple: PlatformColor('systemPurple'),
@@ -37,11 +40,11 @@ export function MacroBar({
         >
           {label}
         </Text>
-        <Text className="text-sm text-secondary-label">
+        <Text className="text-secondary-label text-sm">
           {Math.round(gramsEaten)}g / {Math.round(gramsTarget)}g
         </Text>
       </View>
-      <View className="h-2.5 overflow-hidden rounded-full bg-secondary-system-background">
+      <View className="bg-secondary-system-background h-2.5 overflow-hidden rounded-full">
         <View
           style={{
             width: `${fraction * 100}%`,

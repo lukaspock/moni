@@ -85,7 +85,10 @@ describe('estimatePlannedStrengthKcal', () => {
     const density = calculateSessionDensity(totalSets, 45);
     const met = estimateStrengthMET(density);
     const expected = calculateKcalBurned(met, weightKg, 45 / 60);
-    expect(estimatePlannedStrengthKcal(totalSets, weightKg)).toBeCloseTo(expected, 6);
+    expect(estimatePlannedStrengthKcal(totalSets, weightKg)).toBeCloseTo(
+      expected,
+      6,
+    );
   });
 
   it('a denser (more sets in the same time) session burns more', () => {
@@ -105,6 +108,8 @@ describe('estimatePlannedStrengthKcal', () => {
 describe('metForIntensity', () => {
   it('increases from light to vigorous', () => {
     expect(metForIntensity('light')).toBeLessThan(metForIntensity('moderate'));
-    expect(metForIntensity('moderate')).toBeLessThan(metForIntensity('vigorous'));
+    expect(metForIntensity('moderate')).toBeLessThan(
+      metForIntensity('vigorous'),
+    );
   });
 });

@@ -11,13 +11,29 @@ import type { SFSymbol } from '@/features/auth/components/OptionCard';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 import { themeColor } from '@/theme/colors';
 
-function Point({ symbol, text, index }: { symbol: SFSymbol; text: string; index: number }) {
+function Point({
+  symbol,
+  text,
+  index,
+}: {
+  symbol: SFSymbol;
+  text: string;
+  index: number;
+}) {
   return (
-    <Animated.View entering={FadeInDown.duration(260).delay(80 + index * 60)} className="flex-row items-start gap-3">
-      <View className="mt-0.5 h-8 w-8 items-center justify-center rounded-lg bg-secondary-system-background">
-        <SymbolView name={symbol} size={18} type="hierarchical" tintColor={themeColor('accent')} />
+    <Animated.View
+      entering={FadeInDown.duration(260).delay(80 + index * 60)}
+      className="flex-row items-start gap-3"
+    >
+      <View className="bg-secondary-system-background mt-0.5 h-8 w-8 items-center justify-center rounded-lg">
+        <SymbolView
+          name={symbol}
+          size={18}
+          type="hierarchical"
+          tintColor={themeColor('accent')}
+        />
       </View>
-      <Text className="flex-1 text-base leading-6 text-label">{text}</Text>
+      <Text className="text-label flex-1 text-base leading-6">{text}</Text>
     </Animated.View>
   );
 }
@@ -37,14 +53,28 @@ export default function DisclaimerScreen() {
       continueLabel={t('account.onboarding.disclaimer.cta')}
       continueDisabled={!checked}
       onContinue={() => {
-        update({ disclaimerAcceptedAt: acceptedAt ?? new Date().toISOString() });
+        update({
+          disclaimerAcceptedAt: acceptedAt ?? new Date().toISOString(),
+        });
         goNext();
       }}
     >
       <View className="gap-4 py-2">
-        <Point index={0} symbol="stethoscope" text={t('account.onboarding.disclaimer.point1')} />
-        <Point index={1} symbol="cross.case.fill" text={t('account.onboarding.disclaimer.point2')} />
-        <Point index={2} symbol="shield.lefthalf.filled" text={t('account.onboarding.disclaimer.point3')} />
+        <Point
+          index={0}
+          symbol="stethoscope"
+          text={t('account.onboarding.disclaimer.point1')}
+        />
+        <Point
+          index={1}
+          symbol="cross.case.fill"
+          text={t('account.onboarding.disclaimer.point2')}
+        />
+        <Point
+          index={2}
+          symbol="shield.lefthalf.filled"
+          text={t('account.onboarding.disclaimer.point3')}
+        />
       </View>
       <Pressable
         accessibilityRole="checkbox"
@@ -54,7 +84,9 @@ export default function DisclaimerScreen() {
           setChecked((v) => !v);
         }}
         className={`mt-2 flex-row items-center gap-3 rounded-2xl border-2 p-4 ${
-          checked ? 'border-tint bg-secondary-system-background' : 'border-separator'
+          checked
+            ? 'border-tint bg-secondary-system-background'
+            : 'border-separator'
         }`}
       >
         <SymbolView
@@ -62,7 +94,9 @@ export default function DisclaimerScreen() {
           size={26}
           tintColor={checked ? themeColor('accent') : undefined}
         />
-        <Text className="flex-1 text-base font-semibold text-label">{t('account.onboarding.disclaimer.accept')}</Text>
+        <Text className="text-label flex-1 text-base font-semibold">
+          {t('account.onboarding.disclaimer.accept')}
+        </Text>
       </Pressable>
     </OnboardingScreen>
   );

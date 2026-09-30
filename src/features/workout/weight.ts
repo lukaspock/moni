@@ -19,7 +19,10 @@ async function fetchLatestWeightKg(userId: string): Promise<number | null> {
   return data?.weight_kg ?? null;
 }
 
-export function useLatestWeightKg(): { weightKg: number | null; isLoading: boolean } {
+export function useLatestWeightKg(): {
+  weightKg: number | null;
+  isLoading: boolean;
+} {
   const { userId } = useSession();
   const query = useQuery({
     queryKey: ['workout', 'latestWeight', userId],

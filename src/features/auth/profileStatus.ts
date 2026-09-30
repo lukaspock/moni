@@ -9,7 +9,20 @@ type ProfileRow = Database['public']['Tables']['profiles']['Row'];
  * `applyOnboardingDraftToProfile` to never overwrite an existing profile.
  */
 export function isProfileComplete(
-  profile: Pick<ProfileRow, 'sex' | 'birth_date' | 'height_cm' | 'activity_level' | 'goal'> | null | undefined,
+  profile:
+    | Pick<
+        ProfileRow,
+        'sex' | 'birth_date' | 'height_cm' | 'activity_level' | 'goal'
+      >
+    | null
+    | undefined,
 ): boolean {
-  return !!(profile && profile.sex && profile.birth_date && profile.height_cm && profile.activity_level && profile.goal);
+  return !!(
+    profile &&
+    profile.sex &&
+    profile.birth_date &&
+    profile.height_cm &&
+    profile.activity_level &&
+    profile.goal
+  );
 }

@@ -112,23 +112,37 @@ export interface DynamicLimitResult {
   dailyLimitKcal: number;
 }
 
-export function calculateWorkoutBonus(input: DynamicLimitInput): DynamicLimitResult {
+export function calculateWorkoutBonus(
+  input: DynamicLimitInput,
+): DynamicLimitResult {
   const eatBackFactor = input.eatBackFactor ?? DEFAULT_EAT_BACK_FACTOR;
 
   // A workout was actually logged (planned or unplanned) -> use the real value.
   if (input.workoutCompleted && input.actualKcalBurned != null) {
     const bonus = Math.round(input.actualKcalBurned * eatBackFactor);
-    return { workoutBonusKcal: bonus, isProvisional: false, dailyLimitKcal: input.baseKcal + bonus };
+    return {
+      workoutBonusKcal: bonus,
+      isProvisional: false,
+      dailyLimitKcal: input.baseKcal + bonus,
+    };
   }
 
   // Planned training day, still pending, day not over yet -> provisional estimate.
   if (input.isTrainingDay && !input.workoutCompleted && !input.isDayOver) {
     const expected = input.plannedExpectedKcal ?? 0;
     const bonus = Math.round(expected * eatBackFactor);
-    return { workoutBonusKcal: bonus, isProvisional: true, dailyLimitKcal: input.baseKcal + bonus };
+    return {
+      workoutBonusKcal: bonus,
+      isProvisional: true,
+      dailyLimitKcal: input.baseKcal + bonus,
+    };
   }
 
   // Planned training day, day is over and nothing was logged -> the planned workout was skipped.
   // Rest day with no workout falls into this branch too (bonus is simply 0).
-  return { workoutBonusKcal: 0, isProvisional: false, dailyLimitKcal: input.baseKcal };
+  return {
+    workoutBonusKcal: 0,
+    isProvisional: false,
+    dailyLimitKcal: input.baseKcal,
+  };
 }

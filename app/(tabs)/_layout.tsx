@@ -2,12 +2,14 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTranslation } from 'react-i18next';
 
 import { useHealthAutoSync } from '@/features/health';
+import { useRecomputeTargetsIfDue } from '@/features/targets';
 import { themeColor } from '@/theme/colors';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
   // Apple Health import on mount + foreground (throttled; no-op unless enabled & signed in).
   useHealthAutoSync();
+  useRecomputeTargetsIfDue();
 
   return (
     <NativeTabs tintColor={themeColor('accent')}>
@@ -32,9 +34,7 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Icon sf="chart.line.uptrend.xyaxis" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>
-          {t('tabs.profile')}
-        </NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t('tabs.profile')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
             default: 'person.crop.circle',

@@ -26,10 +26,20 @@ export interface KcalRingProps {
   size?: number;
 }
 
-function arcPath(size: number, strokeWidth: number, startAngle: number, sweepAngle: number): SkPath {
+function arcPath(
+  size: number,
+  strokeWidth: number,
+  startAngle: number,
+  sweepAngle: number,
+): SkPath {
   const path = Skia.Path.Make();
   const inset = strokeWidth / 2;
-  const rect = { x: inset, y: inset, width: size - strokeWidth, height: size - strokeWidth };
+  const rect = {
+    x: inset,
+    y: inset,
+    width: size - strokeWidth,
+    height: size - strokeWidth,
+  };
   path.addArc(rect, startAngle, sweepAngle);
   return path;
 }
@@ -62,20 +72,34 @@ export function KcalRing({
 
   const eatenIntoBaseFraction = Math.min(eatenKcal, baseKcal) / totalKcal;
   const eatenIntoBonusFraction =
-    bonusKcal > 0 ? Math.min(Math.max(eatenKcal - baseKcal, 0), bonusKcal) / totalKcal : 0;
+    bonusKcal > 0
+      ? Math.min(Math.max(eatenKcal - baseKcal, 0), bonusKcal) / totalKcal
+      : 0;
 
-  const overflowFraction = isOver ? Math.min((eatenKcal - totalKcal) / totalKcal, 1) : 0;
+  const overflowFraction = isOver
+    ? Math.min((eatenKcal - totalKcal) / totalKcal, 1)
+    : 0;
 
   const paths = useMemo(() => {
     const trackPath = arcPath(size, STROKE_WIDTH, START_ANGLE, 360);
-    const baseTrackPath = arcPath(size, STROKE_WIDTH, START_ANGLE, baseFraction * 360);
+    const baseTrackPath = arcPath(
+      size,
+      STROKE_WIDTH,
+      START_ANGLE,
+      baseFraction * 360,
+    );
     const bonusTrackPath = arcPath(
       size,
       STROKE_WIDTH,
       START_ANGLE + baseFraction * 360,
       bonusFraction * 360,
     );
-    const eatenBasePath = arcPath(size, STROKE_WIDTH, START_ANGLE, eatenIntoBaseFraction * 360);
+    const eatenBasePath = arcPath(
+      size,
+      STROKE_WIDTH,
+      START_ANGLE,
+      eatenIntoBaseFraction * 360,
+    );
     const eatenBonusPath = arcPath(
       size,
       STROKE_WIDTH,
@@ -88,8 +112,22 @@ export function KcalRing({
       START_ANGLE,
       overflowFraction * 360,
     );
-    return { trackPath, baseTrackPath, bonusTrackPath, eatenBasePath, eatenBonusPath, overflowPath };
-  }, [size, baseFraction, bonusFraction, eatenIntoBaseFraction, eatenIntoBonusFraction, overflowFraction]);
+    return {
+      trackPath,
+      baseTrackPath,
+      bonusTrackPath,
+      eatenBasePath,
+      eatenBonusPath,
+      overflowPath,
+    };
+  }, [
+    size,
+    baseFraction,
+    bonusFraction,
+    eatenIntoBaseFraction,
+    eatenIntoBonusFraction,
+    overflowFraction,
+  ]);
 
   return (
     <View style={{ width: size, height: size }}>

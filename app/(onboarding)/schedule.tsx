@@ -21,7 +21,9 @@ export default function ScheduleScreen() {
     void Haptics.selectionAsync();
     const selected = draft.trainingWeekdays.includes(day);
     if (selected) {
-      update({ trainingWeekdays: draft.trainingWeekdays.filter((d) => d !== day) });
+      update({
+        trainingWeekdays: draft.trainingWeekdays.filter((d) => d !== day),
+      });
       return;
     }
     if (draft.trainingWeekdays.length >= targetCount) return; // cap at workoutsPerWeek
@@ -34,7 +36,8 @@ export default function ScheduleScreen() {
     update({ workoutsPerWeek: value, trainingWeekdays: trimmed });
   }
 
-  const canContinue = targetCount === 0 || draft.trainingWeekdays.length === targetCount;
+  const canContinue =
+    targetCount === 0 || draft.trainingWeekdays.length === targetCount;
 
   const weekdayLabels: Record<number, string> = {
     0: t('account.onboarding.schedule.weekday.0'),
@@ -67,7 +70,9 @@ export default function ScheduleScreen() {
 
       {targetCount > 0 ? (
         <View className="gap-2">
-          <Text className="text-sm font-medium text-secondary-label">{t('account.onboarding.schedule.weekdaysLabel')}</Text>
+          <Text className="text-secondary-label text-sm font-medium">
+            {t('account.onboarding.schedule.weekdaysLabel')}
+          </Text>
           <View className="flex-row justify-between gap-2">
             {WEEKDAYS.map((day) => {
               const selected = draft.trainingWeekdays.includes(day);
@@ -78,10 +83,14 @@ export default function ScheduleScreen() {
                   accessibilityState={{ selected }}
                   onPress={() => toggleWeekday(day)}
                   className={`h-14 flex-1 items-center justify-center rounded-2xl border ${
-                    selected ? 'border-tint bg-tint' : 'border-separator bg-system-background'
+                    selected
+                      ? 'border-tint bg-tint'
+                      : 'border-separator bg-system-background'
                   }`}
                 >
-                  <Text className={`text-sm font-semibold ${selected ? 'text-system-background' : 'text-label'}`}>
+                  <Text
+                    className={`text-sm font-semibold ${selected ? 'text-system-background' : 'text-label'}`}
+                  >
                     {weekdayLabels[day]}
                   </Text>
                 </Pressable>

@@ -40,8 +40,13 @@ function withSceneAppDelegate(config) {
       WINDOW_BLOCK,
       '// The window is created and React Native is started by ExpoAppSceneDelegate.\n',
     );
-    if (!src.includes('ExpoReactNativeFactoryProvider') || src.includes('startReactNative(')) {
-      throw new Error('withSceneLifecycle: AppDelegate template changed, update the plugin');
+    if (
+      !src.includes('ExpoReactNativeFactoryProvider') ||
+      src.includes('startReactNative(')
+    ) {
+      throw new Error(
+        'withSceneLifecycle: AppDelegate template changed, update the plugin',
+      );
     }
     cfg.modResults.contents = src;
     return cfg;

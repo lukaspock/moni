@@ -3,7 +3,11 @@ import '../src/i18n';
 // Starts the offline outbox (NetInfo + foreground triggers) at app launch.
 import '../src/lib/outbox';
 
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -49,7 +53,11 @@ const PROFILE_GATE_TIMEOUT_MS = 2500;
 function RootNavigator() {
   const client = useQueryClient();
   const { session, userId, isLoading: sessionLoading } = useSession();
-  const { profile, isLoading: profileLoading, isError: profileError } = useProfile();
+  const {
+    profile,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = useProfile();
   const onboardingCompleted = useOnboardingStore((s) => s.completed);
   const wantsSignIn = useOnboardingStore((s) => s.wantsSignIn);
   const appliedToProfile = useOnboardingStore((s) => s.appliedToProfile);
@@ -66,7 +74,10 @@ function RootNavigator() {
   const waitingOnProfile = hasSession && profileLoading;
   useEffect(() => {
     if (!waitingOnProfile) return;
-    const timer = setTimeout(() => setProfileTimedOut(true), PROFILE_GATE_TIMEOUT_MS);
+    const timer = setTimeout(
+      () => setProfileTimedOut(true),
+      PROFILE_GATE_TIMEOUT_MS,
+    );
     return () => clearTimeout(timer);
   }, [waitingOnProfile]);
   const profileGaveUp = waitingOnProfile && profileTimedOut;
@@ -100,7 +111,7 @@ function RootNavigator() {
     // Avoid flashing (onboarding) or (auth) before we know where the user belongs.
     // `useProfile` retries only once, so an offline start falls through to the tabs quickly.
     return (
-      <View className="flex-1 items-center justify-center bg-system-background">
+      <View className="bg-system-background flex-1 items-center justify-center">
         <ActivityIndicator />
       </View>
     );
@@ -108,7 +119,9 @@ function RootNavigator() {
 
   // Profile fetch failed (e.g. offline cold start): don't bounce an existing
   // user into onboarding — fall back to the tabs like before v2.
-  const profileComplete = isProfileComplete(profile) || ((profileError || profileGaveUp) && !profile && !draftReady);
+  const profileComplete =
+    isProfileComplete(profile) ||
+    ((profileError || profileGaveUp) && !profile && !draftReady);
 
   if (hasSession && !profileComplete && (draftReady || applyPhase !== 'idle')) {
     return (
@@ -129,11 +142,16 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
       </Stack.Protected>
       <Stack.Protected
-        guard={(!hasSession && !onboardingCompleted && !wantsSignIn) || (hasSession && !profileComplete)}
+        guard={
+          (!hasSession && !onboardingCompleted && !wantsSignIn) ||
+          (hasSession && !profileComplete)
+        }
       >
         <Stack.Screen name="(onboarding)" />
       </Stack.Protected>
-      <Stack.Protected guard={!hasSession && (onboardingCompleted || wantsSignIn)}>
+      <Stack.Protected
+        guard={!hasSession && (onboardingCompleted || wantsSignIn)}
+      >
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
       <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />

@@ -13,19 +13,21 @@ export default function PaywallScreen() {
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-system-background px-8">
+    <View className="bg-system-background flex-1 items-center justify-center gap-4 px-8">
       <SymbolView name="sparkles" size={40} />
-      <Text className="text-center text-xl font-semibold text-label">
+      <Text className="text-label text-center text-xl font-semibold">
         {t('food.paywall.title')}
       </Text>
-      <Text className="text-center text-base text-secondary-label">
+      <Text className="text-secondary-label text-center text-base">
         {t('food.paywall.body')}
       </Text>
       <Pressable
         onPress={() => router.back()}
-        className="mt-4 items-center rounded-xl bg-tint px-6 py-3"
+        className="bg-tint mt-4 items-center rounded-xl px-6 py-3"
       >
-        <Text className="text-base font-semibold text-white">{t('food.paywall.close')}</Text>
+        <Text className="text-base font-semibold text-white">
+          {t('food.paywall.close')}
+        </Text>
       </Pressable>
     </View>
   );

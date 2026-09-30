@@ -1,9 +1,12 @@
 // Shared Supabase client factories for møni Edge Functions (Deno).
-import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import {
+  createClient,
+  type SupabaseClient,
+} from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected automatically by
 // the Supabase platform for every Edge Function — they do not need to be set manually as
@@ -15,7 +18,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
  * Use this for anything that should respect row ownership.
  */
 export function createUserClient(req: Request): SupabaseClient {
-  const authHeader = req.headers.get("Authorization") ?? "";
+  const authHeader = req.headers.get('Authorization') ?? '';
   return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false },

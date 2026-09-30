@@ -8,14 +8,33 @@ import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import type { SFSymbol } from '@/features/auth/components/OptionCard';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
-import { requestHealthAuthorization, useHealthSettings } from '@/features/health';
+import {
+  requestHealthAuthorization,
+  useHealthSettings,
+} from '@/features/health';
 import { themeColor } from '@/theme/colors';
 
-function Benefit({ symbol, text, index }: { symbol: SFSymbol; text: string; index: number }) {
+function Benefit({
+  symbol,
+  text,
+  index,
+}: {
+  symbol: SFSymbol;
+  text: string;
+  index: number;
+}) {
   return (
-    <Animated.View entering={FadeInDown.duration(260).delay(120 + index * 70)} className="flex-row items-center gap-3">
-      <SymbolView name={symbol} size={22} type="hierarchical" tintColor={themeColor('accent')} />
-      <Text className="flex-1 text-base text-label">{text}</Text>
+    <Animated.View
+      entering={FadeInDown.duration(260).delay(120 + index * 70)}
+      className="flex-row items-center gap-3"
+    >
+      <SymbolView
+        name={symbol}
+        size={22}
+        type="hierarchical"
+        tintColor={themeColor('accent')}
+      />
+      <Text className="text-label flex-1 text-base">{text}</Text>
     </Animated.View>
   );
 }
@@ -37,7 +56,9 @@ export default function HealthPrimerScreen() {
       const result = await requestHealthAuthorization();
       if (result === 'granted') {
         setEnabled(true);
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        void Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        );
       }
     } catch (error) {
       console.warn('[onboarding] health authorization failed', error);
@@ -57,17 +78,38 @@ export default function HealthPrimerScreen() {
       secondaryLabel={t('account.onboarding.health.later')}
       onSecondary={() => goNext()}
     >
-      <Animated.View entering={ZoomIn.duration(280)} className="items-center py-4">
-        <View className="h-24 w-24 items-center justify-center rounded-3xl bg-secondary-system-background">
-          <SymbolView name="heart.text.square.fill" size={56} type="multicolor" />
+      <Animated.View
+        entering={ZoomIn.duration(280)}
+        className="items-center py-4"
+      >
+        <View className="bg-secondary-system-background h-24 w-24 items-center justify-center rounded-3xl">
+          <SymbolView
+            name="heart.text.square.fill"
+            size={56}
+            type="multicolor"
+          />
         </View>
       </Animated.View>
       <View className="gap-4">
-        <Benefit index={0} symbol="figure.run" text={t('account.onboarding.health.benefit1')} />
-        <Benefit index={1} symbol="scalemass.fill" text={t('account.onboarding.health.benefit2')} />
-        <Benefit index={2} symbol="flame.fill" text={t('account.onboarding.health.benefit3')} />
+        <Benefit
+          index={0}
+          symbol="figure.run"
+          text={t('account.onboarding.health.benefit1')}
+        />
+        <Benefit
+          index={1}
+          symbol="scalemass.fill"
+          text={t('account.onboarding.health.benefit2')}
+        />
+        <Benefit
+          index={2}
+          symbol="flame.fill"
+          text={t('account.onboarding.health.benefit3')}
+        />
       </View>
-      <Text className="pt-2 text-sm text-secondary-label">{t('account.onboarding.health.privacy')}</Text>
+      <Text className="text-secondary-label pt-2 text-sm">
+        {t('account.onboarding.health.privacy')}
+      </Text>
     </OnboardingScreen>
   );
 }

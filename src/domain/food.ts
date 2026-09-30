@@ -12,7 +12,10 @@ export interface FoodItemMacros {
 }
 
 /** Scales a food item's macros linearly to a new gram amount. */
-export function scaleFoodItem(item: FoodItemMacros, newGrams: number): FoodItemMacros {
+export function scaleFoodItem(
+  item: FoodItemMacros,
+  newGrams: number,
+): FoodItemMacros {
   if (item.grams <= 0) {
     return { ...item, grams: newGrams };
   }
@@ -41,7 +44,11 @@ export function sumFoodItems(items: FoodItemMacros[]): FoodItemMacros {
 
 export const KCAL_PLAUSIBILITY_TOLERANCE = 0.15;
 
-export function computeKcalFromMacros(proteinG: number, carbsG: number, fatG: number): number {
+export function computeKcalFromMacros(
+  proteinG: number,
+  carbsG: number,
+  fatG: number,
+): number {
   return proteinG * 4 + carbsG * 4 + fatG * 9;
 }
 

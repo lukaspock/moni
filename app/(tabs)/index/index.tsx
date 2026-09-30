@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { Directions, Gesture, GestureDetector, Swipeable } from 'react-native-gesture-handler';
+import {
+  Directions,
+  Gesture,
+  GestureDetector,
+  Swipeable,
+} from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { router, Stack } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -10,7 +15,11 @@ import { KcalRing } from '@/components/charts/KcalRing';
 import { MacroBar } from '@/components/charts/MacroBar';
 import { FloatingActionButton } from '@/components/glass/FloatingActionButton';
 import type { FoodLogWithItems } from '@/features/food';
-import { useDeleteFoodLog, useFoodLogsForDate, useFoodTotals } from '@/features/food';
+import {
+  useDeleteFoodLog,
+  useFoodLogsForDate,
+  useFoodTotals,
+} from '@/features/food';
 import { useDailyTargets, useProfile } from '@/features/targets';
 import { greetingPeriod, type GreetingPeriod } from '@/features/auth';
 import { usePlannedDay, useWorkoutsForDate } from '@/features/workout';
@@ -71,7 +80,10 @@ export default function TodayScreen() {
   const handleDelete = (id: string) => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     deleteFoodLog.mutate(id, {
-      onSuccess: () => void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
+      onSuccess: () =>
+        void Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        ),
     });
   };
 
@@ -110,26 +122,31 @@ export default function TodayScreen() {
         }}
       />
       <GestureDetector gesture={swipeGesture}>
-        <View className="flex-1 bg-system-background">
+        <View className="bg-system-background flex-1">
           <ScrollView
             className="flex-1"
             contentContainerClassName="gap-6 px-4 pb-32 pt-4"
             showsVerticalScrollIndicator={false}
           >
             {isToday && displayName ? (
-              <Text className="text-center text-xl font-semibold text-label">{greetings[greetingPeriod()]}</Text>
+              <Text className="text-label text-center text-xl font-semibold">
+                {greetings[greetingPeriod()]}
+              </Text>
             ) : null}
-            <Text className="text-center text-sm font-medium text-secondary-label">
+            <Text className="text-secondary-label text-center text-sm font-medium">
               {isToday ? t('food.dashboard.today') : dateLabel}
             </Text>
 
             {!targets && !targetsLoading ? (
-              <View className="items-center gap-3 rounded-2xl bg-secondary-system-background p-6">
-                <SymbolView name="person.crop.circle.badge.exclamationmark" size={32} />
-                <Text className="text-center text-base font-semibold text-label">
+              <View className="bg-secondary-system-background items-center gap-3 rounded-2xl p-6">
+                <SymbolView
+                  name="person.crop.circle.badge.exclamationmark"
+                  size={32}
+                />
+                <Text className="text-label text-center text-base font-semibold">
                   {t('food.dashboard.completeProfileTitle')}
                 </Text>
-                <Text className="text-center text-sm text-secondary-label">
+                <Text className="text-secondary-label text-center text-sm">
                   {t('food.dashboard.completeProfileBody')}
                 </Text>
               </View>
@@ -143,16 +160,18 @@ export default function TodayScreen() {
                     bonusIsProvisional={targets?.bonusIsProvisional ?? false}
                   />
                   <View className="items-center gap-0.5">
-                    <Text className="text-3xl font-bold text-label">
+                    <Text className="text-label text-3xl font-bold">
                       {Math.round(totals.kcal)}
                     </Text>
-                    <Text className="text-sm text-secondary-label">
-                      {t('food.dashboard.ofLimit', { limit: Math.round(targets?.totalKcal ?? 0) })}
+                    <Text className="text-secondary-label text-sm">
+                      {t('food.dashboard.ofLimit', {
+                        limit: Math.round(targets?.totalKcal ?? 0),
+                      })}
                     </Text>
                   </View>
                 </View>
 
-                <View className="gap-3 rounded-2xl bg-secondary-system-background p-4">
+                <View className="bg-secondary-system-background gap-3 rounded-2xl p-4">
                   <MacroBar
                     label={t('food.dashboard.protein')}
                     gramsEaten={totals.proteinG}
@@ -176,21 +195,22 @@ export default function TodayScreen() {
               </>
             )}
 
-            <View className="gap-2 rounded-2xl bg-secondary-system-background p-4">
-              <Text className="text-base font-semibold text-label">
+            <View className="bg-secondary-system-background gap-2 rounded-2xl p-4">
+              <Text className="text-label text-base font-semibold">
                 {t('food.dashboard.trainingCardTitle')}
               </Text>
               {hasTrainingToday ? (
                 <View className="gap-3">
-                  <Text className="text-sm text-secondary-label">
+                  <Text className="text-secondary-label text-sm">
                     {workouts.length > 0
                       ? t('food.dashboard.trainingDone')
-                      : (plannedDay?.routineName ?? t('food.dashboard.trainingPlannedFreeform'))}
+                      : (plannedDay?.routineName ??
+                        t('food.dashboard.trainingPlannedFreeform'))}
                   </Text>
                   {workouts.length === 0 && (
                     <Pressable
                       onPress={() => router.push('/workout/active')}
-                      className="items-center rounded-xl bg-tint py-3"
+                      className="bg-tint items-center rounded-xl py-3"
                     >
                       <Text className="text-base font-semibold text-white">
                         {t('food.dashboard.startWorkout')}
@@ -199,7 +219,9 @@ export default function TodayScreen() {
                   )}
                 </View>
               ) : (
-                <Text className="text-sm text-secondary-label">{t('food.dashboard.restDay')}</Text>
+                <Text className="text-secondary-label text-sm">
+                  {t('food.dashboard.restDay')}
+                </Text>
               )}
             </View>
 
@@ -207,28 +229,35 @@ export default function TodayScreen() {
               {MEAL_ORDER.map((mealType) => {
                 const mealLogs = mealsByType.get(mealType) ?? [];
                 if (mealLogs.length === 0) return null;
-                const mealKcal = mealLogs.reduce((sum, log) => sum + log.kcal, 0);
+                const mealKcal = mealLogs.reduce(
+                  (sum, log) => sum + log.kcal,
+                  0,
+                );
                 return (
                   <View key={mealType} className="gap-2">
                     <View className="flex-row items-baseline justify-between px-1">
-                      <Text className="text-base font-semibold text-label">
+                      <Text className="text-label text-base font-semibold">
                         {t(`food.mealType.${mealType}`)}
                       </Text>
-                      <Text className="text-sm text-secondary-label">
+                      <Text className="text-secondary-label text-sm">
                         {Math.round(mealKcal)} {t('food.dashboard.kcalUnit')}
                       </Text>
                     </View>
-                    <View className="overflow-hidden rounded-2xl bg-secondary-system-background">
+                    <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
                       {mealLogs.map((log, index) => (
                         <View key={log.id}>
-                          {index > 0 && <View className="h-px bg-separator" />}
+                          {index > 0 && <View className="bg-separator h-px" />}
                           <Swipeable
                             renderRightActions={() => (
                               <Pressable
                                 onPress={() => handleDelete(log.id)}
-                                className="w-20 items-center justify-center bg-destructive"
+                                className="bg-destructive w-20 items-center justify-center"
                               >
-                                <SymbolView name="trash" size={20} tintColor="white" />
+                                <SymbolView
+                                  name="trash"
+                                  size={20}
+                                  tintColor="white"
+                                />
                               </Pressable>
                             )}
                           >
@@ -240,22 +269,33 @@ export default function TodayScreen() {
                                 })
                               }
                               onLongPress={() =>
-                                Alert.alert(log.title ?? t('food.dashboard.untitledMeal'), undefined, [
-                                  { text: t('food.dashboard.cancel'), style: 'cancel' },
-                                  {
-                                    text: t('food.dashboard.delete'),
-                                    style: 'destructive',
-                                    onPress: () => handleDelete(log.id),
-                                  },
-                                ])
+                                Alert.alert(
+                                  log.title ?? t('food.dashboard.untitledMeal'),
+                                  undefined,
+                                  [
+                                    {
+                                      text: t('food.dashboard.cancel'),
+                                      style: 'cancel',
+                                    },
+                                    {
+                                      text: t('food.dashboard.delete'),
+                                      style: 'destructive',
+                                      onPress: () => handleDelete(log.id),
+                                    },
+                                  ],
+                                )
                               }
                               className="flex-row items-center justify-between px-4 py-3"
                             >
-                              <Text className="flex-1 text-base text-label" numberOfLines={1}>
+                              <Text
+                                className="text-label flex-1 text-base"
+                                numberOfLines={1}
+                              >
                                 {log.title || t('food.dashboard.untitledMeal')}
                               </Text>
-                              <Text className="text-base text-secondary-label">
-                                {Math.round(log.kcal)} {t('food.dashboard.kcalUnit')}
+                              <Text className="text-secondary-label text-base">
+                                {Math.round(log.kcal)}{' '}
+                                {t('food.dashboard.kcalUnit')}
                               </Text>
                             </Pressable>
                           </Swipeable>
@@ -266,7 +306,7 @@ export default function TodayScreen() {
                 );
               })}
               {logs.length === 0 && (
-                <Text className="px-1 text-center text-sm text-secondary-label">
+                <Text className="text-secondary-label px-1 text-center text-sm">
                   {t('food.dashboard.noMeals')}
                 </Text>
               )}

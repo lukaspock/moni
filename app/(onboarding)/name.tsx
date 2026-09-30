@@ -48,11 +48,16 @@ export default function NameScreen() {
         enablesReturnKeyAutomatically
         submitBehavior="blurAndSubmit"
         onSubmitEditing={() => trimmed && submit()}
-        className="h-16 rounded-2xl border-2 border-separator px-5 text-2xl font-semibold text-label"
+        className="border-separator text-label h-16 rounded-2xl border-2 px-5 text-2xl font-semibold"
       />
       {trimmed ? (
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
-          <Text className="text-lg text-tint">{t('account.onboarding.name.greeting', { name: trimmed })}</Text>
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(150)}
+        >
+          <Text className="text-tint text-lg">
+            {t('account.onboarding.name.greeting', { name: trimmed })}
+          </Text>
         </Animated.View>
       ) : null}
     </OnboardingScreen>

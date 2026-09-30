@@ -1,7 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,7 +25,8 @@ import { GlassButton } from '@/features/auth/components/GlassButton';
 type Mode = 'signUp' | 'signIn';
 type Method = 'password' | 'otp';
 
-const inputClass = 'h-14 rounded-2xl border border-separator bg-secondary-system-background px-4 text-lg text-label';
+const inputClass =
+  'h-14 rounded-2xl border border-separator bg-secondary-system-background px-4 text-lg text-label';
 
 /**
  * Sign-up is the default after onboarding ("Almost there, {name}!"); a
@@ -38,7 +46,9 @@ export default function SignInScreen() {
   const name = useOnboardingStore((s) => s.draft.displayName.trim());
   const setWantsSignIn = useOnboardingStore((s) => s.setWantsSignIn);
 
-  const [mode, setMode] = useState<Mode>(() => (completed ? 'signUp' : 'signIn'));
+  const [mode, setMode] = useState<Mode>(() =>
+    completed ? 'signUp' : 'signIn',
+  );
   const [method, setMethod] = useState<Method>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,14 +80,19 @@ export default function SignInScreen() {
   }
 
   async function handlePasswordSubmit() {
-    if (!email.trim()) return setError(t('account.auth.signIn.errors.missingEmail'));
-    if (!password) return setError(t('account.auth.signIn.errors.missingPassword'));
+    if (!email.trim())
+      return setError(t('account.auth.signIn.errors.missingEmail'));
+    if (!password)
+      return setError(t('account.auth.signIn.errors.missingPassword'));
     setError(null);
     setNotice(null);
     setLoading(true);
     try {
       if (isSignUp) {
-        const { needsEmailConfirmation } = await signUpWithPassword(email.trim(), password);
+        const { needsEmailConfirmation } = await signUpWithPassword(
+          email.trim(),
+          password,
+        );
         if (needsEmailConfirmation) {
           setMode('signIn');
           setNotice(t('account.auth.signIn.checkEmail'));
@@ -93,7 +108,8 @@ export default function SignInScreen() {
   }
 
   async function handleSendOtp() {
-    if (!email.trim()) return setError(t('account.auth.signIn.errors.missingEmail'));
+    if (!email.trim())
+      return setError(t('account.auth.signIn.errors.missingEmail'));
     setError(null);
     setLoading(true);
     try {
@@ -107,7 +123,8 @@ export default function SignInScreen() {
   }
 
   async function handleVerifyOtp() {
-    if (otpCode.trim().length < 6) return setError(t('account.auth.signIn.errors.invalidCode'));
+    if (otpCode.trim().length < 6)
+      return setError(t('account.auth.signIn.errors.invalidCode'));
     setError(null);
     setLoading(true);
     try {
@@ -124,24 +141,41 @@ export default function SignInScreen() {
       ? t('account.auth.signIn.signUpTitle', { name })
       : t('account.auth.signIn.signUpTitleNoName')
     : t('account.auth.signIn.signInTitle');
-  const subtitle = isSignUp ? t('account.auth.signIn.signUpSubtitle') : t('account.auth.signIn.signInSubtitle');
+  const subtitle = isSignUp
+    ? t('account.auth.signIn.signUpSubtitle')
+    : t('account.auth.signIn.signInSubtitle');
 
   return (
-    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-system-background">
+    <KeyboardAvoidingView
+      behavior="padding"
+      className="bg-system-background flex-1"
+    >
       <ScrollView
         contentContainerClassName="gap-5 px-6"
-        contentContainerStyle={{ paddingTop: insets.top + 32, paddingBottom: Math.max(insets.bottom, 16) + 16 }}
+        contentContainerStyle={{
+          paddingTop: insets.top + 32,
+          paddingBottom: Math.max(insets.bottom, 16) + 16,
+        }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        <Animated.View key={mode} entering={FadeInDown.duration(250)} className="gap-2 pb-2">
-          <Text className="text-3xl font-bold text-label">{title}</Text>
-          <Text className="text-base leading-6 text-secondary-label">{subtitle}</Text>
+        <Animated.View
+          key={mode}
+          entering={FadeInDown.duration(250)}
+          className="gap-2 pb-2"
+        >
+          <Text className="text-label text-3xl font-bold">{title}</Text>
+          <Text className="text-secondary-label text-base leading-6">
+            {subtitle}
+          </Text>
         </Animated.View>
 
         {notice ? (
-          <Animated.View entering={FadeIn.duration(200)} className="rounded-2xl bg-secondary-system-background p-4">
-            <Text className="text-sm text-label">{notice}</Text>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            className="bg-secondary-system-background rounded-2xl p-4"
+          >
+            <Text className="text-label text-sm">{notice}</Text>
           </Animated.View>
         ) : null}
 
@@ -171,9 +205,15 @@ export default function SignInScreen() {
               onSubmitEditing={handlePasswordSubmit}
               className={inputClass}
             />
-            {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
+            {error ? (
+              <Text className="text-destructive text-sm">{error}</Text>
+            ) : null}
             <GlassButton
-              label={t(isSignUp ? 'account.auth.signIn.signUpCta' : 'account.auth.signIn.signInCta')}
+              label={t(
+                isSignUp
+                  ? 'account.auth.signIn.signUpCta'
+                  : 'account.auth.signIn.signInCta',
+              )}
               onPress={handlePasswordSubmit}
               loading={loading}
             />
@@ -182,7 +222,9 @@ export default function SignInScreen() {
           <View className="gap-4">
             {otpSent ? (
               <>
-                <Text className="text-sm text-secondary-label">{t('account.auth.signIn.otp.codeSentTo', { email })}</Text>
+                <Text className="text-secondary-label text-sm">
+                  {t('account.auth.signIn.otp.codeSentTo', { email })}
+                </Text>
                 <TextInput
                   value={otpCode}
                   onChangeText={setOtpCode}
@@ -193,17 +235,36 @@ export default function SignInScreen() {
                   maxLength={6}
                   className={`${inputClass} text-center text-2xl tracking-widest`}
                 />
-                {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-                <GlassButton label={t('account.auth.signIn.otp.verifyCta')} onPress={handleVerifyOtp} loading={loading} />
-                <Pressable onPress={handleSendOtp} className="items-center py-2">
-                  <Text className="text-sm font-medium text-tint">{t('account.auth.signIn.otp.resendCta')}</Text>
+                {error ? (
+                  <Text className="text-destructive text-sm">{error}</Text>
+                ) : null}
+                <GlassButton
+                  label={t('account.auth.signIn.otp.verifyCta')}
+                  onPress={handleVerifyOtp}
+                  loading={loading}
+                />
+                <Pressable
+                  onPress={handleSendOtp}
+                  className="items-center py-2"
+                >
+                  <Text className="text-tint text-sm font-medium">
+                    {t('account.auth.signIn.otp.resendCta')}
+                  </Text>
                 </Pressable>
               </>
             ) : (
               <>
-                <Text className="text-sm text-secondary-label">{t('account.auth.signIn.otp.subtitle')}</Text>
-                {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-                <GlassButton label={t('account.auth.signIn.otp.sendCta')} onPress={handleSendOtp} loading={loading} />
+                <Text className="text-secondary-label text-sm">
+                  {t('account.auth.signIn.otp.subtitle')}
+                </Text>
+                {error ? (
+                  <Text className="text-destructive text-sm">{error}</Text>
+                ) : null}
+                <GlassButton
+                  label={t('account.auth.signIn.otp.sendCta')}
+                  onPress={handleSendOtp}
+                  loading={loading}
+                />
               </>
             )}
           </View>
@@ -218,15 +279,19 @@ export default function SignInScreen() {
           }}
           className="items-center py-1"
         >
-          <Text className="text-sm font-medium text-tint">
-            {method === 'password' ? t('account.auth.signIn.otp.title') : t('account.auth.signIn.usePassword')}
+          <Text className="text-tint text-sm font-medium">
+            {method === 'password'
+              ? t('account.auth.signIn.otp.title')
+              : t('account.auth.signIn.usePassword')}
           </Text>
         </Pressable>
 
         <View className="flex-row items-center gap-3 py-1">
-          <View className="h-px flex-1 bg-separator" />
-          <Text className="text-sm text-secondary-label">{t('account.auth.signIn.orDivider')}</Text>
-          <View className="h-px flex-1 bg-separator" />
+          <View className="bg-separator h-px flex-1" />
+          <Text className="text-secondary-label text-sm">
+            {t('account.auth.signIn.orDivider')}
+          </Text>
+          <View className="bg-separator h-px flex-1" />
         </View>
 
         {isSignUp ? (
@@ -242,17 +307,33 @@ export default function SignInScreen() {
             onPress={() => switchMode('signUp')}
           />
         ) : (
-          <GlassButton variant="secondary" label={t('account.auth.signIn.newHere')} onPress={backToSetup} />
+          <GlassButton
+            variant="secondary"
+            label={t('account.auth.signIn.newHere')}
+            onPress={backToSetup}
+          />
         )}
 
         <View className="mt-2 gap-3">
-          <Pressable disabled className="h-14 items-center justify-center rounded-2xl border border-separator opacity-40">
-            <Text className="text-base font-medium text-label">{t('account.auth.signIn.appleCta')}</Text>
+          <Pressable
+            disabled
+            className="border-separator h-14 items-center justify-center rounded-2xl border opacity-40"
+          >
+            <Text className="text-label text-base font-medium">
+              {t('account.auth.signIn.appleCta')}
+            </Text>
           </Pressable>
-          <Pressable disabled className="h-14 items-center justify-center rounded-2xl border border-separator opacity-40">
-            <Text className="text-base font-medium text-label">{t('account.auth.signIn.googleCta')}</Text>
+          <Pressable
+            disabled
+            className="border-separator h-14 items-center justify-center rounded-2xl border opacity-40"
+          >
+            <Text className="text-label text-base font-medium">
+              {t('account.auth.signIn.googleCta')}
+            </Text>
           </Pressable>
-          <Text className="text-center text-xs text-tertiary-label">{t('account.auth.signIn.socialComingSoon')}</Text>
+          <Text className="text-tertiary-label text-center text-xs">
+            {t('account.auth.signIn.socialComingSoon')}
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

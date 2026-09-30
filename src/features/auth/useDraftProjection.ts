@@ -21,7 +21,8 @@ export function useDraftProjection(): GoalProjectionResult | null {
       weightKg: draft.weightKg!,
       activityLevel: draft.activityLevel!,
       goal: draft.goal!,
-      goalRateKgPerWeek: draft.goal === 'maintain' ? 0 : draft.goalRateKgPerWeek,
+      goalRateKgPerWeek:
+        draft.goal === 'maintain' ? 0 : draft.goalRateKgPerWeek,
       hasTrainingDays: draft.trainingWeekdays.length > 0,
       eatBackFactor: draft.eatBackFactor,
       targetWeightKg: draft.targetWeightKg,

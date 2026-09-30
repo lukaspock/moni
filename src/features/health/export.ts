@@ -33,8 +33,11 @@ export interface ExportWorkoutInput {
  * metadata, and attributed to møni's bundle id by HealthKit — both make the
  * importer skip it, so it never comes back as a second workout.
  */
-export async function exportWorkoutToHealth(input: ExportWorkoutInput): Promise<void> {
-  if (!useHealthSettingsStore.getState().enabled || !healthKitAvailable()) return;
+export async function exportWorkoutToHealth(
+  input: ExportWorkoutInput,
+): Promise<void> {
+  if (!useHealthSettingsStore.getState().enabled || !healthKitAvailable())
+    return;
   const hk = getHealthKit();
   if (!hk) return;
   try {
@@ -76,9 +79,17 @@ export interface ExportFoodLogInput {
 }
 
 const NUTRIENTS = [
-  { key: 'kcal', type: 'HKQuantityTypeIdentifierDietaryEnergyConsumed', unit: 'kcal' },
+  {
+    key: 'kcal',
+    type: 'HKQuantityTypeIdentifierDietaryEnergyConsumed',
+    unit: 'kcal',
+  },
   { key: 'protein', type: 'HKQuantityTypeIdentifierDietaryProtein', unit: 'g' },
-  { key: 'carbs', type: 'HKQuantityTypeIdentifierDietaryCarbohydrates', unit: 'g' },
+  {
+    key: 'carbs',
+    type: 'HKQuantityTypeIdentifierDietaryCarbohydrates',
+    unit: 'g',
+  },
   { key: 'fat', type: 'HKQuantityTypeIdentifierDietaryFatTotal', unit: 'g' },
 ] as const;
 
@@ -87,7 +98,10 @@ function nutritionEnabled(): boolean {
   return enabled && writeNutrition && healthKitAvailable();
 }
 
-async function deleteNutrientSample(foodLogId: string, nutrient: (typeof NUTRIENTS)[number]): Promise<void> {
+async function deleteNutrientSample(
+  foodLogId: string,
+  nutrient: (typeof NUTRIENTS)[number],
+): Promise<void> {
   const hk = getHealthKit();
   if (!hk) return;
   await hk.deleteObjects(nutrient.type, {
@@ -109,7 +123,9 @@ async function deleteNutrientSample(foodLogId: string, nutrient: (typeof NUTRIEN
  * `HKCorrelationTypeIdentifierFood`) because sync-identifier replacement and
  * deletion by predicate are well-defined per quantity type.
  */
-export async function exportFoodLogToHealth(input: ExportFoodLogInput): Promise<void> {
+export async function exportFoodLogToHealth(
+  input: ExportFoodLogInput,
+): Promise<void> {
   if (!nutritionEnabled()) return;
   const hk = getHealthKit();
   if (!hk) return;
@@ -135,13 +151,18 @@ export async function exportFoodLogToHealth(input: ExportFoodLogInput): Promise<
         [MOENI_FOOD_LOG_ID_METADATA_KEY]: input.id,
       });
     } catch (err) {
-      console.warn(`[health] exporting ${nutrient.key} of food log failed`, err);
+      console.warn(
+        `[health] exporting ${nutrient.key} of food log failed`,
+        err,
+      );
     }
   }
 }
 
 /** Removes a deleted food log's dietary samples from Health (by sync identifier). */
-export async function deleteFoodLogFromHealth(foodLogId: string): Promise<void> {
+export async function deleteFoodLogFromHealth(
+  foodLogId: string,
+): Promise<void> {
   if (!nutritionEnabled()) return;
   for (const nutrient of NUTRIENTS) {
     try {

@@ -27,9 +27,18 @@
 import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
 
-import { calculateKcalBurned, metForIntensity, STRENGTH_MET_MIN } from '@/domain/met';
+import {
+  calculateKcalBurned,
+  metForIntensity,
+  STRENGTH_MET_MIN,
+} from '@/domain/met';
 import { toISODate } from '@/lib/date';
-import { enqueueDelete, enqueueUpsert, pendingDeleteIdsForTable, pendingUpsertsForTable } from '@/lib/outbox';
+import {
+  enqueueDelete,
+  enqueueUpsert,
+  pendingDeleteIdsForTable,
+  pendingUpsertsForTable,
+} from '@/lib/outbox';
 import { storage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 
@@ -63,7 +72,10 @@ export const useHealthSyncStatusStore = create<{
   lastAttemptMs: number | null;
 }>()(() => ({ isSyncing: false, lastAttemptMs: null }));
 
-async function importedWorkoutId(userId: string, healthkitUuid: string): Promise<string> {
+async function importedWorkoutId(
+  userId: string,
+  healthkitUuid: string,
+): Promise<string> {
   const hex = await Crypto.digestStringAsync(
     Crypto.CryptoDigestAlgorithm.SHA1,
     importedWorkoutIdName(userId, healthkitUuid),
@@ -73,7 +85,8 @@ async function importedWorkoutId(userId: string, healthkitUuid: string): Promise
 
 function chunks<T>(items: readonly T[], size: number): T[][] {
   const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  for (let i = 0; i < items.length; i += size)
+    out.push(items.slice(i, i + size));
   return out;
 }
 
@@ -102,10 +115,16 @@ type WorkoutRowForMerge = {
 };
 
 /** Server rows + not-yet-synced outbox rows of this user overlapping [from, to]. */
-async function existingWorkoutsInWindow(userId: string, from: Date, to: Date): Promise<WorkoutRowForMerge[]> {
+async function existingWorkoutsInWindow(
+  userId: string,
+  from: Date,
+  to: Date,
+): Promise<WorkoutRowForMerge[]> {
   const { data, error } = await supabase
     .from('workouts')
-    .select('id, user_id, routine_id, started_at, ended_at, category, kcal_burned, kcal_source, healthkit_uuid, notes')
+    .select(
+      'id, user_id, routine_id, started_at, ended_at, category, kcal_burned, kcal_source, healthkit_uuid, notes',
+    )
     .eq('user_id', userId)
     .gte('started_at', from.toISOString())
     .lte('started_at', to.toISOString());
@@ -113,19 +132,29 @@ async function existingWorkoutsInWindow(userId: string, from: Date, to: Date): P
 
   const pendingDeletes = pendingDeleteIdsForTable('workouts');
   const byId = new Map<string, WorkoutRowForMerge>();
-  for (const row of data ?? []) if (!pendingDeletes.has(row.id)) byId.set(row.id, row);
+  for (const row of data ?? [])
+    if (!pendingDeletes.has(row.id)) byId.set(row.id, row);
   for (const p of pendingUpsertsForTable('workouts')) {
     const startedAt = p.started_at as string | undefined;
     if (p.user_id !== userId || !startedAt) continue;
     const t = Date.parse(startedAt);
     if (t < from.getTime() || t > to.getTime()) continue;
     const prev = byId.get(p.id as string);
-    byId.set(p.id as string, { ...(prev ?? {}), ...(p as Partial<WorkoutRowForMerge>) } as WorkoutRowForMerge);
+    byId.set(
+      p.id as string,
+      {
+        ...(prev ?? {}),
+        ...(p as Partial<WorkoutRowForMerge>),
+      } as WorkoutRowForMerge,
+    );
   }
   return [...byId.values()];
 }
 
-async function syncWorkouts(userId: string, own: string | null): Promise<Omit<HealthSyncResult, 'importedWeights'>> {
+async function syncWorkouts(
+  userId: string,
+  own: string | null,
+): Promise<Omit<HealthSyncResult, 'importedWeights'>> {
   const hk = getHealthKit();
   const result = { importedWorkouts: 0, mergedWorkouts: 0, deletedWorkouts: 0 };
   if (!hk) return result;
@@ -135,7 +164,9 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
   const response = await hk.queryWorkoutSamplesWithAnchor({
     limit: 0,
     anchor,
-    filter: anchor ? undefined : { date: { startDate: initialImportStart(new Date()) } },
+    filter: anchor
+      ? undefined
+      : { date: { startDate: initialImportStart(new Date()) } },
   });
 
   // Flatten the native proxies. Energy: per-workout statistics (the iOS 18+
@@ -147,12 +178,16 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
     let kcal: number | null = null;
     if (sourceBundleId !== own) {
       try {
-        const stat = await w.getStatistic('HKQuantityTypeIdentifierActiveEnergyBurned', 'kcal');
+        const stat = await w.getStatistic(
+          'HKQuantityTypeIdentifierActiveEnergyBurned',
+          'kcal',
+        );
         kcal = stat?.sumQuantity?.quantity ?? null;
       } catch {
         kcal = null;
       }
-      if (kcal === null || kcal <= 0) kcal = w.totalEnergyBurned?.quantity ?? null;
+      if (kcal === null || kcal <= 0)
+        kcal = w.totalEnergyBurned?.quantity ?? null;
     }
     healthWorkouts.push({
       uuid: w.uuid,
@@ -189,9 +224,15 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
           // No energy in Health (e.g. manually entered workout): MET estimate via src/domain.
           weightKg ??= await latestWeightKg(userId);
           const category = categoryForActivityType(w.activityType);
-          const met = category === 'strength' ? STRENGTH_MET_MIN : metForIntensity('moderate');
-          const hours = (Date.parse(w.endedAt) - Date.parse(w.startedAt)) / 3_600_000;
-          kcal = Math.round(calculateKcalBurned(met, weightKg, Math.max(0, hours)));
+          const met =
+            category === 'strength'
+              ? STRENGTH_MET_MIN
+              : metForIntensity('moderate');
+          const hours =
+            (Date.parse(w.endedAt) - Date.parse(w.startedAt)) / 3_600_000;
+          kcal = Math.round(
+            calculateKcalBurned(met, weightKg, Math.max(0, hours)),
+          );
           kcalSource = 'met';
         }
         enqueueUpsert('workouts', await importedWorkoutId(userId, w.uuid), {
@@ -231,7 +272,9 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
   // møni workout keeps its own id and is therefore never matched here.
   const deletedUuids = response.deletedSamples.map((d) => d.uuid);
   if (deletedUuids.length > 0) {
-    const candidateIds = await Promise.all(deletedUuids.map((uuid) => importedWorkoutId(userId, uuid)));
+    const candidateIds = await Promise.all(
+      deletedUuids.map((uuid) => importedWorkoutId(userId, uuid)),
+    );
     for (const id of await knownWorkoutIds(userId, candidateIds)) {
       enqueueDelete('workouts', id);
       result.deletedWorkouts += 1;
@@ -248,12 +291,18 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
  * the row stays (the session was recorded in møni) but loses the Health link
  * and its Health kcal → MET estimate again.
  */
-async function unmergeDeletedWorkouts(userId: string, uuids: string[], importedIds: Set<string>): Promise<void> {
+async function unmergeDeletedWorkouts(
+  userId: string,
+  uuids: string[],
+  importedIds: Set<string>,
+): Promise<void> {
   const rows: WorkoutRowForMerge[] = [];
   for (const chunk of chunks(uuids, IN_CHUNK)) {
     const { data, error } = await supabase
       .from('workouts')
-      .select('id, user_id, routine_id, started_at, ended_at, category, kcal_burned, kcal_source, healthkit_uuid, notes')
+      .select(
+        'id, user_id, routine_id, started_at, ended_at, category, kcal_burned, kcal_source, healthkit_uuid, notes',
+      )
       .eq('user_id', userId)
       .in('healthkit_uuid', chunk);
     if (error) throw error;
@@ -263,8 +312,13 @@ async function unmergeDeletedWorkouts(userId: string, uuids: string[], importedI
   for (const row of rows) {
     if (importedIds.has(row.id)) continue; // plain imports are deleted above
     weightKg ??= await latestWeightKg(userId);
-    const met = row.category === 'strength' ? STRENGTH_MET_MIN : metForIntensity('moderate');
-    const end = row.ended_at ? Date.parse(row.ended_at) : Date.parse(row.started_at);
+    const met =
+      row.category === 'strength'
+        ? STRENGTH_MET_MIN
+        : metForIntensity('moderate');
+    const end = row.ended_at
+      ? Date.parse(row.ended_at)
+      : Date.parse(row.started_at);
     const hours = Math.max(0, (end - Date.parse(row.started_at)) / 3_600_000);
     enqueueUpsert('workouts', row.id, {
       user_id: row.user_id,
@@ -281,11 +335,18 @@ async function unmergeDeletedWorkouts(userId: string, uuids: string[], importedI
 }
 
 /** Of the given candidate ids, those that exist on the server or in the outbox. */
-async function knownWorkoutIds(userId: string, ids: string[]): Promise<string[]> {
+async function knownWorkoutIds(
+  userId: string,
+  ids: string[],
+): Promise<string[]> {
   if (ids.length === 0) return [];
   const found = new Set<string>();
   for (const chunk of chunks(ids, IN_CHUNK)) {
-    const { data, error } = await supabase.from('workouts').select('id').eq('user_id', userId).in('id', chunk);
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('id')
+      .eq('user_id', userId)
+      .in('id', chunk);
     if (error) throw error;
     for (const row of data ?? []) found.add(row.id);
   }
@@ -296,18 +357,26 @@ async function knownWorkoutIds(userId: string, ids: string[]): Promise<string[]>
   return [...found];
 }
 
-async function syncBodyMass(userId: string, own: string | null): Promise<number> {
+async function syncBodyMass(
+  userId: string,
+  own: string | null,
+): Promise<number> {
   const hk = getHealthKit();
   if (!hk) return 0;
 
   const key = anchorStorageKey(userId, 'bodyMass');
   const anchor = storage.getString(key);
-  const response = await hk.queryQuantitySamplesWithAnchor('HKQuantityTypeIdentifierBodyMass', {
-    limit: 0,
-    anchor,
-    unit: 'kg',
-    filter: anchor ? undefined : { date: { startDate: initialImportStart(new Date()) } },
-  });
+  const response = await hk.queryQuantitySamplesWithAnchor(
+    'HKQuantityTypeIdentifierBodyMass',
+    {
+      limit: 0,
+      anchor,
+      unit: 'kg',
+      filter: anchor
+        ? undefined
+        : { date: { startDate: initialImportStart(new Date()) } },
+    },
+  );
 
   const rows = mapBodyMassSamples(
     response.samples.map((s) => ({
@@ -331,7 +400,11 @@ async function syncBodyMass(userId: string, own: string | null): Promise<number>
 
   const deletedUuids = response.deletedSamples.map((d) => d.uuid);
   for (const chunk of chunks(deletedUuids, IN_CHUNK)) {
-    const { error } = await supabase.from('weight_logs').delete().eq('user_id', userId).in('healthkit_uuid', chunk);
+    const { error } = await supabase
+      .from('weight_logs')
+      .delete()
+      .eq('user_id', userId)
+      .in('healthkit_uuid', chunk);
     if (error) throw error;
   }
 
@@ -347,14 +420,25 @@ let inFlight: Promise<HealthSyncResult | null> | null = null;
  * Workouts and weights are independent: one failing doesn't block the other,
  * and only a fully successful run updates `lastSyncedAt`.
  */
-export function runHealthSync(userId: string): Promise<HealthSyncResult | null> {
+export function runHealthSync(
+  userId: string,
+): Promise<HealthSyncResult | null> {
   if (inFlight) return inFlight;
-  if (!useHealthSettingsStore.getState().enabled || !healthKitAvailable()) return Promise.resolve(null);
+  if (!useHealthSettingsStore.getState().enabled || !healthKitAvailable())
+    return Promise.resolve(null);
 
   inFlight = (async () => {
-    useHealthSyncStatusStore.setState({ isSyncing: true, lastAttemptMs: Date.now() });
+    useHealthSyncStatusStore.setState({
+      isSyncing: true,
+      lastAttemptMs: Date.now(),
+    });
     const own = ownBundleId();
-    const result: HealthSyncResult = { importedWorkouts: 0, mergedWorkouts: 0, deletedWorkouts: 0, importedWeights: 0 };
+    const result: HealthSyncResult = {
+      importedWorkouts: 0,
+      mergedWorkouts: 0,
+      deletedWorkouts: 0,
+      importedWeights: 0,
+    };
     let ok = true;
     try {
       Object.assign(result, await syncWorkouts(userId, own));
@@ -368,7 +452,10 @@ export function runHealthSync(userId: string): Promise<HealthSyncResult | null> 
       ok = false;
       console.warn('[health] body mass import failed', err);
     }
-    if (ok) useHealthSettingsStore.getState().setLastSyncedAt(new Date().toISOString());
+    if (ok)
+      useHealthSettingsStore
+        .getState()
+        .setLastSyncedAt(new Date().toISOString());
     return result;
   })().finally(() => {
     useHealthSyncStatusStore.setState({ isSyncing: false });

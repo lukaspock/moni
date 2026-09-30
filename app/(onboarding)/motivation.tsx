@@ -13,7 +13,11 @@ export default function MotivationScreen() {
   return (
     <ChoiceStep<Motivation>
       step="motivation"
-      title={name ? t('account.onboarding.motivation.title', { name }) : t('account.onboarding.motivation.titleNoName')}
+      title={
+        name
+          ? t('account.onboarding.motivation.title', { name })
+          : t('account.onboarding.motivation.titleNoName')
+      }
       subtitle={t('account.onboarding.motivation.subtitle')}
       selected={motivation}
       onSelect={(value) => update({ motivation: value })}
@@ -34,7 +38,9 @@ export default function MotivationScreen() {
           value: 'performance',
           symbol: 'trophy.fill',
           label: t('account.onboarding.motivation.performance'),
-          description: t('account.onboarding.motivation.performanceDescription'),
+          description: t(
+            'account.onboarding.motivation.performanceDescription',
+          ),
         },
         {
           value: 'energy',

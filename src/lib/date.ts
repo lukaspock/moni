@@ -22,7 +22,10 @@ export function weekdayOf(isoDate: string): number {
  * `timestamptz` columns (e.g. `workouts.started_at`) by the user's local date.
  * DST-safe: both bounds are built from local midnight via the Date constructor.
  */
-export function localDayBoundsUtc(isoDate: string): { start: string; end: string } {
+export function localDayBoundsUtc(isoDate: string): {
+  start: string;
+  end: string;
+} {
   const [y, m, d] = isoDate.split('-').map(Number);
   return {
     start: new Date(y, m - 1, d).toISOString(),

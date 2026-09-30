@@ -3,14 +3,21 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { isHealthAvailable } from '../health';
 import { supabase } from '../../lib/supabase';
-import { nextOnboardingStep, type OnboardingFlowContext, type OnboardingStep } from './onboardingFlow';
+import {
+  nextOnboardingStep,
+  type OnboardingFlowContext,
+  type OnboardingStep,
+} from './onboardingFlow';
 import { useOnboardingStore } from './onboardingStore';
 
 /** Delay between tapping a single-choice card and advancing — long enough to see the selection. */
 export const AUTO_ADVANCE_MS = 380;
 
 export function currentFlowContext(): OnboardingFlowContext {
-  return { goal: useOnboardingStore.getState().draft.goal, healthAvailable: isHealthAvailable() };
+  return {
+    goal: useOnboardingStore.getState().draft.goal,
+    healthAvailable: isHealthAvailable(),
+  };
 }
 
 /**

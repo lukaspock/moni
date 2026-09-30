@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from 'zustand/middleware';
 
 import { storage } from '../../lib/storage';
 

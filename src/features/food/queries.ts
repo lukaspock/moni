@@ -242,13 +242,11 @@ export function useSaveFoodDraft() {
               .from('favorite_meals')
               .update({ items: favoriteItems })
               .eq('id', existingFavorite.id)
-          : await supabase
-              .from('favorite_meals')
-              .insert({
-                user_id: userId,
-                title: favoriteTitle,
-                items: favoriteItems,
-              });
+          : await supabase.from('favorite_meals').insert({
+              user_id: userId,
+              title: favoriteTitle,
+              items: favoriteItems,
+            });
         if (favError) throw favError;
       }
 

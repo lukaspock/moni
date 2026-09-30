@@ -29,7 +29,10 @@ export type AdaptiveTdeeEstimate = {
 };
 
 /** Newest `tdee_estimates` row, or null while there is not enough data yet. */
-export function useAdaptiveTdee(): { estimate: AdaptiveTdeeEstimate | null; isLoading: boolean } {
+export function useAdaptiveTdee(): {
+  estimate: AdaptiveTdeeEstimate | null;
+  isLoading: boolean;
+} {
   const { userId } = useSession();
   const query = useQuery({
     queryKey: ['targets', 'adaptiveTdee', userId],
@@ -46,18 +49,23 @@ export function useAdaptiveTdee(): { estimate: AdaptiveTdeeEstimate | null; isLo
       return {
         weekStart: data.week_start,
         formulaTdee: Number(data.formula_tdee ?? data.blended_tdee),
-        observedTdee: data.observed_tdee == null ? null : Number(data.observed_tdee),
+        observedTdee:
+          data.observed_tdee == null ? null : Number(data.observed_tdee),
         blendedTdee: Number(data.blended_tdee),
         confidence: Number(data.confidence ?? 0),
         reasonCode: (data.reason_code as AdaptiveReason | null) ?? null,
         weeklyChangeKcal: Number(data.weekly_change_kcal ?? 0),
-        weightTrendKg: data.weight_trend_kg == null ? null : Number(data.weight_trend_kg),
+        weightTrendKg:
+          data.weight_trend_kg == null ? null : Number(data.weight_trend_kg),
         createdAt: data.created_at,
       };
     },
     enabled: !!userId,
   });
-  return { estimate: query.data ?? null, isLoading: !!userId && query.isLoading };
+  return {
+    estimate: query.data ?? null,
+    isLoading: !!userId && query.isLoading,
+  };
 }
 
 const attemptKey = (userId: string) => `targets:recomputeAttempt:${userId}`;
@@ -91,7 +99,10 @@ export function useRecomputeTargetsIfDue(): void {
         // allow a retry on the next launch
         if (previous == null) storage.remove(attemptKey(userId));
         else storage.set(attemptKey(userId), previous);
-        console.warn('[targets] recompute-targets failed', e instanceof Error ? e.message : e);
+        console.warn(
+          '[targets] recompute-targets failed',
+          e instanceof Error ? e.message : e,
+        );
       })
       .finally(() => {
         inFlight = false;

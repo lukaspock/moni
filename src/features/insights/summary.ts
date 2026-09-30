@@ -9,7 +9,10 @@ import { supabase } from '@/lib/supabase';
 export const SUMMARY_DAYS = 60;
 
 /** Per-day kcal / protein / training summary from `v_daily_summary` (RLS via security_invoker). */
-export function useDailySummaries(today: string): { days: DaySummary[]; isLoading: boolean } {
+export function useDailySummaries(today: string): {
+  days: DaySummary[];
+  isLoading: boolean;
+} {
   const { userId } = useSession();
   const from = shiftIsoDate(today, -(SUMMARY_DAYS - 1));
   const query = useQuery({
@@ -17,7 +20,9 @@ export function useDailySummaries(today: string): { days: DaySummary[]; isLoadin
     queryFn: async (): Promise<DaySummary[]> => {
       const { data, error } = await supabase
         .from('v_daily_summary')
-        .select('date,kcal_eaten,target_kcal,protein_eaten,target_protein_g,food_log_count,had_workout')
+        .select(
+          'date,kcal_eaten,target_kcal,protein_eaten,target_protein_g,food_log_count,had_workout',
+        )
         .eq('user_id', userId!)
         .gte('date', from)
         .lte('date', today)
@@ -51,7 +56,10 @@ export interface ExerciseTrend {
 }
 
 /** Top exercises by logged sets in the last 12 weeks, with their est. 1RM trend (`v_exercise_progress`). */
-export function useExerciseTrends(today: string, limit = 3): { trends: ExerciseTrend[]; isLoading: boolean } {
+export function useExerciseTrends(
+  today: string,
+  limit = 3,
+): { trends: ExerciseTrend[]; isLoading: boolean } {
   const { userId } = useSession();
   const from = shiftIsoDate(today, -84);
   const query = useQuery({

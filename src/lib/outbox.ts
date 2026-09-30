@@ -35,7 +35,8 @@ const STORAGE_KEY = 'outbox:queue';
  * primary key (unlike e.g. `training_plan_days`, which is keyed on
  * `(user_id, weekday)` and is upserted directly via Supabase instead).
  */
-export type OutboxTable = 'workouts' | 'workout_sets' | 'routines' | 'routine_exercises' | 'exercises';
+export type OutboxTable =
+  'workouts' | 'workout_sets' | 'routines' | 'routine_exercises' | 'exercises';
 
 type Listener = (queue: OutboxEntry[]) => void;
 const listeners = new Set<Listener>();
@@ -64,14 +65,29 @@ export function subscribeOutbox(listener: Listener): () => void {
   return () => listeners.delete(listener);
 }
 
-export function enqueueMutation(table: OutboxTable, op: OutboxOp, id: string, payload: Record<string, unknown>): void {
-  const entry: NewOutboxEntry = { id, table, op, payload, createdAt: Date.now() };
+export function enqueueMutation(
+  table: OutboxTable,
+  op: OutboxOp,
+  id: string,
+  payload: Record<string, unknown>,
+): void {
+  const entry: NewOutboxEntry = {
+    id,
+    table,
+    op,
+    payload,
+    createdAt: Date.now(),
+  };
   const next = enqueuePure(readQueue(), entry);
   writeQueue(next);
   void processQueue();
 }
 
-export function enqueueUpsert(table: OutboxTable, id: string, payload: Record<string, unknown>): void {
+export function enqueueUpsert(
+  table: OutboxTable,
+  id: string,
+  payload: Record<string, unknown>,
+): void {
   enqueueMutation(table, 'upsert', id, { id, ...payload });
 }
 
@@ -80,7 +96,9 @@ export function enqueueDelete(table: OutboxTable, id: string): void {
 }
 
 /** Rows still pending sync for a table (used to overlay unsynced data onto server reads). */
-export function pendingUpsertsForTable(table: OutboxTable): Record<string, unknown>[] {
+export function pendingUpsertsForTable(
+  table: OutboxTable,
+): Record<string, unknown>[] {
   return readQueue()
     .filter((e) => e.table === table && e.op === 'upsert')
     .map((e) => e.payload);
@@ -128,7 +146,9 @@ export async function processQueue(): Promise<void> {
 
       const failed = markFailure(entry, Date.now());
       if (isExhausted(failed)) {
-        console.warn(`[outbox] giving up on ${entry.table}/${entry.id} after ${failed.attempts} attempts`);
+        console.warn(
+          `[outbox] giving up on ${entry.table}/${entry.id} after ${failed.attempts} attempts`,
+        );
         queue = removeEntry(queue, entry.table, entry.id);
         writeQueue(queue);
         continue;
@@ -145,13 +165,18 @@ export async function processQueue(): Promise<void> {
 async function syncEntry(entry: OutboxEntry): Promise<boolean> {
   try {
     if (entry.op === 'delete') {
-      const { error } = await supabase.from(entry.table as OutboxTable).delete().eq('id', entry.id);
+      const { error } = await supabase
+        .from(entry.table as OutboxTable)
+        .delete()
+        .eq('id', entry.id);
       if (error) throw error;
       return true;
     }
     // Client-generated UUIDs make this idempotent: safe to retry after a partial failure.
     // (every outbox table's primary key is `id`, so the default upsert conflict target is already correct.)
-    const { error } = await supabase.from(entry.table as OutboxTable).upsert(entry.payload as never);
+    const { error } = await supabase
+      .from(entry.table as OutboxTable)
+      .upsert(entry.payload as never);
     if (error) throw error;
     return true;
   } catch (err) {

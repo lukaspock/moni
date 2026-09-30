@@ -7,7 +7,11 @@ import * as Crypto from 'expo-crypto';
 
 import { enqueueUpsert } from '@/lib/outbox';
 import { exportWorkoutToHealth } from '@/features/health';
-import { calculateKcalBurned, metForIntensity, type CardioIntensity } from '@/domain/met';
+import {
+  calculateKcalBurned,
+  metForIntensity,
+  type CardioIntensity,
+} from '@/domain/met';
 import type { Exercise, WorkoutCategory } from './types';
 
 export interface LogCardioInput {
@@ -29,7 +33,9 @@ export interface LogCardioResult {
 /** Logs a completed cardio/sport session (already finished, unlike the active-workout flow). */
 export function logCardioWorkout(input: LogCardioInput): LogCardioResult {
   const metValue = input.exercise?.metValue ?? metForIntensity(input.intensity);
-  const kcalBurned = Math.round(calculateKcalBurned(metValue, input.weightKg, input.durationMinutes / 60));
+  const kcalBurned = Math.round(
+    calculateKcalBurned(metValue, input.weightKg, input.durationMinutes / 60),
+  );
 
   const workoutId = Crypto.randomUUID();
   const endedAt = new Date();
@@ -46,7 +52,13 @@ export function logCardioWorkout(input: LogCardioInput): LogCardioResult {
     notes: input.notes ?? null,
   });
   // Apple Health write-back (fire-and-forget; no-op unless enabled in settings, never blocks this offline flow).
-  void exportWorkoutToHealth({ workoutId, category: input.category, startedAt: startedAt.toISOString(), endedAt: endedAt.toISOString(), kcalBurned });
+  void exportWorkoutToHealth({
+    workoutId,
+    category: input.category,
+    startedAt: startedAt.toISOString(),
+    endedAt: endedAt.toISOString(),
+    kcalBurned,
+  });
 
   if (input.exercise) {
     const setId = Crypto.randomUUID();

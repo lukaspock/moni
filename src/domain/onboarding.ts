@@ -10,9 +10,17 @@
 
 import { calculateBMR, ageFromBirthDate } from './bmr';
 import { calculateBaseTDEE } from './tdee';
-import { calculateBaseTarget, calculateWorkoutBonus, type BaseTargetResult } from './targets';
+import {
+  calculateBaseTarget,
+  calculateWorkoutBonus,
+  type BaseTargetResult,
+} from './targets';
 import { calculateMacros, type MacroResult } from './macros';
-import { calculateSessionDensity, estimateStrengthMET, calculateKcalBurned } from './met';
+import {
+  calculateSessionDensity,
+  estimateStrengthMET,
+  calculateKcalBurned,
+} from './met';
 import {
   classifyPace,
   dailyDeltaToWeeklyRate,
@@ -36,21 +44,38 @@ export const DEFAULT_SESSION_TOTAL_SETS = 20;
 
 /** Estimated kcal burned for a default 60-minute strength session at the given bodyweight (§6.5). */
 export function estimateDefaultWorkoutExpectedKcal(weightKg: number): number {
-  const density = calculateSessionDensity(DEFAULT_SESSION_TOTAL_SETS, DEFAULT_SESSION_MINUTES);
+  const density = calculateSessionDensity(
+    DEFAULT_SESSION_TOTAL_SETS,
+    DEFAULT_SESSION_MINUTES,
+  );
   const met = estimateStrengthMET(density);
-  return Math.round(calculateKcalBurned(met, weightKg, DEFAULT_SESSION_MINUTES / 60));
+  return Math.round(
+    calculateKcalBurned(met, weightKg, DEFAULT_SESSION_MINUTES / 60),
+  );
 }
 
 /** Plausibility bounds for onboarding body input (catches typos like 1.8 m typed as "1.8" cm). */
 export const HEIGHT_CM_RANGE = { min: 100, max: 250 } as const;
 export const WEIGHT_KG_RANGE = { min: 30, max: 300 } as const;
 
-export function isPlausibleHeightCm(heightCm: number | null | undefined): boolean {
-  return heightCm != null && heightCm >= HEIGHT_CM_RANGE.min && heightCm <= HEIGHT_CM_RANGE.max;
+export function isPlausibleHeightCm(
+  heightCm: number | null | undefined,
+): boolean {
+  return (
+    heightCm != null &&
+    heightCm >= HEIGHT_CM_RANGE.min &&
+    heightCm <= HEIGHT_CM_RANGE.max
+  );
 }
 
-export function isPlausibleWeightKg(weightKg: number | null | undefined): boolean {
-  return weightKg != null && weightKg >= WEIGHT_KG_RANGE.min && weightKg <= WEIGHT_KG_RANGE.max;
+export function isPlausibleWeightKg(
+  weightKg: number | null | undefined,
+): boolean {
+  return (
+    weightKg != null &&
+    weightKg >= WEIGHT_KG_RANGE.min &&
+    weightKg <= WEIGHT_KG_RANGE.max
+  );
 }
 
 export interface OnboardingPreviewInput {
@@ -82,7 +107,9 @@ export interface OnboardingPreviewResult {
   trainingDay: OnboardingDayPreview;
 }
 
-export function computeOnboardingPreview(input: OnboardingPreviewInput): OnboardingPreviewResult {
+export function computeOnboardingPreview(
+  input: OnboardingPreviewInput,
+): OnboardingPreviewResult {
   const age = ageFromBirthDate(input.birthDate);
   const bmr = calculateBMR(input.sex, input.weightKg, input.heightCm, age);
   const tdee = calculateBaseTDEE(bmr, input.activityLevel);
@@ -100,7 +127,9 @@ export function computeOnboardingPreview(input: OnboardingPreviewInput): Onboard
     isDeficit,
   });
 
-  const expectedKcal = input.hasTrainingDays ? estimateDefaultWorkoutExpectedKcal(input.weightKg) : 0;
+  const expectedKcal = input.hasTrainingDays
+    ? estimateDefaultWorkoutExpectedKcal(input.weightKg)
+    : 0;
   const bonus = calculateWorkoutBonus({
     baseKcal: base.baseKcal,
     isTrainingDay: input.hasTrainingDays,
@@ -160,12 +189,18 @@ export interface GoalProjectionResult {
  * Everything the target-weight/rate/result screens show live: guardrail-adjusted
  * rest-day target, effective weekly rate, pace, projected goal date and curve.
  */
-export function computeGoalProjection(input: GoalProjectionInput): GoalProjectionResult {
+export function computeGoalProjection(
+  input: GoalProjectionInput,
+): GoalProjectionResult {
   const preview = computeOnboardingPreview(input);
   const dailyDeltaKcal = preview.restDay.totalKcal - preview.tdee;
-  const effectiveRateKgPerWeek = input.goal === 'maintain' ? 0 : dailyDeltaToWeeklyRate(dailyDeltaKcal);
+  const effectiveRateKgPerWeek =
+    input.goal === 'maintain' ? 0 : dailyDeltaToWeeklyRate(dailyDeltaKcal);
   const target = input.goal === 'maintain' ? null : input.targetWeightKg;
-  const weeksToTarget = target == null ? null : weeksToReachTarget(input.weightKg, target, effectiveRateKgPerWeek);
+  const weeksToTarget =
+    target == null
+      ? null
+      : weeksToReachTarget(input.weightKg, target, effectiveRateKgPerWeek);
 
   return {
     preview,
@@ -173,7 +208,10 @@ export function computeGoalProjection(input: GoalProjectionInput): GoalProjectio
     effectiveRateKgPerWeek,
     pace: classifyPace(input.goalRateKgPerWeek, input.weightKg),
     weeksToTarget,
-    targetDate: weeksToTarget == null ? null : projectDateAfterWeeks(input.startDate, weeksToTarget),
+    targetDate:
+      weeksToTarget == null
+        ? null
+        : projectDateAfterWeeks(input.startDate, weeksToTarget),
     curve: projectWeightCurve({
       currentWeightKg: input.weightKg,
       targetWeightKg: target,

@@ -24,11 +24,13 @@ export function useSession(): SessionState {
       setIsLoading(false);
     });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted) return;
-      setSession(nextSession);
-      setIsLoading(false);
-    });
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        if (!mounted) return;
+        setSession(nextSession);
+        setIsLoading(false);
+      },
+    );
 
     return () => {
       mounted = false;
@@ -59,11 +61,20 @@ export async function signUpWithPassword(
 ): Promise<{ userId: string | null; needsEmailConfirmation: boolean }> {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
-  return { userId: data.user?.id ?? null, needsEmailConfirmation: !!data.user && !data.session };
+  return {
+    userId: data.user?.id ?? null,
+    needsEmailConfirmation: !!data.user && !data.session,
+  };
 }
 
-export async function signInWithPassword(email: string, password: string): Promise<string | null> {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+export async function signInWithPassword(
+  email: string,
+  password: string,
+): Promise<string | null> {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) throw error;
   return data.user?.id ?? null;
 }
@@ -77,18 +88,37 @@ export async function sendEmailOtp(email: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function verifyEmailOtp(email: string, token: string): Promise<string | null> {
-  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+export async function verifyEmailOtp(
+  email: string,
+  token: string,
+): Promise<string | null> {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  });
   if (error) throw error;
   return data.user?.id ?? null;
 }
 
 /** True for Supabase auth errors, so callers can map `error.message` to a translated string. */
 export function isAuthError(error: unknown): error is AuthError {
-  return !!error && typeof error === 'object' && 'status' in (error as object) && 'message' in (error as object);
+  return (
+    !!error &&
+    typeof error === 'object' &&
+    'status' in (error as object) &&
+    'message' in (error as object)
+  );
 }
 
-export { useOnboardingStore, isDraftComplete, type OnboardingDraft } from './onboardingStore';
-export { applyOnboardingDraftToProfile, type ApplyDraftResult } from './applyOnboardingDraft';
+export {
+  useOnboardingStore,
+  isDraftComplete,
+  type OnboardingDraft,
+} from './onboardingStore';
+export {
+  applyOnboardingDraftToProfile,
+  type ApplyDraftResult,
+} from './applyOnboardingDraft';
 export { isProfileComplete } from './profileStatus';
 export { formatWeight, greetingPeriod, type GreetingPeriod } from './format';

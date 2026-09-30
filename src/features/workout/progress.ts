@@ -15,7 +15,10 @@ export interface ProgressPoint {
   setCount: number;
 }
 
-async function fetchProgress(userId: string, exerciseId: string): Promise<ProgressPoint[]> {
+async function fetchProgress(
+  userId: string,
+  exerciseId: string,
+): Promise<ProgressPoint[]> {
   const { data, error } = await supabase
     .from('v_exercise_progress')
     .select('*')
@@ -34,7 +37,10 @@ async function fetchProgress(userId: string, exerciseId: string): Promise<Progre
     }));
 }
 
-export function useExerciseProgress(exerciseId: string | null): { points: ProgressPoint[]; isLoading: boolean } {
+export function useExerciseProgress(exerciseId: string | null): {
+  points: ProgressPoint[];
+  isLoading: boolean;
+} {
   const { userId } = useSession();
   const query = useQuery({
     queryKey: ['workout', 'progress', userId, exerciseId],

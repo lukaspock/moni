@@ -21,7 +21,11 @@ describe('weeklyRateToDailyDelta', () => {
 describe('calculateBaseTarget', () => {
   it('applies an unclamped deficit', () => {
     // TDEE 2500, -0.3 kg/week -> delta = -330, within 25% guardrail (max -625)
-    const result = calculateBaseTarget({ tdee: 2500, sex: 'male', goalRateKgPerWeek: -0.3 });
+    const result = calculateBaseTarget({
+      tdee: 2500,
+      sex: 'male',
+      goalRateKgPerWeek: -0.3,
+    });
     expect(result.baseKcal).toBe(2170);
     expect(result.flags.deficitCapped).toBe(false);
     expect(result.flags.minimumFloorApplied).toBe(false);
@@ -29,7 +33,11 @@ describe('calculateBaseTarget', () => {
 
   it('caps a deficit exceeding 25% of TDEE', () => {
     // TDEE 2000, -1.5 kg/week -> raw delta = -1650, max deficit = -500
-    const result = calculateBaseTarget({ tdee: 2000, sex: 'male', goalRateKgPerWeek: -1.5 });
+    const result = calculateBaseTarget({
+      tdee: 2000,
+      sex: 'male',
+      goalRateKgPerWeek: -1.5,
+    });
     expect(result.flags.deficitCapped).toBe(true);
     expect(result.appliedDeltaKcal).toBe(-500);
     expect(result.baseKcal).toBe(1500);
@@ -37,28 +45,48 @@ describe('calculateBaseTarget', () => {
 
   it('caps a surplus above +500 kcal', () => {
     // TDEE 2200, +1.0 kg/week -> raw delta = +1100
-    const result = calculateBaseTarget({ tdee: 2200, sex: 'female', goalRateKgPerWeek: 1.0 });
+    const result = calculateBaseTarget({
+      tdee: 2200,
+      sex: 'female',
+      goalRateKgPerWeek: 1.0,
+    });
     expect(result.flags.surplusCapped).toBe(true);
     expect(result.appliedDeltaKcal).toBe(500);
     expect(result.baseKcal).toBe(2700);
   });
 
   it('raises the result to the male floor of 1500 kcal', () => {
-    const result = calculateBaseTarget({ tdee: 1400, sex: 'male', goalRateKgPerWeek: -1.0 });
+    const result = calculateBaseTarget({
+      tdee: 1400,
+      sex: 'male',
+      goalRateKgPerWeek: -1.0,
+    });
     expect(result.flags.minimumFloorApplied).toBe(true);
     expect(result.baseKcal).toBe(MIN_KCAL_MALE);
   });
 
   it('raises the result to the female floor of 1200 kcal', () => {
-    const result = calculateBaseTarget({ tdee: 1100, sex: 'female', goalRateKgPerWeek: -0.5 });
+    const result = calculateBaseTarget({
+      tdee: 1100,
+      sex: 'female',
+      goalRateKgPerWeek: -0.5,
+    });
     expect(result.flags.minimumFloorApplied).toBe(true);
     expect(result.baseKcal).toBe(MIN_KCAL_FEMALE);
   });
 
   it('applies no delta on maintenance', () => {
-    const result = calculateBaseTarget({ tdee: 2000, sex: 'male', goalRateKgPerWeek: 0 });
+    const result = calculateBaseTarget({
+      tdee: 2000,
+      sex: 'male',
+      goalRateKgPerWeek: 0,
+    });
     expect(result.baseKcal).toBe(2000);
-    expect(result.flags).toEqual({ deficitCapped: false, surplusCapped: false, minimumFloorApplied: false });
+    expect(result.flags).toEqual({
+      deficitCapped: false,
+      surplusCapped: false,
+      minimumFloorApplied: false,
+    });
   });
 });
 
@@ -72,7 +100,11 @@ describe('calculateWorkoutBonus', () => {
       workoutCompleted: false,
       isDayOver: false,
     });
-    expect(result).toEqual({ workoutBonusKcal: 0, isProvisional: false, dailyLimitKcal: base });
+    expect(result).toEqual({
+      workoutBonusKcal: 0,
+      isProvisional: false,
+      dailyLimitKcal: base,
+    });
   });
 
   it('gives a provisional bonus from expected_kcal on a pending planned training day', () => {

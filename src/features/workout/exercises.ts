@@ -10,12 +10,19 @@ import { supabase } from '@/lib/supabase';
 import { storage } from '@/lib/storage';
 import { enqueueUpsert, pendingUpsertsForTable } from '@/lib/outbox';
 import { useSession } from '@/features/auth';
-import { exerciseFromRow, type Exercise, type ExerciseCategory, type TrackingType } from './types';
+import {
+  exerciseFromRow,
+  type Exercise,
+  type ExerciseCategory,
+  type TrackingType,
+} from './types';
 
 const CATALOG_CACHE_KEY = 'workout:exerciseCatalog';
 
 /** Sensible default MET for a custom exercise when the user doesn't set one; strength MET is computed dynamically from session density (see src/domain/met.ts) so it stays null. */
-export function defaultMetForCategory(category: ExerciseCategory): number | null {
+export function defaultMetForCategory(
+  category: ExerciseCategory,
+): number | null {
   switch (category) {
     case 'strength':
       return null;
@@ -43,7 +50,10 @@ function writeCache(exercises: Exercise[]): void {
 }
 
 /** Overlays any not-yet-synced custom exercises from the outbox onto a list. */
-function withPendingExercises(base: Exercise[], userId: string | null): Exercise[] {
+function withPendingExercises(
+  base: Exercise[],
+  userId: string | null,
+): Exercise[] {
   const pending = pendingUpsertsForTable('exercises')
     .filter((p) => p.owner_id === userId)
     .map((p) =>
@@ -79,7 +89,11 @@ async function fetchCatalog(): Promise<Exercise[]> {
 }
 
 /** Loads the full catalog (global + own), caching to MMKV for offline use. Refetches in the background. */
-export function useExerciseCatalog(): { exercises: Exercise[]; isLoading: boolean; refresh: () => Promise<void> } {
+export function useExerciseCatalog(): {
+  exercises: Exercise[];
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+} {
   const { userId } = useSession();
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -88,7 +102,10 @@ export function useExerciseCatalog(): { exercises: Exercise[]; isLoading: boolea
     initialData: readCache,
   });
 
-  const exercises = useMemo(() => withPendingExercises(query.data ?? [], userId), [query.data, userId]);
+  const exercises = useMemo(
+    () => withPendingExercises(query.data ?? [], userId),
+    [query.data, userId],
+  );
 
   return {
     exercises,
@@ -109,7 +126,10 @@ export interface CreateCustomExerciseInput {
 }
 
 /** Creates a user-owned exercise. Client-generated UUID -> works offline via the outbox. */
-export function createCustomExercise(userId: string, input: CreateCustomExerciseInput): Exercise {
+export function createCustomExercise(
+  userId: string,
+  input: CreateCustomExerciseInput,
+): Exercise {
   const id = Crypto.randomUUID();
   const metValue = input.metValue ?? defaultMetForCategory(input.category);
   const payload = {
@@ -126,7 +146,10 @@ export function createCustomExercise(userId: string, input: CreateCustomExercise
   enqueueUpsert('exercises', id, payload);
 
   const cache = readCache();
-  const exercise = exerciseFromRow({ ...payload, created_at: new Date().toISOString() } as never);
+  const exercise = exerciseFromRow({
+    ...payload,
+    created_at: new Date().toISOString(),
+  } as never);
   writeCache([...cache, exercise]);
   return exercise;
 }
@@ -138,7 +161,10 @@ export function createCustomExercise(userId: string, input: CreateCustomExercise
  */
 type TranslateFn = (key: any) => string;
 
-export function exerciseDisplayName(exercise: Exercise, t: TranslateFn): string {
+export function exerciseDisplayName(
+  exercise: Exercise,
+  t: TranslateFn,
+): string {
   if (exercise.nameKey) return t(exercise.nameKey);
   return exercise.customName ?? '?';
 }

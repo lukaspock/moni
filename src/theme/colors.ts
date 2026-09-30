@@ -11,10 +11,12 @@ type ThemeColor = { platform: string; light: string; dark: string };
 export type ThemeColorName = keyof typeof theme;
 
 /** iOS semantic color name, e.g. for `SymbolView tintColor` or `PlatformColor(...)`. */
-export const platformColorName = (name: ThemeColorName): string => theme[name].platform;
+export const platformColorName = (name: ThemeColorName): string =>
+  theme[name].platform;
 
 /** `PlatformColor` handle for RN styles (auto Light/Dark). */
-export const themeColor = (name: ThemeColorName) => PlatformColor(theme[name].platform);
+export const themeColor = (name: ThemeColorName) =>
+  PlatformColor(theme[name].platform);
 
 /**
  * Concrete hex for the current color scheme — for Skia canvases, which can't

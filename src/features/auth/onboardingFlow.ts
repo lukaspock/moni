@@ -37,8 +37,12 @@ export type OnboardingFlowContext = {
   healthAvailable: boolean;
 };
 
-export function isStepActive(step: OnboardingStep, ctx: OnboardingFlowContext): boolean {
-  if (step === 'target-weight' || step === 'rate') return ctx.goal !== 'maintain';
+export function isStepActive(
+  step: OnboardingStep,
+  ctx: OnboardingFlowContext,
+): boolean {
+  if (step === 'target-weight' || step === 'rate')
+    return ctx.goal !== 'maintain';
   if (step === 'health') return ctx.healthAvailable;
   return true;
 }
@@ -48,8 +52,12 @@ export function activeSteps(ctx: OnboardingFlowContext): OnboardingStep[] {
 }
 
 /** Next step after `current` ('welcome' = the intro screen); null = flow finished → sign-up. */
-export function nextOnboardingStep(current: OnboardingStep | 'welcome', ctx: OnboardingFlowContext): OnboardingStep | null {
-  const start = current === 'welcome' ? 0 : ONBOARDING_STEPS.indexOf(current) + 1;
+export function nextOnboardingStep(
+  current: OnboardingStep | 'welcome',
+  ctx: OnboardingFlowContext,
+): OnboardingStep | null {
+  const start =
+    current === 'welcome' ? 0 : ONBOARDING_STEPS.indexOf(current) + 1;
   for (let i = start; i < ONBOARDING_STEPS.length; i += 1) {
     if (isStepActive(ONBOARDING_STEPS[i], ctx)) return ONBOARDING_STEPS[i];
   }
@@ -57,7 +65,10 @@ export function nextOnboardingStep(current: OnboardingStep | 'welcome', ctx: Onb
 }
 
 /** 0..1 progress for the top bar (step n of N, counting only active steps). */
-export function onboardingProgress(step: string | null, ctx: OnboardingFlowContext): number {
+export function onboardingProgress(
+  step: string | null,
+  ctx: OnboardingFlowContext,
+): number {
   const steps = activeSteps(ctx);
   const index = steps.indexOf(step as OnboardingStep);
   if (index < 0) return 0;

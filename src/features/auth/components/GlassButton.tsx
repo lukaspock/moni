@@ -41,17 +41,27 @@ export function GlassButton({
       accessibilityState={{ disabled: isDisabled }}
       disabled={isDisabled}
       onPress={() => {
-        void Haptics.impactAsync(isPrimary ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light);
+        void Haptics.impactAsync(
+          isPrimary
+            ? Haptics.ImpactFeedbackStyle.Medium
+            : Haptics.ImpactFeedbackStyle.Light,
+        );
         onPress();
       }}
       className={`h-14 w-full flex-row items-center justify-center rounded-full ${
-        isPrimary ? 'bg-tint' : 'border border-separator bg-secondary-system-background'
+        isPrimary
+          ? 'bg-tint'
+          : 'border-separator bg-secondary-system-background border'
       } ${isDisabled ? 'opacity-40' : ''}`}
     >
       {loading ? (
         <ActivityIndicator color={isPrimary ? 'white' : undefined} />
       ) : (
-        <Text className={`text-lg font-semibold ${isPrimary ? 'text-white' : 'text-label'}`}>{label}</Text>
+        <Text
+          className={`text-lg font-semibold ${isPrimary ? 'text-white' : 'text-label'}`}
+        >
+          {label}
+        </Text>
       )}
     </Pressable>
   );

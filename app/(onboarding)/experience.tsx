@@ -27,7 +27,9 @@ export default function ExperienceScreen() {
           value: 'intermediate',
           symbol: 'dumbbell.fill',
           label: t('account.onboarding.experience.intermediate'),
-          description: t('account.onboarding.experience.intermediateDescription'),
+          description: t(
+            'account.onboarding.experience.intermediateDescription',
+          ),
         },
         {
           value: 'advanced',

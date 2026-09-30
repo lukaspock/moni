@@ -3,7 +3,12 @@ import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, useReducedMotion, ZoomIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  useReducedMotion,
+  ZoomIn,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useOnboardingStore } from '@/features/auth';
@@ -42,11 +47,18 @@ export default function CalculatingScreen() {
       );
     }
     timers.push(
-      setTimeout(() => {
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }, STEP_COUNT * stepMs + 150),
+      setTimeout(
+        () => {
+          void Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
+        },
+        STEP_COUNT * stepMs + 150,
+      ),
     );
-    timers.push(setTimeout(() => goNext({ replace: true }), STEP_COUNT * stepMs + 650));
+    timers.push(
+      setTimeout(() => goNext({ replace: true }), STEP_COUNT * stepMs + 650),
+    );
     return () => timers.forEach(clearTimeout);
   }, [goNext, stepMs]);
 
@@ -60,14 +72,18 @@ export default function CalculatingScreen() {
 
   return (
     <View
-      className="flex-1 justify-center gap-10 bg-system-background px-8"
+      className="bg-system-background flex-1 justify-center gap-10 px-8"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <View className="items-center gap-4">
-        <View className="h-28 w-28 items-center justify-center rounded-full bg-secondary-system-background">
+        <View className="bg-secondary-system-background h-28 w-28 items-center justify-center rounded-full">
           {finished ? (
             <Animated.View entering={ZoomIn.duration(250)}>
-              <SymbolView name="checkmark.circle.fill" size={64} tintColor={themeColor('accent')} />
+              <SymbolView
+                name="checkmark.circle.fill"
+                size={64}
+                tintColor={themeColor('accent')}
+              />
             </Animated.View>
           ) : (
             <CountUpText
@@ -75,11 +91,14 @@ export default function CalculatingScreen() {
               startFrom={0}
               duration={STEP_COUNT * stepMs}
               format={(v) => `${Math.round(v)}%`}
-              className="text-3xl font-bold text-tint"
+              className="text-tint text-3xl font-bold"
             />
           )}
         </View>
-        <Animated.Text entering={FadeIn.duration(250)} className="text-center text-2xl font-bold text-label">
+        <Animated.Text
+          entering={FadeIn.duration(250)}
+          className="text-label text-center text-2xl font-bold"
+        >
           {finished
             ? t('account.onboarding.calculating.done')
             : name
@@ -101,15 +120,21 @@ export default function CalculatingScreen() {
               <View className="h-7 w-7 items-center justify-center">
                 {isDone ? (
                   <Animated.View entering={ZoomIn.duration(200)}>
-                    <SymbolView name="checkmark.circle.fill" size={24} tintColor={themeColor('accent')} />
+                    <SymbolView
+                      name="checkmark.circle.fill"
+                      size={24}
+                      tintColor={themeColor('accent')}
+                    />
                   </Animated.View>
                 ) : isActive ? (
                   <ActivityIndicator />
                 ) : (
-                  <View className="h-5 w-5 rounded-full border-2 border-separator" />
+                  <View className="border-separator h-5 w-5 rounded-full border-2" />
                 )}
               </View>
-              <Text className={`text-base ${isDone || isActive ? 'font-semibold text-label' : 'text-secondary-label'}`}>
+              <Text
+                className={`text-base ${isDone || isActive ? 'text-label font-semibold' : 'text-secondary-label'}`}
+              >
                 {label}
               </Text>
             </Animated.View>

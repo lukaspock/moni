@@ -93,7 +93,9 @@ export function categoryForActivityType(activityType: number): WorkoutCategory {
 }
 
 /** møni category → HKWorkoutActivityType used when writing a møni workout to Health. */
-export function activityTypeForCategory(category: WorkoutCategory): WorkoutActivityType {
+export function activityTypeForCategory(
+  category: WorkoutCategory,
+): WorkoutActivityType {
   switch (category) {
     case 'strength':
       return WorkoutActivityType.traditionalStrengthTraining;
@@ -122,8 +124,13 @@ export function isOwnSample(
   metadata: Record<string, unknown> | null | undefined,
   ownBundleId: string | null | undefined,
 ): boolean {
-  if (ownBundleId && sourceBundleId && sourceBundleId === ownBundleId) return true;
-  if (metadata && (MOENI_WORKOUT_ID_METADATA_KEY in metadata || MOENI_FOOD_LOG_ID_METADATA_KEY in metadata)) {
+  if (ownBundleId && sourceBundleId && sourceBundleId === ownBundleId)
+    return true;
+  if (
+    metadata &&
+    (MOENI_WORKOUT_ID_METADATA_KEY in metadata ||
+      MOENI_FOOD_LOG_ID_METADATA_KEY in metadata)
+  ) {
     return true;
   }
   return false;
@@ -154,7 +161,12 @@ export interface ExistingWorkout {
 }
 
 /** Overlap of two time ranges as a share (0…1) of the shorter one. */
-export function overlapShare(aStart: string, aEnd: string | null, bStart: string, bEnd: string | null): number {
+export function overlapShare(
+  aStart: string,
+  aEnd: string | null,
+  bStart: string,
+  bEnd: string | null,
+): number {
   const a0 = Date.parse(aStart);
   const b0 = Date.parse(bStart);
   // An open-ended row (shouldn't happen for finished workouts) counts as 1 min long.
@@ -176,7 +188,11 @@ export type WorkoutImportAction =
    * HealthKit uuid on it (PLAN §6.5).
    */
   | { kind: 'merge'; workout: HealthWorkout; targetId: string }
-  | { kind: 'skip'; workout: HealthWorkout; reason: 'own' | 'known' | 'duplicate' };
+  | {
+      kind: 'skip';
+      workout: HealthWorkout;
+      reason: 'own' | 'known' | 'duplicate';
+    };
 
 /**
  * Decides, per HealthKit workout, whether to insert, merge into an existing
@@ -196,7 +212,9 @@ export function planWorkoutImport(
   ownBundleId: string | null,
 ): WorkoutImportAction[] {
   const known: ExistingWorkout[] = existing.map((e) => ({ ...e }));
-  const sorted = [...healthWorkouts].sort((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt));
+  const sorted = [...healthWorkouts].sort(
+    (a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt),
+  );
   const actions: WorkoutImportAction[] = [];
 
   for (const workout of sorted) {
@@ -214,13 +232,24 @@ export function planWorkoutImport(
 
     let best: { row: ExistingWorkout; share: number } | null = null;
     for (const row of known) {
-      const share = overlapShare(workout.startedAt, workout.endedAt, row.startedAt, row.endedAt);
-      if (share >= OVERLAP_MIN_SHARE && (!best || share > best.share)) best = { row, share };
+      const share = overlapShare(
+        workout.startedAt,
+        workout.endedAt,
+        row.startedAt,
+        row.endedAt,
+      );
+      if (share >= OVERLAP_MIN_SHARE && (!best || share > best.share))
+        best = { row, share };
     }
 
     if (!best) {
       actions.push({ kind: 'insert', workout });
-      known.push({ id: `hk:${workout.uuid}`, startedAt: workout.startedAt, endedAt: workout.endedAt, healthkitUuid: workout.uuid });
+      known.push({
+        id: `hk:${workout.uuid}`,
+        startedAt: workout.startedAt,
+        endedAt: workout.endedAt,
+        healthkitUuid: workout.uuid,
+      });
       continue;
     }
 
@@ -241,7 +270,10 @@ export function planWorkoutImport(
 // ---------------------------------------------------------------------------
 
 /** Name used to derive an imported workout's row id (see `uuidFromSha1Hex`). */
-export function importedWorkoutIdName(userId: string, healthkitUuid: string): string {
+export function importedWorkoutIdName(
+  userId: string,
+  healthkitUuid: string,
+): string {
   return `moeni:healthkit-workout:${userId}:${healthkitUuid}`;
 }
 
@@ -255,8 +287,12 @@ export function importedWorkoutIdName(userId: string, healthkitUuid: string): st
 export function uuidFromSha1Hex(hex: string): string {
   const h = hex.toLowerCase().replace(/[^0-9a-f]/g, '');
   if (h.length < 32) throw new Error('uuidFromSha1Hex: digest too short');
-  const timeHiAndVersion = ((parseInt(h.slice(12, 16), 16) & 0x0fff) | 0x5000).toString(16).padStart(4, '0');
-  const clockSeq = ((parseInt(h.slice(16, 20), 16) & 0x3fff) | 0x8000).toString(16).padStart(4, '0');
+  const timeHiAndVersion = ((parseInt(h.slice(12, 16), 16) & 0x0fff) | 0x5000)
+    .toString(16)
+    .padStart(4, '0');
+  const clockSeq = ((parseInt(h.slice(16, 20), 16) & 0x3fff) | 0x8000)
+    .toString(16)
+    .padStart(4, '0');
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${timeHiAndVersion}-${clockSeq}-${h.slice(20, 32)}`;
 }
 
@@ -305,7 +341,10 @@ export function mapBodyMassSamples(
 // ---------------------------------------------------------------------------
 
 /** MMKV key for a per-user anchored-query anchor. */
-export function anchorStorageKey(userId: string, kind: 'workouts' | 'bodyMass'): string {
+export function anchorStorageKey(
+  userId: string,
+  kind: 'workouts' | 'bodyMass',
+): string {
   return `health:anchor:${userId}:${kind}`;
 }
 
@@ -315,8 +354,13 @@ export function initialImportStart(now: Date): Date {
 }
 
 /** Throttle for automatic syncs; manual "sync now" bypasses it. */
-export function shouldAutoSync(lastAttemptMs: number | null, nowMs: number): boolean {
-  return lastAttemptMs === null || nowMs - lastAttemptMs >= AUTO_SYNC_MIN_INTERVAL_MS;
+export function shouldAutoSync(
+  lastAttemptMs: number | null,
+  nowMs: number,
+): boolean {
+  return (
+    lastAttemptMs === null || nowMs - lastAttemptMs >= AUTO_SYNC_MIN_INTERVAL_MS
+  );
 }
 
 /**
@@ -324,6 +368,9 @@ export function shouldAutoSync(lastAttemptMs: number | null, nowMs: number): boo
  * sample with the same identifier and a higher `HKMetadataKeySyncVersion`
  * replaces the previous one (edits), and deletes filter on it.
  */
-export function foodSyncIdentifier(foodLogId: string, nutrient: 'kcal' | 'protein' | 'carbs' | 'fat'): string {
+export function foodSyncIdentifier(
+  foodLogId: string,
+  nutrient: 'kcal' | 'protein' | 'carbs' | 'fat',
+): string {
   return `moeni:food:${foodLogId}:${nutrient}`;
 }

@@ -52,13 +52,17 @@ export default function BodyScreen() {
             })()
           : { feet: '', inches: '' },
       );
-      setWeightImperialText(draft.weightKg ? String(roundTo(kgToLb(draft.weightKg), 1)) : '');
+      setWeightImperialText(
+        draft.weightKg ? String(roundTo(kgToLb(draft.weightKg), 1)) : '',
+      );
     }
   }
 
   function onHeightCmChange(text: string) {
     const value = Number(text.replace(',', '.'));
-    update({ heightCm: text.trim() === '' || Number.isNaN(value) ? null : value });
+    update({
+      heightCm: text.trim() === '' || Number.isNaN(value) ? null : value,
+    });
   }
 
   function onHeightImperialChange(feetText: string, inchesText: string) {
@@ -74,13 +78,18 @@ export default function BodyScreen() {
 
   function onWeightKgChange(text: string) {
     const value = Number(text.replace(',', '.'));
-    update({ weightKg: text.trim() === '' || Number.isNaN(value) ? null : value });
+    update({
+      weightKg: text.trim() === '' || Number.isNaN(value) ? null : value,
+    });
   }
 
   function onWeightImperialChange(text: string) {
     setWeightImperialText(text);
     const lb = Number(text.replace(',', '.'));
-    update({ weightKg: text.trim() === '' || Number.isNaN(lb) ? null : roundTo(lbToKg(lb), 1) });
+    update({
+      weightKg:
+        text.trim() === '' || Number.isNaN(lb) ? null : roundTo(lbToKg(lb), 1),
+    });
   }
 
   return (
@@ -88,7 +97,10 @@ export default function BodyScreen() {
       title={t('account.onboarding.body.title')}
       subtitle={t('account.onboarding.body.subtitle')}
       continueLabel={t('account.common.continue')}
-      continueDisabled={!isPlausibleHeightCm(draft.heightCm) || !isPlausibleWeightKg(draft.weightKg)}
+      continueDisabled={
+        !isPlausibleHeightCm(draft.heightCm) ||
+        !isPlausibleWeightKg(draft.weightKg)
+      }
       onContinue={() => goNext()}
     >
       <Host matchContents>
@@ -97,28 +109,38 @@ export default function BodyScreen() {
           onSelectionChange={(v) => setUnitSystem(v as UnitSystem)}
           modifiers={[pickerStyle('segmented')]}
         >
-          <UIText modifiers={[tag('metric')]}>{t('account.onboarding.body.unitMetric')}</UIText>
-          <UIText modifiers={[tag('imperial')]}>{t('account.onboarding.body.unitImperial')}</UIText>
+          <UIText modifiers={[tag('metric')]}>
+            {t('account.onboarding.body.unitMetric')}
+          </UIText>
+          <UIText modifiers={[tag('imperial')]}>
+            {t('account.onboarding.body.unitImperial')}
+          </UIText>
         </Picker>
       </Host>
 
       <View className="gap-2">
-        <Text className="text-sm font-medium text-secondary-label">{t('account.onboarding.body.heightLabel')}</Text>
+        <Text className="text-secondary-label text-sm font-medium">
+          {t('account.onboarding.body.heightLabel')}
+        </Text>
         {isImperial ? (
           <View className="flex-row gap-3">
             <TextInput
               value={heightImperialText.feet}
-              onChangeText={(txt) => onHeightImperialChange(txt, heightImperialText.inches)}
+              onChangeText={(txt) =>
+                onHeightImperialChange(txt, heightImperialText.inches)
+              }
               keyboardType="number-pad"
               placeholder="ft"
-              className="h-14 flex-1 rounded-xl border border-separator px-4 text-lg text-label"
+              className="border-separator text-label h-14 flex-1 rounded-xl border px-4 text-lg"
             />
             <TextInput
               value={heightImperialText.inches}
-              onChangeText={(txt) => onHeightImperialChange(heightImperialText.feet, txt)}
+              onChangeText={(txt) =>
+                onHeightImperialChange(heightImperialText.feet, txt)
+              }
               keyboardType="number-pad"
               placeholder="in"
-              className="h-14 flex-1 rounded-xl border border-separator px-4 text-lg text-label"
+              className="border-separator text-label h-14 flex-1 rounded-xl border px-4 text-lg"
             />
           </View>
         ) : (
@@ -127,19 +149,27 @@ export default function BodyScreen() {
             onChangeText={onHeightCmChange}
             keyboardType="decimal-pad"
             placeholder="cm"
-            className="h-14 rounded-xl border border-separator px-4 text-lg text-label"
+            className="border-separator text-label h-14 rounded-xl border px-4 text-lg"
           />
         )}
       </View>
 
       <View className="gap-2">
-        <Text className="text-sm font-medium text-secondary-label">{t('account.onboarding.body.weightLabel')}</Text>
+        <Text className="text-secondary-label text-sm font-medium">
+          {t('account.onboarding.body.weightLabel')}
+        </Text>
         <TextInput
-          value={isImperial ? weightImperialText : draft.weightKg != null ? String(draft.weightKg) : ''}
+          value={
+            isImperial
+              ? weightImperialText
+              : draft.weightKg != null
+                ? String(draft.weightKg)
+                : ''
+          }
           onChangeText={isImperial ? onWeightImperialChange : onWeightKgChange}
           keyboardType="decimal-pad"
           placeholder={isImperial ? 'lb' : 'kg'}
-          className="h-14 rounded-xl border border-separator px-4 text-lg text-label"
+          className="border-separator text-label h-14 rounded-xl border px-4 text-lg"
         />
       </View>
     </OnboardingScreen>

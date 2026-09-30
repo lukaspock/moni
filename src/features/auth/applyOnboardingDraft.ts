@@ -26,7 +26,9 @@ let inFlight: Promise<ApplyDraftResult> | null = null;
  *   calls share one in-flight promise, and the writes are upserts (or
  *   existence-checked inserts), so a retry after a crash never duplicates rows.
  */
-export function applyOnboardingDraftToProfile(userId: string): Promise<ApplyDraftResult> {
+export function applyOnboardingDraftToProfile(
+  userId: string,
+): Promise<ApplyDraftResult> {
   if (!inFlight) {
     inFlight = applyImpl(userId).finally(() => {
       inFlight = null;
@@ -36,7 +38,8 @@ export function applyOnboardingDraftToProfile(userId: string): Promise<ApplyDraf
 }
 
 async function applyImpl(userId: string): Promise<ApplyDraftResult> {
-  const { draft, appliedToProfile, markAppliedToProfile } = useOnboardingStore.getState();
+  const { draft, appliedToProfile, markAppliedToProfile } =
+    useOnboardingStore.getState();
   if (appliedToProfile || !isDraftComplete(draft)) return 'nothingToApply';
 
   const { data: existing, error: existingError } = await supabase
@@ -52,14 +55,17 @@ async function applyImpl(userId: string): Promise<ApplyDraftResult> {
 
   const { error: profileError } = await supabase.from('profiles').upsert({
     id: userId,
-    display_name: draft.displayName.trim() ? draft.displayName.trim().slice(0, 40) : null,
+    display_name: draft.displayName.trim()
+      ? draft.displayName.trim().slice(0, 40)
+      : null,
     motivation: draft.motivation,
     sex: draft.sex,
     birth_date: draft.birthDate,
     height_cm: draft.heightCm,
     activity_level: draft.activityLevel,
     goal: draft.goal,
-    goal_rate_kg_per_week: draft.goal === 'maintain' ? 0 : draft.goalRateKgPerWeek,
+    goal_rate_kg_per_week:
+      draft.goal === 'maintain' ? 0 : draft.goalRateKgPerWeek,
     target_weight_kg: draft.goal === 'maintain' ? null : draft.targetWeightKg,
     training_experience: draft.trainingExperience,
     workouts_per_week: draft.workoutsPerWeek,
@@ -80,7 +86,9 @@ async function applyImpl(userId: string): Promise<ApplyDraftResult> {
       routine_id: null,
       expected_kcal: expectedKcal,
     }));
-    const { error: planError } = await supabase.from('training_plan_days').upsert(rows, { onConflict: 'user_id,weekday' });
+    const { error: planError } = await supabase
+      .from('training_plan_days')
+      .upsert(rows, { onConflict: 'user_id,weekday' });
     if (planError) throw planError;
   }
 

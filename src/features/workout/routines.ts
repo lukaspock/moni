@@ -11,11 +11,19 @@ import { enqueueDelete, enqueueUpsert } from '@/lib/outbox';
 import { useSession } from '@/features/auth';
 import type { Routine, RoutineExercise } from './types';
 
-export const routinesQueryKey = (userId: string | null) => ['workout', 'routines', userId] as const;
+export const routinesQueryKey = (userId: string | null) =>
+  ['workout', 'routines', userId] as const;
 
 async function fetchRoutines(userId: string): Promise<Routine[]> {
-  const [{ data: routineRows, error: rErr }, { data: exerciseRows, error: eErr }] = await Promise.all([
-    supabase.from('routines').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
+  const [
+    { data: routineRows, error: rErr },
+    { data: exerciseRows, error: eErr },
+  ] = await Promise.all([
+    supabase
+      .from('routines')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true }),
     supabase
       .from('routine_exercises')
       .select('*, routines!inner(user_id)')
@@ -47,7 +55,11 @@ async function fetchRoutines(userId: string): Promise<Routine[]> {
   }));
 }
 
-export function useRoutines(): { routines: Routine[]; isLoading: boolean; refresh: () => void } {
+export function useRoutines(): {
+  routines: Routine[];
+  isLoading: boolean;
+  refresh: () => void;
+} {
   const { userId } = useSession();
   const query = useQuery({
     queryKey: routinesQueryKey(userId),
@@ -72,15 +84,25 @@ export function useSaveRoutine() {
   const { userId } = useSession();
   const queryClient = useQueryClient();
 
-  return async (params: { id?: string; name: string; exercises: RoutineExerciseInput[] }): Promise<string> => {
+  return async (params: {
+    id?: string;
+    name: string;
+    exercises: RoutineExerciseInput[];
+  }): Promise<string> => {
     if (!userId) throw new Error('not signed in');
     const routineId = params.id ?? Crypto.randomUUID();
 
-    enqueueUpsert('routines', routineId, { user_id: userId, name: params.name });
+    enqueueUpsert('routines', routineId, {
+      user_id: userId,
+      name: params.name,
+    });
 
     // Replace the routine's exercise list: delete existing rows we know about, then upsert the new set.
     if (params.id) {
-      const { data: existing } = await supabase.from('routine_exercises').select('id').eq('routine_id', routineId);
+      const { data: existing } = await supabase
+        .from('routine_exercises')
+        .select('id')
+        .eq('routine_id', routineId);
       for (const row of existing ?? []) {
         enqueueDelete('routine_exercises', row.id);
       }

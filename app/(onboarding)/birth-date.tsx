@@ -1,5 +1,10 @@
 import { DatePicker, Host } from '@expo/ui/swift-ui';
-import { accessibilityLabel, datePickerStyle, environment, labelsHidden } from '@expo/ui/swift-ui/modifiers';
+import {
+  accessibilityLabel,
+  datePickerStyle,
+  environment,
+  labelsHidden,
+} from '@expo/ui/swift-ui/modifiers';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -34,7 +39,9 @@ export default function BirthDateScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount only
   }, []);
 
-  const selected = birthDate ? new Date(`${birthDate}T00:00:00`) : DEFAULT_BIRTH_DATE;
+  const selected = birthDate
+    ? new Date(`${birthDate}T00:00:00`)
+    : DEFAULT_BIRTH_DATE;
   const age = ageFromBirthDate(selected);
 
   return (
@@ -49,8 +56,10 @@ export default function BirthDateScreen() {
         <CountUpText
           value={age}
           duration={250}
-          format={(v) => t('account.onboarding.birthDate.age', { value: Math.round(v) })}
-          className="text-4xl font-bold text-tint"
+          format={(v) =>
+            t('account.onboarding.birthDate.age', { value: Math.round(v) })
+          }
+          className="text-tint text-4xl font-bold"
         />
       </View>
       <Host matchContents style={{ alignSelf: 'center' }}>

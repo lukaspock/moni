@@ -1,14 +1,17 @@
 import type { Database } from '@/types/database';
 
 export type ExerciseCategory = 'strength' | 'cardio' | 'sport' | 'other';
-export type TrackingType = 'weight_reps' | 'reps' | 'duration' | 'distance_duration';
+export type TrackingType =
+  'weight_reps' | 'reps' | 'duration' | 'distance_duration';
 export type WorkoutCategory = ExerciseCategory;
 export type KcalSource = 'met' | 'healthkit' | 'manual';
 
 export type ExerciseRow = Database['public']['Tables']['exercises']['Row'];
 export type RoutineRow = Database['public']['Tables']['routines']['Row'];
-export type RoutineExerciseRow = Database['public']['Tables']['routine_exercises']['Row'];
-export type TrainingPlanDayRow = Database['public']['Tables']['training_plan_days']['Row'];
+export type RoutineExerciseRow =
+  Database['public']['Tables']['routine_exercises']['Row'];
+export type TrainingPlanDayRow =
+  Database['public']['Tables']['training_plan_days']['Row'];
 export type WorkoutRow = Database['public']['Tables']['workouts']['Row'];
 export type WorkoutSetRow = Database['public']['Tables']['workout_sets']['Row'];
 

@@ -2,7 +2,14 @@ import * as Haptics from 'expo-haptics';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useEffect } from 'react';
 import { PlatformColor, Pressable, Text, View } from 'react-native';
-import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { themeColor } from '@/theme/colors';
 
@@ -37,14 +44,22 @@ export function OptionCard({
 
   useEffect(() => {
     if (selected) {
-      scale.value = withSequence(withTiming(0.97, { duration: 70 }), withSpring(1, { damping: 12, stiffness: 260 }));
+      scale.value = withSequence(
+        withTiming(0.97, { duration: 70 }),
+        withSpring(1, { damping: 12, stiffness: 260 }),
+      );
     }
   }, [selected, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <Animated.View entering={FadeInDown.duration(260).delay(60 + index * 45)} style={animatedStyle}>
+    <Animated.View
+      entering={FadeInDown.duration(260).delay(60 + index * 45)}
+      style={animatedStyle}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ selected }}
@@ -54,17 +69,23 @@ export function OptionCard({
           onPress();
         }}
         className={`min-h-16 flex-row items-center gap-4 rounded-2xl border-2 px-4 py-4 ${
-          selected ? 'border-tint bg-secondary-system-background' : 'border-separator bg-system-background'
+          selected
+            ? 'border-tint bg-secondary-system-background'
+            : 'border-separator bg-system-background'
         }`}
       >
         {symbol || emoji ? (
-          <View className="h-11 w-11 items-center justify-center rounded-xl bg-secondary-system-background">
+          <View className="bg-secondary-system-background h-11 w-11 items-center justify-center rounded-xl">
             {symbol ? (
               <SymbolView
                 name={symbol}
                 size={24}
                 type="hierarchical"
-                tintColor={selected ? themeColor('accent') : PlatformColor('secondaryLabel')}
+                tintColor={
+                  selected
+                    ? themeColor('accent')
+                    : PlatformColor('secondaryLabel')
+                }
               />
             ) : (
               <Text className="text-2xl">{emoji}</Text>
@@ -72,15 +93,24 @@ export function OptionCard({
           </View>
         ) : null}
         <View className="flex-1 gap-0.5">
-          <Text className="text-base font-semibold text-label">{label}</Text>
-          {description ? <Text className="text-sm text-secondary-label">{description}</Text> : null}
+          <Text className="text-label text-base font-semibold">{label}</Text>
+          {description ? (
+            <Text className="text-secondary-label text-sm">{description}</Text>
+          ) : null}
         </View>
         <View
           className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
             selected ? 'border-tint bg-tint' : 'border-separator'
           }`}
         >
-          {selected ? <SymbolView name="checkmark" size={12} weight="bold" tintColor="white" /> : null}
+          {selected ? (
+            <SymbolView
+              name="checkmark"
+              size={12}
+              weight="bold"
+              tintColor="white"
+            />
+          ) : null}
         </View>
       </Pressable>
     </Animated.View>

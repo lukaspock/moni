@@ -20,7 +20,10 @@ import {
   workoutDaysPerWeek,
   type WeightRange,
 } from '@/domain';
-import { DailyKcalBars, type DailyKcalBar } from '@/components/charts/DailyKcalBars';
+import {
+  DailyKcalBars,
+  type DailyKcalBar,
+} from '@/components/charts/DailyKcalBars';
 import { WeeklyBars } from '@/components/charts/WeeklyBars';
 import { WeightTrendChart } from '@/components/charts/WeightTrendChart';
 import {
@@ -29,7 +32,11 @@ import {
   useWeightInput,
   useWeightTrend,
 } from '@/features/insights';
-import { EmptyState, InsightCard, InsightRow } from '@/features/insights/components';
+import {
+  EmptyState,
+  InsightCard,
+  InsightRow,
+} from '@/features/insights/components';
 import { useProfile } from '@/features/targets';
 import { exerciseDisplayName, useExerciseCatalog } from '@/features/workout';
 import { toISODate } from '@/lib/date';
@@ -43,7 +50,15 @@ function formatSigned(value: number, decimals = 1): string {
   return r > 0 ? `+${r}` : String(r);
 }
 
-function Legend({ color, label, dashed }: { color: string; label: string; dashed?: boolean }) {
+function Legend({
+  color,
+  label,
+  dashed,
+}: {
+  color: string;
+  label: string;
+  dashed?: boolean;
+}) {
   return (
     <View className="flex-row items-center gap-1.5">
       <View
@@ -55,7 +70,7 @@ function Legend({ color, label, dashed }: { color: string; label: string; dashed
           borderColor: color,
         }}
       />
-      <Text className="text-xs text-secondary-label">{label}</Text>
+      <Text className="text-secondary-label text-xs">{label}</Text>
     </View>
   );
 }
@@ -71,7 +86,11 @@ function Segmented({
 }) {
   return (
     <Host matchContents style={{ width: '100%' }}>
-      <Picker selection={value} onSelectionChange={(v) => onChange(String(v))} modifiers={[pickerStyle('segmented')]}>
+      <Picker
+        selection={value}
+        onSelectionChange={(v) => onChange(String(v))}
+        modifiers={[pickerStyle('segmented')]}
+      >
         {options.map((o) => (
           <SwiftUIText key={o.value} modifiers={[tag(o.value)]}>
             {o.label}
@@ -100,13 +119,20 @@ export default function InsightsScreen() {
   const fmt = (kg: number) => String(toDisplay(kg));
 
   // --- weight ---
-  const rangeRaw = useMemo(() => filterByRange(raw, range, today), [raw, range, today]);
-  const rangeTrend = useMemo(() => filterByRange(trend, range, today), [trend, range, today]);
+  const rangeRaw = useMemo(
+    () => filterByRange(raw, range, today),
+    [raw, range, today],
+  );
+  const rangeTrend = useMemo(
+    () => filterByRange(trend, range, today),
+    [trend, range, today],
+  );
   const rateKg = useMemo(() => weeklyRateKg(trend), [trend]);
   const latestEntry = entries.length > 0 ? entries[entries.length - 1] : null;
   const trendNow = trend.length > 0 ? trend[trend.length - 1].weightKg : null;
   const targetKg = profile?.target_weight_kg ?? null;
-  const rateDisplay = rateKg === null ? null : roundTo(isImperial ? kgToLb(rateKg) : rateKg, 2);
+  const rateDisplay =
+    rateKg === null ? null : roundTo(isImperial ? kgToLb(rateKg) : rateKg, 2);
 
   // --- calories ---
   const kcalDays = useMemo(() => {
@@ -124,7 +150,9 @@ export default function InsightsScreen() {
         key: date,
         label:
           n === 7
-            ? new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: 'narrow' })
+            ? new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
+                weekday: 'narrow',
+              })
             : '',
         eatenKcal: d?.kcalEaten ?? 0,
         targetKcal: d?.targetKcal ?? null,
@@ -134,33 +162,49 @@ export default function InsightsScreen() {
   }, [kcalDays, kcalRange, today]);
 
   // --- training / consistency ---
-  const weeklyWorkouts = useMemo(() => workoutDaysPerWeek(days, today, 4), [days, today]);
-  const totalWorkoutDays = weeklyWorkouts.reduce((a, b) => a + b, 0);
-  const loggedStreak = useMemo(
-    () => currentStreak(new Set(days.filter((d) => d.logged).map((d) => d.date)), today),
+  const weeklyWorkouts = useMemo(
+    () => workoutDaysPerWeek(days, today, 4),
     [days, today],
   );
-  const weekLabels = [
-    t('insights.training.thisWeek'),
-  ];
+  const totalWorkoutDays = weeklyWorkouts.reduce((a, b) => a + b, 0);
+  const loggedStreak = useMemo(
+    () =>
+      currentStreak(
+        new Set(days.filter((d) => d.logged).map((d) => d.date)),
+        today,
+      ),
+    [days, today],
+  );
+  const weekLabels = [t('insights.training.thisWeek')];
   const weekBarLabels = weeklyWorkouts.map((_, i) =>
-    i === weeklyWorkouts.length - 1 ? weekLabels[0] : `-${weeklyWorkouts.length - 1 - i}`,
+    i === weeklyWorkouts.length - 1
+      ? weekLabels[0]
+      : `-${weeklyWorkouts.length - 1 - i}`,
   );
 
   // --- strength ---
   const exerciseName = (id: string) => {
     const ex = exercises.find((e) => e.id === id);
-    return ex ? exerciseDisplayName(ex, t) : t('insights.strength.exerciseFallback');
+    return ex
+      ? exerciseDisplayName(ex, t)
+      : t('insights.strength.exerciseFallback');
   };
 
   // --- correlations ---
-  const enoughDays = days.filter((d) => d.logged).length >= MIN_CORRELATION_DAYS;
-  const comparison = useMemo(() => (enoughDays ? compareTrainingDays(days) : null), [days, enoughDays]);
+  const enoughDays =
+    days.filter((d) => d.logged).length >= MIN_CORRELATION_DAYS;
+  const comparison = useMemo(
+    () => (enoughDays ? compareTrainingDays(days) : null),
+    [days, enoughDays],
+  );
   const weightLink = useMemo(
     () => (enoughDays ? weightVsKcalCorrelation(days, trend, today) : null),
     [days, trend, today, enoughDays],
   );
-  const insightRows: { icon: 'fork.knife' | 'flame' | 'scalemass'; text: string }[] = [];
+  const insightRows: {
+    icon: 'fork.knife' | 'flame' | 'scalemass';
+    text: string;
+  }[] = [];
   if (comparison) {
     const training = Math.round(comparison.avgProteinTrainingG);
     const rest = Math.round(comparison.avgProteinRestG);
@@ -177,7 +221,10 @@ export default function InsightsScreen() {
         icon: 'flame',
         text: t('insights.correlations.kcalTraining', {
           value: Math.abs(delta),
-          direction: delta < 0 ? t('insights.correlations.directionUnder') : t('insights.correlations.directionOver'),
+          direction:
+            delta < 0
+              ? t('insights.correlations.directionUnder')
+              : t('insights.correlations.directionOver'),
         }),
       });
     }
@@ -188,17 +235,21 @@ export default function InsightsScreen() {
       text:
         weightLink.r >= 0.5
           ? t('insights.correlations.weightLink', { weeks: weightLink.weeks })
-          : t('insights.correlations.weightNoLink', { weeks: weightLink.weeks }),
+          : t('insights.correlations.weightNoLink', {
+              weeks: weightLink.weeks,
+            }),
     });
   }
 
   const card = (index: number, node: React.ReactNode) => (
-    <Animated.View entering={FadeInDown.delay(index * 60).duration(300)}>{node}</Animated.View>
+    <Animated.View entering={FadeInDown.delay(index * 60).duration(300)}>
+      {node}
+    </Animated.View>
   );
 
   return (
     <ScrollView
-      className="flex-1 bg-system-grouped-background"
+      className="bg-system-grouped-background flex-1"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-4 p-4 pb-10"
     >
@@ -215,51 +266,99 @@ export default function InsightsScreen() {
               hitSlop={8}
               className="flex-row items-center gap-1"
             >
-              <SymbolView name="plus.circle.fill" size={20} tintColor={themeColor('accent')} />
-              <Text className="text-sm font-medium text-tint">{t('insights.weight.logCta')}</Text>
+              <SymbolView
+                name="plus.circle.fill"
+                size={20}
+                tintColor={themeColor('accent')}
+              />
+              <Text className="text-tint text-sm font-medium">
+                {t('insights.weight.logCta')}
+              </Text>
             </Pressable>
           }
         >
           {weightLoading || entries.length === 0 ? (
             weightLoading ? null : (
-              <EmptyState icon="scalemass" title={t('insights.weight.emptyTitle')} body={t('insights.weight.emptyBody')} />
+              <EmptyState
+                icon="scalemass"
+                title={t('insights.weight.emptyTitle')}
+                body={t('insights.weight.emptyBody')}
+              />
             )
           ) : (
             <>
               <View className="flex-row items-end justify-between">
                 <View>
-                  <Text className="text-xs uppercase text-secondary-label">{t('insights.weight.trendLabel')}</Text>
-                  <Text className="text-3xl font-bold text-label">
-                    {fmt(trendNow ?? latestEntry!.weightKg)} <Text className="text-lg font-medium">{unit}</Text>
+                  <Text className="text-secondary-label text-xs uppercase">
+                    {t('insights.weight.trendLabel')}
+                  </Text>
+                  <Text className="text-label text-3xl font-bold">
+                    {fmt(trendNow ?? latestEntry!.weightKg)}{' '}
+                    <Text className="text-lg font-medium">{unit}</Text>
                   </Text>
                 </View>
                 <View className="items-end">
-                  <Text className="text-xs uppercase text-secondary-label">{t('insights.weight.weeklyRateLabel')}</Text>
-                  <Text className="text-base font-semibold text-label">
+                  <Text className="text-secondary-label text-xs uppercase">
+                    {t('insights.weight.weeklyRateLabel')}
+                  </Text>
+                  <Text className="text-label text-base font-semibold">
                     {rateDisplay === null
                       ? '–'
-                      : t('insights.weight.weeklyRate', { value: formatSigned(rateDisplay, 2), unit })}
+                      : t('insights.weight.weeklyRate', {
+                          value: formatSigned(rateDisplay, 2),
+                          unit,
+                        })}
                   </Text>
                 </View>
               </View>
               <Segmented
                 value={range}
                 onChange={(v) => setRange(v as WeightRange)}
-                options={RANGES.map((r) => ({ value: r, label: t(`insights.weight.range.${r}`) }))}
+                options={RANGES.map((r) => ({
+                  value: r,
+                  label: t(`insights.weight.range.${r}`),
+                }))}
               />
-              <WeightTrendChart raw={rangeRaw} trend={rangeTrend} targetKg={targetKg} formatWeight={fmt} />
+              <WeightTrendChart
+                raw={rangeRaw}
+                trend={rangeTrend}
+                targetKg={targetKg}
+                formatWeight={fmt}
+              />
               <View className="flex-row flex-wrap items-center gap-x-4 gap-y-1">
-                <Legend color={accentHex} label={t('insights.weight.legendTrend')} />
-                {targetKg != null && <Legend color={dangerHex} dashed label={t('insights.weight.goalLabel', { value: fmt(targetKg), unit })} />}
+                <Legend
+                  color={accentHex}
+                  label={t('insights.weight.legendTrend')}
+                />
+                {targetKg != null && (
+                  <Legend
+                    color={dangerHex}
+                    dashed
+                    label={t('insights.weight.goalLabel', {
+                      value: fmt(targetKg),
+                      unit,
+                    })}
+                  />
+                )}
               </View>
-              {rateKg === null && <Text className="text-xs text-secondary-label">{t('insights.weight.noRate')}</Text>}
+              {rateKg === null && (
+                <Text className="text-secondary-label text-xs">
+                  {t('insights.weight.noRate')}
+                </Text>
+              )}
               <Pressable
                 onPress={() => router.push('/insights/weight-history')}
                 accessibilityRole="button"
                 className="flex-row items-center justify-between pt-1"
               >
-                <Text className="text-sm text-tint">{t('insights.weight.allEntries')}</Text>
-                <SymbolView name="chevron.right" size={12} tintColor="secondaryLabel" />
+                <Text className="text-tint text-sm">
+                  {t('insights.weight.allEntries')}
+                </Text>
+                <SymbolView
+                  name="chevron.right"
+                  size={12}
+                  tintColor="secondaryLabel"
+                />
               </Pressable>
             </>
           )}
@@ -280,28 +379,42 @@ export default function InsightsScreen() {
           />
           {adherence ? (
             <>
-              <View accessible accessibilityLabel={t('insights.kcal.barsLabel')}>
+              <View
+                accessible
+                accessibilityLabel={t('insights.kcal.barsLabel')}
+              >
                 <DailyKcalBars bars={bars} />
               </View>
-              <Text className="text-base font-semibold text-label">
+              <Text className="text-label text-base font-semibold">
                 {t('insights.kcal.average', {
                   eaten: Math.round(adherence.avgEatenKcal),
                   target: Math.round(adherence.avgTargetKcal),
                 })}
               </Text>
-              <Text className="text-sm text-secondary-label">
-                {t('insights.kcal.daysOnTarget', { count: adherence.daysOnTarget, total: adherence.loggedDays })}
+              <Text className="text-secondary-label text-sm">
+                {t('insights.kcal.daysOnTarget', {
+                  count: adherence.daysOnTarget,
+                  total: adherence.loggedDays,
+                })}
               </Text>
               {Math.abs(adherence.avgDeltaKcal) >= 25 && (
-                <Text className="text-sm text-secondary-label">
+                <Text className="text-secondary-label text-sm">
                   {adherence.avgDeltaKcal < 0
-                    ? t('insights.kcal.under', { value: Math.round(-adherence.avgDeltaKcal) })
-                    : t('insights.kcal.over', { value: Math.round(adherence.avgDeltaKcal) })}
+                    ? t('insights.kcal.under', {
+                        value: Math.round(-adherence.avgDeltaKcal),
+                      })
+                    : t('insights.kcal.over', {
+                        value: Math.round(adherence.avgDeltaKcal),
+                      })}
                 </Text>
               )}
             </>
           ) : (
-            <EmptyState icon="fork.knife" title={t('insights.kcal.emptyTitle')} body={t('insights.kcal.emptyBody')} />
+            <EmptyState
+              icon="fork.knife"
+              title={t('insights.kcal.emptyTitle')}
+              body={t('insights.kcal.emptyBody')}
+            />
           )}
         </InsightCard>,
       )}
@@ -311,15 +424,29 @@ export default function InsightsScreen() {
         2,
         <InsightCard title={t('insights.training.title')}>
           {totalWorkoutDays === 0 && loggedStreak === 0 ? (
-            <EmptyState icon="figure.strengthtraining.traditional" title={t('insights.training.emptyTitle')} body={t('insights.training.emptyBody')} />
+            <EmptyState
+              icon="figure.strengthtraining.traditional"
+              title={t('insights.training.emptyTitle')}
+              body={t('insights.training.emptyBody')}
+            />
           ) : (
             <>
-              <Text className="text-xs uppercase text-secondary-label">{t('insights.training.weeksLabel')}</Text>
+              <Text className="text-secondary-label text-xs uppercase">
+                {t('insights.training.weeksLabel')}
+              </Text>
               <WeeklyBars values={weeklyWorkouts} labels={weekBarLabels} />
-              <Text className="text-sm text-secondary-label">{t('insights.training.total', { count: totalWorkoutDays })}</Text>
+              <Text className="text-secondary-label text-sm">
+                {t('insights.training.total', { count: totalWorkoutDays })}
+              </Text>
               <InsightRow
                 icon="flame"
-                text={loggedStreak > 0 ? t('insights.training.loggingStreak', { count: loggedStreak }) : t('insights.training.noStreak')}
+                text={
+                  loggedStreak > 0
+                    ? t('insights.training.loggingStreak', {
+                        count: loggedStreak,
+                      })
+                    : t('insights.training.noStreak')
+                }
               />
             </>
           )}
@@ -331,24 +458,35 @@ export default function InsightsScreen() {
         3,
         <InsightCard title={t('insights.strength.title')}>
           {trends.length === 0 ? (
-            <EmptyState icon="dumbbell" title={t('insights.strength.emptyTitle')} body={t('insights.strength.emptyBody')} />
+            <EmptyState
+              icon="dumbbell"
+              title={t('insights.strength.emptyTitle')}
+              body={t('insights.strength.emptyBody')}
+            />
           ) : (
             <>
-              <Text className="text-xs text-secondary-label">{t('insights.strength.caption')}</Text>
+              <Text className="text-secondary-label text-xs">
+                {t('insights.strength.caption')}
+              </Text>
               {trends.map((tr) => {
                 const up = tr.latestOneRmKg >= tr.firstOneRmKg;
                 return (
                   <Pressable
                     key={tr.exerciseId}
-                    onPress={() => router.push({ pathname: '/training/exercise/[id]', params: { id: tr.exerciseId } })}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/training/exercise/[id]',
+                        params: { id: tr.exerciseId },
+                      })
+                    }
                     accessibilityRole="button"
                     className="flex-row items-center justify-between"
                   >
                     <View className="flex-1 pr-3">
-                      <Text className="text-base text-label" numberOfLines={1}>
+                      <Text className="text-label text-base" numberOfLines={1}>
                         {exerciseName(tr.exerciseId)}
                       </Text>
-                      <Text className="text-xs text-secondary-label">
+                      <Text className="text-secondary-label text-xs">
                         {t('insights.strength.change', {
                           from: fmt(tr.firstOneRmKg),
                           to: fmt(tr.latestOneRmKg),
@@ -359,7 +497,9 @@ export default function InsightsScreen() {
                     <SymbolView
                       name={up ? 'arrow.up.right' : 'arrow.down.right'}
                       size={18}
-                      tintColor={up ? themeColor('accent') : themeColor('danger')}
+                      tintColor={
+                        up ? themeColor('accent') : themeColor('danger')
+                      }
                     />
                   </Pressable>
                 );
@@ -374,9 +514,13 @@ export default function InsightsScreen() {
         4,
         <InsightCard title={t('insights.correlations.title')}>
           {insightRows.length === 0 ? (
-            <Text className="text-sm text-secondary-label">{t('insights.correlations.notEnough')}</Text>
+            <Text className="text-secondary-label text-sm">
+              {t('insights.correlations.notEnough')}
+            </Text>
           ) : (
-            insightRows.map((row) => <InsightRow key={row.text} icon={row.icon} text={row.text} />)
+            insightRows.map((row) => (
+              <InsightRow key={row.text} icon={row.icon} text={row.text} />
+            ))
           )}
         </InsightCard>,
       )}

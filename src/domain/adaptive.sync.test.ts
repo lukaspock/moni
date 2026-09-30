@@ -9,11 +9,19 @@ describe('adaptive.ts Deno copy', () => {
   it('stays in sync with src/domain/adaptive.ts', () => {
     const root = join(__dirname, '..', '..');
     const domain = readFileSync(join(root, 'src/domain/adaptive.ts'), 'utf8');
-    const shared = readFileSync(join(root, 'supabase/functions/_shared/adaptive.ts'), 'utf8');
+    const shared = readFileSync(
+      join(root, 'supabase/functions/_shared/adaptive.ts'),
+      'utf8',
+    );
     const strip = (s: string) =>
       s
         .split('\n')
-        .filter((l) => !l.includes('KCAL_PER_KG = 7700') && !l.includes("import { KCAL_PER_KG }") && !l.includes('(Deno copy)'))
+        .filter(
+          (l) =>
+            !l.includes('KCAL_PER_KG = 7700') &&
+            !l.includes('import { KCAL_PER_KG }') &&
+            !l.includes('(Deno copy)'),
+        )
         .join('\n');
     expect(strip(shared)).toBe(strip(domain));
   });

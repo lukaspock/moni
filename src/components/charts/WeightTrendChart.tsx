@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Text, View, type LayoutChangeEvent } from 'react-native';
-import { Canvas, Circle, DashPathEffect, Path, Skia } from '@shopify/react-native-skia';
+import {
+  Canvas,
+  Circle,
+  DashPathEffect,
+  Path,
+  Skia,
+} from '@shopify/react-native-skia';
 
 import { dayNumber, type WeightPoint } from '@/domain';
 import { useThemeHex } from '@/theme/colors';
@@ -24,7 +30,13 @@ export interface WeightTrendChartProps {
  * target line. Skia can't take PlatformColor, so brand colors come from
  * `useThemeHex`. Axis labels are plain RN Text overlays (no Skia fonts needed).
  */
-export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 200 }: WeightTrendChartProps) {
+export function WeightTrendChart({
+  raw,
+  trend,
+  targetKg,
+  formatWeight,
+  height = 200,
+}: WeightTrendChartProps) {
   const [width, setWidth] = useState(0);
   const accent = useThemeHex('accent');
   const danger = useThemeHex('danger');
@@ -33,7 +45,10 @@ export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 
 
   const geometry = useMemo(() => {
     if (width === 0 || raw.length === 0) return null;
-    const all = [...raw.map((p) => p.weightKg), ...trend.map((p) => p.weightKg)];
+    const all = [
+      ...raw.map((p) => p.weightKg),
+      ...trend.map((p) => p.weightKg),
+    ];
     if (targetKg != null) all.push(targetKg);
     let min = Math.min(...all);
     let max = Math.max(...all);
@@ -45,7 +60,10 @@ export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 
     const d1 = Math.max(...days);
     const plotW = width - PAD_X * 2;
     const plotH = height - PAD_Y * 2;
-    const x = (date: string) => (d1 === d0 ? width / 2 : PAD_X + ((dayNumber(date) - d0) / (d1 - d0)) * plotW);
+    const x = (date: string) =>
+      d1 === d0
+        ? width / 2
+        : PAD_X + ((dayNumber(date) - d0) / (d1 - d0)) * plotW;
     const y = (kg: number) => PAD_Y + (1 - (kg - min) / (max - min)) * plotH;
 
     const trendPath = Skia.Path.Make();
@@ -70,7 +88,8 @@ export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 
     };
   }, [width, height, raw, trend, targetKg]);
 
-  const onLayout = (e: LayoutChangeEvent) => setWidth(Math.floor(e.nativeEvent.layout.width));
+  const onLayout = (e: LayoutChangeEvent) =>
+    setWidth(Math.floor(e.nativeEvent.layout.width));
 
   return (
     <View style={{ height }} onLayout={onLayout}>
@@ -81,10 +100,23 @@ export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 
               const p = Skia.Path.Make();
               p.moveTo(PAD_X, gy);
               p.lineTo(width - PAD_X, gy);
-              return <Path key={gy} path={p} style="stroke" strokeWidth={1} color={gridColor} />;
+              return (
+                <Path
+                  key={gy}
+                  path={p}
+                  style="stroke"
+                  strokeWidth={1}
+                  color={gridColor}
+                />
+              );
             })}
             {targetKg != null && (
-              <Path path={geometry.targetPath} style="stroke" strokeWidth={1.5} color={danger}>
+              <Path
+                path={geometry.targetPath}
+                style="stroke"
+                strokeWidth={1.5}
+                color={danger}
+              >
                 <DashPathEffect intervals={[6, 5]} />
               </Path>
             )}
@@ -106,7 +138,7 @@ export function WeightTrendChart({ raw, trend, targetKg, formatWeight, height = 
             <Text
               key={gy}
               pointerEvents="none"
-              className="absolute right-2 text-[10px] text-secondary-label"
+              className="text-secondary-label absolute right-2 text-[10px]"
               style={{ top: gy - 13 }}
             >
               {formatWeight(geometry.gridValues[i])}

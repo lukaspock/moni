@@ -1,4 +1,9 @@
-import { scaleFoodItem, sumFoodItems, isKcalPlausible, computeKcalFromMacros } from './food';
+import {
+  scaleFoodItem,
+  sumFoodItems,
+  isKcalPlausible,
+  computeKcalFromMacros,
+} from './food';
 
 describe('scaleFoodItem', () => {
   it('scales macros linearly when grams change', () => {
@@ -21,7 +26,13 @@ describe('scaleFoodItem', () => {
   it('does not divide by zero when the original grams is 0', () => {
     const item = { grams: 0, kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
     const scaled = scaleFoodItem(item, 100);
-    expect(scaled).toEqual({ grams: 100, kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 });
+    expect(scaled).toEqual({
+      grams: 100,
+      kcal: 0,
+      proteinG: 0,
+      carbsG: 0,
+      fatG: 0,
+    });
   });
 });
 
@@ -31,11 +42,23 @@ describe('sumFoodItems', () => {
       { grams: 100, kcal: 200, proteinG: 10, carbsG: 20, fatG: 5 },
       { grams: 50, kcal: 100, proteinG: 5, carbsG: 10, fatG: 2 },
     ];
-    expect(sumFoodItems(items)).toEqual({ grams: 150, kcal: 300, proteinG: 15, carbsG: 30, fatG: 7 });
+    expect(sumFoodItems(items)).toEqual({
+      grams: 150,
+      kcal: 300,
+      proteinG: 15,
+      carbsG: 30,
+      fatG: 7,
+    });
   });
 
   it('returns all zeros for an empty list', () => {
-    expect(sumFoodItems([])).toEqual({ grams: 0, kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 });
+    expect(sumFoodItems([])).toEqual({
+      grams: 0,
+      kcal: 0,
+      proteinG: 0,
+      carbsG: 0,
+      fatG: 0,
+    });
   });
 });
 

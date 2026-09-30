@@ -1,4 +1,8 @@
-import { activeSteps, nextOnboardingStep, onboardingProgress } from './onboardingFlow';
+import {
+  activeSteps,
+  nextOnboardingStep,
+  onboardingProgress,
+} from './onboardingFlow';
 
 describe('onboardingFlow', () => {
   const lose = { goal: 'lose' as const, healthAvailable: true };

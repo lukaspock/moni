@@ -46,29 +46,48 @@ describe('BMI helpers', () => {
 
 describe('dailyDeltaToWeeklyRate', () => {
   it('is the inverse of weeklyRateToDailyDelta', () => {
-    expect(dailyDeltaToWeeklyRate(weeklyRateToDailyDelta(-0.5))).toBeCloseTo(-0.5, 10);
+    expect(dailyDeltaToWeeklyRate(weeklyRateToDailyDelta(-0.5))).toBeCloseTo(
+      -0.5,
+      10,
+    );
     expect(dailyDeltaToWeeklyRate(-550)).toBeCloseTo(-0.5, 10);
   });
 });
 
 describe('targetWeightBounds', () => {
   it('lose: BMI-17 floor up to current − 0.5', () => {
-    const b = targetWeightBounds({ goal: 'lose', currentWeightKg: 90, heightCm: 180 });
+    const b = targetWeightBounds({
+      goal: 'lose',
+      currentWeightKg: 90,
+      heightCm: 180,
+    });
     expect(b.maxKg).toBe(89.5);
     expect(b.minKg).toBe(55.5); // 17 × 1.8² = 55.08 → rounded up to 55.5
   });
 
   it('lose: never inverts when already at the floor', () => {
-    const b = targetWeightBounds({ goal: 'lose', currentWeightKg: 50, heightCm: 180 });
+    const b = targetWeightBounds({
+      goal: 'lose',
+      currentWeightKg: 50,
+      heightCm: 180,
+    });
     expect(b.minKg).toBeLessThanOrEqual(b.maxKg);
   });
 
   it('gain: current + 0.5 up to current + 25', () => {
-    expect(targetWeightBounds({ goal: 'gain', currentWeightKg: 70, heightCm: 180 })).toEqual({ minKg: 70.5, maxKg: 95 });
+    expect(
+      targetWeightBounds({ goal: 'gain', currentWeightKg: 70, heightCm: 180 }),
+    ).toEqual({ minKg: 70.5, maxKg: 95 });
   });
 
   it('maintain: pinned to current', () => {
-    expect(targetWeightBounds({ goal: 'maintain', currentWeightKg: 70.2, heightCm: 180 })).toEqual({
+    expect(
+      targetWeightBounds({
+        goal: 'maintain',
+        currentWeightKg: 70.2,
+        heightCm: 180,
+      }),
+    ).toEqual({
       minKg: 70,
       maxKg: 70,
     });
@@ -77,21 +96,35 @@ describe('targetWeightBounds', () => {
 
 describe('suggestTargetWeight', () => {
   it('lose: ~10 % less for an overweight person', () => {
-    expect(suggestTargetWeight({ goal: 'lose', currentWeightKg: 100, heightCm: 180 })).toBe(90);
+    expect(
+      suggestTargetWeight({
+        goal: 'lose',
+        currentWeightKg: 100,
+        heightCm: 180,
+      }),
+    ).toBe(90);
   });
 
   it('lose: not below BMI 21 for someone already lean', () => {
     // BMI-21 weight at 180 cm = 68.04 → 68
-    expect(suggestTargetWeight({ goal: 'lose', currentWeightKg: 72, heightCm: 180 })).toBe(68);
+    expect(
+      suggestTargetWeight({ goal: 'lose', currentWeightKg: 72, heightCm: 180 }),
+    ).toBe(68);
   });
 
   it('lose: stays below current even if current is under BMI 21', () => {
-    const s = suggestTargetWeight({ goal: 'lose', currentWeightKg: 62, heightCm: 180 });
+    const s = suggestTargetWeight({
+      goal: 'lose',
+      currentWeightKg: 62,
+      heightCm: 180,
+    });
     expect(s).toBeLessThan(62);
   });
 
   it('gain: ~5 % more', () => {
-    expect(suggestTargetWeight({ goal: 'gain', currentWeightKg: 70, heightCm: 180 })).toBe(73.5);
+    expect(
+      suggestTargetWeight({ goal: 'gain', currentWeightKg: 70, heightCm: 180 }),
+    ).toBe(73.5);
   });
 });
 
@@ -99,18 +132,30 @@ describe('validateTargetWeight', () => {
   const ctx = { currentWeightKg: 80, heightCm: 180 };
 
   it('flags the wrong direction', () => {
-    expect(validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 85 })).toBe('wrongDirection');
-    expect(validateTargetWeight({ ...ctx, goal: 'gain', targetWeightKg: 75 })).toBe('wrongDirection');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 85 }),
+    ).toBe('wrongDirection');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'gain', targetWeightKg: 75 }),
+    ).toBe('wrongDirection');
   });
 
   it('rejects BMI < 17 and warns for 17–18.5', () => {
-    expect(validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 54 })).toBe('tooLow');
-    expect(validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 58 })).toBe('underweight');
-    expect(validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 72 })).toBe('ok');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 54 }),
+    ).toBe('tooLow');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 58 }),
+    ).toBe('underweight');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'lose', targetWeightKg: 72 }),
+    ).toBe('ok');
   });
 
   it('maintain is always ok', () => {
-    expect(validateTargetWeight({ ...ctx, goal: 'maintain', targetWeightKg: 10 })).toBe('ok');
+    expect(
+      validateTargetWeight({ ...ctx, goal: 'maintain', targetWeightKg: 10 }),
+    ).toBe('ok');
   });
 });
 
@@ -162,7 +207,12 @@ describe('classifyPace', () => {
 
 describe('projectWeightCurve', () => {
   it('goes linearly from current to target, then plateaus', () => {
-    const pts = projectWeightCurve({ currentWeightKg: 80, targetWeightKg: 75, rateKgPerWeek: -0.5, samples: 10 });
+    const pts = projectWeightCurve({
+      currentWeightKg: 80,
+      targetWeightKg: 75,
+      rateKgPerWeek: -0.5,
+      samples: 10,
+    });
     expect(pts[0]).toEqual({ week: 0, weightKg: 80 });
     expect(pts[10]).toEqual({ week: 10, weightKg: 75 });
     expect(pts[5].weightKg).toBeCloseTo(77.5, 10);
@@ -170,14 +220,27 @@ describe('projectWeightCurve', () => {
     expect(tail.weightKg).toBe(75);
     expect(tail.week).toBe(12);
     // monotonic weeks
-    for (let i = 1; i < pts.length; i += 1) expect(pts[i].week).toBeGreaterThan(pts[i - 1].week);
+    for (let i = 1; i < pts.length; i += 1)
+      expect(pts[i].week).toBeGreaterThan(pts[i - 1].week);
   });
 
   it('flat line when there is no reachable target', () => {
-    expect(projectWeightCurve({ currentWeightKg: 80, targetWeightKg: null, rateKgPerWeek: 0 })).toEqual([
+    expect(
+      projectWeightCurve({
+        currentWeightKg: 80,
+        targetWeightKg: null,
+        rateKgPerWeek: 0,
+      }),
+    ).toEqual([
       { week: 0, weightKg: 80 },
       { week: 12, weightKg: 80 },
     ]);
-    expect(projectWeightCurve({ currentWeightKg: 80, targetWeightKg: 75, rateKgPerWeek: 0.5 })).toHaveLength(2);
+    expect(
+      projectWeightCurve({
+        currentWeightKg: 80,
+        targetWeightKg: 75,
+        rateKgPerWeek: 0.5,
+      }),
+    ).toHaveLength(2);
   });
 });

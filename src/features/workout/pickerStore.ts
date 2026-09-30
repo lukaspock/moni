@@ -17,7 +17,10 @@ interface ExercisePickerState {
   selectedIds: string[];
   /** increments every time the picker confirms a selection, so a caller with a stale closure can detect a new result */
   resultVersion: number;
-  open: (opts: { mode: ExercisePickerMode; initialSelectedIds?: string[] }) => void;
+  open: (opts: {
+    mode: ExercisePickerMode;
+    initialSelectedIds?: string[];
+  }) => void;
   setSelectedIds: (ids: string[]) => void;
   confirm: (ids: string[]) => void;
 }
@@ -30,10 +33,14 @@ export const useExercisePickerStore = create<ExercisePickerState>((set) => ({
   open: ({ mode, initialSelectedIds = [] }) =>
     set({ mode, initialSelectedIds, selectedIds: initialSelectedIds }),
   setSelectedIds: (ids) => set({ selectedIds: ids }),
-  confirm: (ids) => set((s) => ({ selectedIds: ids, resultVersion: s.resultVersion + 1 })),
+  confirm: (ids) =>
+    set((s) => ({ selectedIds: ids, resultVersion: s.resultVersion + 1 })),
 }));
 
 /** Convenience for callers: open the picker store before navigating to `/exercise-picker`. */
-export function openExercisePicker(mode: ExercisePickerMode, initialSelectedIds: string[] = []): void {
+export function openExercisePicker(
+  mode: ExercisePickerMode,
+  initialSelectedIds: string[] = [],
+): void {
   useExercisePickerStore.getState().open({ mode, initialSelectedIds });
 }

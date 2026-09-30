@@ -2,7 +2,11 @@
 // `isHealthAvailable`, `requestHealthAuthorization`, `useHealthSettings` and
 // `useHealthSync` are fixed. Scope: PLAN §7.5 Apple Health.
 // Sync/dedupe design: see the header of `./sync.ts` and CLAUDE.md "Apple Health".
-import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
@@ -105,7 +109,10 @@ function invalidateAfterSync(queryClient: QueryClient): void {
   // outbox changes, which the import's `enqueueUpsert` calls trigger.
 }
 
-async function syncAndInvalidate(userId: string, queryClient: QueryClient): Promise<void> {
+async function syncAndInvalidate(
+  userId: string,
+  queryClient: QueryClient,
+): Promise<void> {
   const result = await runHealthSync(userId);
   if (result) invalidateAfterSync(queryClient);
 }
@@ -166,7 +173,10 @@ export function useHealthAutoSync(): void {
  * into the workout bonus (PLAN §6.5: only workouts count). null when Health
  * is off/unavailable or has no data.
  */
-export function useActiveEnergyForDate(date: string): { kcal: number | null; isLoading: boolean } {
+export function useActiveEnergyForDate(date: string): {
+  kcal: number | null;
+  isLoading: boolean;
+} {
   const enabled = useHealthSettingsStore((s) => s.enabled);
   const available = enabled && healthKitAvailable();
   const query = useQuery({
@@ -179,10 +189,14 @@ export function useActiveEnergyForDate(date: string): { kcal: number | null; isL
       const [y, m, d] = date.split('-').map(Number);
       const startDate = new Date(y, m - 1, d);
       const endDate = new Date(y, m - 1, d + 1);
-      const stats = await hk.queryStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], {
-        unit: 'kcal',
-        filter: { date: { startDate, endDate } },
-      });
+      const stats = await hk.queryStatisticsForQuantity(
+        'HKQuantityTypeIdentifierActiveEnergyBurned',
+        ['cumulativeSum'],
+        {
+          unit: 'kcal',
+          filter: { date: { startDate, endDate } },
+        },
+      );
       const kcal = stats.sumQuantity?.quantity;
       return kcal !== undefined ? Math.round(kcal) : null;
     },
@@ -193,6 +207,10 @@ export function useActiveEnergyForDate(date: string): { kcal: number | null; isL
 // Write-back (fire-and-forget; guarded by the settings above). Called from
 // `src/features/workout` (finished workouts) and `src/features/food`
 // (food log save/delete, only when `writeNutrition` is on).
-export { exportWorkoutToHealth, exportFoodLogToHealth, deleteFoodLogFromHealth } from './export';
+export {
+  exportWorkoutToHealth,
+  exportFoodLogToHealth,
+  deleteFoodLogFromHealth,
+} from './export';
 export type { ExportWorkoutInput, ExportFoodLogInput } from './export';
 export type { HealthSyncResult } from './sync';

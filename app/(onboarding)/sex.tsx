@@ -17,8 +17,16 @@ export default function SexScreen() {
       selected={sex}
       onSelect={(value) => update({ sex: value })}
       options={[
-        { value: 'female', symbol: 'figure.stand.dress', label: t('account.onboarding.sex.female') },
-        { value: 'male', symbol: 'figure.stand', label: t('account.onboarding.sex.male') },
+        {
+          value: 'female',
+          symbol: 'figure.stand.dress',
+          label: t('account.onboarding.sex.female'),
+        },
+        {
+          value: 'male',
+          symbol: 'figure.stand',
+          label: t('account.onboarding.sex.male'),
+        },
       ]}
     />
   );

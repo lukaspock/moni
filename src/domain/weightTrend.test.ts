@@ -5,13 +5,13 @@ import {
   filterByRange,
   kcalAdherence,
   pearson,
-  shiftIsoDate,
   smoothTrend,
   weeklyRateKg,
   workoutDaysPerWeek,
   weightVsKcalCorrelation,
   type DaySummary,
 } from './weightTrend';
+import { shiftIsoDate } from './adaptive';
 
 const day = (date: string, o: Partial<DaySummary> = {}): DaySummary => ({
   date,
@@ -48,8 +48,15 @@ describe('weight trend', () => {
   });
 
   it('filters by range', () => {
-    const pts = [{ date: '2026-01-01' }, { date: '2026-03-01' }, { date: '2026-03-20' }];
-    expect(filterByRange(pts, '4w', '2026-03-20').map((p) => p.date)).toEqual(['2026-03-01', '2026-03-20']);
+    const pts = [
+      { date: '2026-01-01' },
+      { date: '2026-03-01' },
+      { date: '2026-03-20' },
+    ];
+    expect(filterByRange(pts, '4w', '2026-03-20').map((p) => p.date)).toEqual([
+      '2026-03-01',
+      '2026-03-20',
+    ]);
     expect(filterByRange(pts, 'all', '2026-03-20')).toHaveLength(3);
     expect(filterByRange(pts, '12w', '2026-03-20')).toHaveLength(3);
   });
@@ -59,7 +66,10 @@ describe('weight trend', () => {
   });
 
   it('computes weekly rate from a linear loss', () => {
-    const pts = Array.from({ length: 15 }, (_, i) => ({ date: shiftIsoDate('2026-01-01', i), weightKg: 80 - i * 0.1 }));
+    const pts = Array.from({ length: 15 }, (_, i) => ({
+      date: shiftIsoDate('2026-01-01', i),
+      weightKg: 80 - i * 0.1,
+    }));
     expect(weeklyRateKg(pts)).toBeCloseTo(-0.7, 5);
   });
 
@@ -97,7 +107,9 @@ describe('correlation helpers', () => {
 
   it('compares training vs rest days only with enough data', () => {
     const days = [
-      ...[1, 2, 3].map((d) => day(`2026-01-0${d}`, { hadWorkout: true, proteinEatenG: 150 })),
+      ...[1, 2, 3].map((d) =>
+        day(`2026-01-0${d}`, { hadWorkout: true, proteinEatenG: 150 }),
+      ),
       ...[4, 5, 6].map((d) => day(`2026-01-0${d}`, { proteinEatenG: 100 })),
     ];
     const c = compareTrainingDays(days);
@@ -107,8 +119,15 @@ describe('correlation helpers', () => {
   });
 
   it('streak counts back from today or yesterday', () => {
-    expect(currentStreak(new Set(['2026-01-05', '2026-01-04', '2026-01-02']), '2026-01-05')).toBe(2);
-    expect(currentStreak(new Set(['2026-01-04', '2026-01-03']), '2026-01-05')).toBe(2);
+    expect(
+      currentStreak(
+        new Set(['2026-01-05', '2026-01-04', '2026-01-02']),
+        '2026-01-05',
+      ),
+    ).toBe(2);
+    expect(
+      currentStreak(new Set(['2026-01-04', '2026-01-03']), '2026-01-05'),
+    ).toBe(2);
     expect(currentStreak(new Set(['2026-01-01']), '2026-01-05')).toBe(0);
   });
 
@@ -128,7 +147,9 @@ describe('correlation helpers', () => {
     const today = '2026-03-01';
     for (let w = 0; w < 6; w++) {
       for (let i = 0; i < 7; i++) {
-        days.push(day(shiftIsoDate(today, -(w * 7 + i)), { kcalEaten: 1800 + w * 100 }));
+        days.push(
+          day(shiftIsoDate(today, -(w * 7 + i)), { kcalEaten: 1800 + w * 100 }),
+        );
       }
     }
     // older weeks (higher w) eat more and gain more

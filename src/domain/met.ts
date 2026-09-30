@@ -22,19 +22,31 @@ export const STRENGTH_MET_MAX = 6.0;
 export const STRENGTH_DENSITY_MIN = 0.15; // sets per minute
 export const STRENGTH_DENSITY_MAX = 0.6; // sets per minute
 
-export function calculateSessionDensity(totalSets: number, durationMinutes: number): number {
+export function calculateSessionDensity(
+  totalSets: number,
+  durationMinutes: number,
+): number {
   if (durationMinutes <= 0) return 0;
   return totalSets / durationMinutes;
 }
 
 export function estimateStrengthMET(setsPerMinute: number): number {
-  const clamped = Math.min(Math.max(setsPerMinute, STRENGTH_DENSITY_MIN), STRENGTH_DENSITY_MAX);
-  const t = (clamped - STRENGTH_DENSITY_MIN) / (STRENGTH_DENSITY_MAX - STRENGTH_DENSITY_MIN);
+  const clamped = Math.min(
+    Math.max(setsPerMinute, STRENGTH_DENSITY_MIN),
+    STRENGTH_DENSITY_MAX,
+  );
+  const t =
+    (clamped - STRENGTH_DENSITY_MIN) /
+    (STRENGTH_DENSITY_MAX - STRENGTH_DENSITY_MIN);
   return STRENGTH_MET_MIN + t * (STRENGTH_MET_MAX - STRENGTH_MET_MIN);
 }
 
 /** Generic MET-based energy expenditure, used for strength (estimated MET) and cardio/sport (catalog MET). */
-export function calculateKcalBurned(metValue: number, weightKg: number, durationHours: number): number {
+export function calculateKcalBurned(
+  metValue: number,
+  weightKg: number,
+  durationHours: number,
+): number {
   return metValue * weightKg * durationHours;
 }
 
@@ -44,7 +56,10 @@ export function estimateOneRepMaxEpley(weightKg: number, reps: number): number {
   return weightKg * (1 + reps / 30);
 }
 
-export function estimateOneRepMaxBrzycki(weightKg: number, reps: number): number {
+export function estimateOneRepMaxBrzycki(
+  weightKg: number,
+  reps: number,
+): number {
   if (reps <= 1) return weightKg;
   return (weightKg * 36) / (37 - reps);
 }

@@ -15,11 +15,11 @@ export function PlaceholderScreen({
   description,
 }: PlaceholderScreenProps) {
   return (
-    <View className="flex-1 items-center justify-center gap-2 bg-system-background px-8">
-      <Text className="text-center text-xl font-semibold text-label">
+    <View className="bg-system-background flex-1 items-center justify-center gap-2 px-8">
+      <Text className="text-label text-center text-xl font-semibold">
         {title}
       </Text>
-      <Text className="text-center text-base text-secondary-label">
+      <Text className="text-secondary-label text-center text-base">
         {description}
       </Text>
     </View>

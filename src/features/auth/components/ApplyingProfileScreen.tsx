@@ -21,17 +21,31 @@ export function ApplyingProfileScreen({
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 items-center justify-center gap-5 bg-system-background px-8">
+    <View className="bg-system-background flex-1 items-center justify-center gap-5 px-8">
       {failed ? (
-        <Animated.View entering={FadeIn.duration(200)} className="w-full items-center gap-4">
-          <Text className="text-center text-base text-label">{t('account.auth.applying.error')}</Text>
-          <GlassButton label={t('account.auth.applying.retry')} onPress={onRetry} />
-          <GlassButton variant="secondary" label={t('account.auth.applying.signOut')} onPress={onSignOut} />
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          className="w-full items-center gap-4"
+        >
+          <Text className="text-label text-center text-base">
+            {t('account.auth.applying.error')}
+          </Text>
+          <GlassButton
+            label={t('account.auth.applying.retry')}
+            onPress={onRetry}
+          />
+          <GlassButton
+            variant="secondary"
+            label={t('account.auth.applying.signOut')}
+            onPress={onSignOut}
+          />
         </Animated.View>
       ) : (
         <>
           <ActivityIndicator size="large" />
-          <Text className="text-center text-base text-secondary-label">{t('account.auth.applying.title')}</Text>
+          <Text className="text-secondary-label text-center text-base">
+            {t('account.auth.applying.title')}
+          </Text>
         </>
       )}
     </View>

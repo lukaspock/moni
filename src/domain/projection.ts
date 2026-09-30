@@ -31,7 +31,10 @@ export const DEFAULT_RATE_GAIN = 0.25;
  */
 export function defaultGoalRate(goal: Goal, previousRateKgPerWeek = 0): number {
   if (goal === 'maintain') return 0;
-  if (goal === 'lose') return previousRateKgPerWeek < 0 ? previousRateKgPerWeek : DEFAULT_RATE_LOSE;
+  if (goal === 'lose')
+    return previousRateKgPerWeek < 0
+      ? previousRateKgPerWeek
+      : DEFAULT_RATE_LOSE;
   return previousRateKgPerWeek > 0 ? previousRateKgPerWeek : DEFAULT_RATE_GAIN;
 }
 
@@ -46,8 +49,14 @@ export function weightForBMI(bmi: number, heightCm: number): number {
 }
 
 /** Healthy (BMI 18.5–24.9) weight range for a height, in kg (unrounded). */
-export function healthyWeightRange(heightCm: number): { minKg: number; maxKg: number } {
-  return { minKg: weightForBMI(BMI_UNDERWEIGHT, heightCm), maxKg: weightForBMI(BMI_HEALTHY_MAX, heightCm) };
+export function healthyWeightRange(heightCm: number): {
+  minKg: number;
+  maxKg: number;
+} {
+  return {
+    minKg: weightForBMI(BMI_UNDERWEIGHT, heightCm),
+    maxKg: weightForBMI(BMI_HEALTHY_MAX, heightCm),
+  };
 }
 
 /** Rounds to the nearest 0.5 kg (the target-weight picker's step). */
@@ -71,7 +80,11 @@ export interface TargetWeightContext {
  * lose: [BMI 17 weight, current − 0.5] · gain: [current + 0.5, current + 25] · maintain: [current, current].
  * If the user is already at/below the BMI floor, `minKg === maxKg` (nothing sensible to pick).
  */
-export function targetWeightBounds({ goal, currentWeightKg, heightCm }: TargetWeightContext): {
+export function targetWeightBounds({
+  goal,
+  currentWeightKg,
+  heightCm,
+}: TargetWeightContext): {
   minKg: number;
   maxKg: number;
 } {
@@ -119,11 +132,15 @@ export type TargetWeightStatus =
   /** BMI 17–18.5 — accepted, but the UI should show a gentle warning */
   | 'underweight';
 
-export function validateTargetWeight(ctx: TargetWeightContext & { targetWeightKg: number }): TargetWeightStatus {
+export function validateTargetWeight(
+  ctx: TargetWeightContext & { targetWeightKg: number },
+): TargetWeightStatus {
   const { goal, currentWeightKg, targetWeightKg, heightCm } = ctx;
   if (goal === 'maintain') return 'ok';
-  if (goal === 'lose' && targetWeightKg >= currentWeightKg) return 'wrongDirection';
-  if (goal === 'gain' && targetWeightKg <= currentWeightKg) return 'wrongDirection';
+  if (goal === 'lose' && targetWeightKg >= currentWeightKg)
+    return 'wrongDirection';
+  if (goal === 'gain' && targetWeightKg <= currentWeightKg)
+    return 'wrongDirection';
   const bmi = calculateBMI(targetWeightKg, heightCm);
   if (bmi < BMI_TARGET_MIN) return 'tooLow';
   if (bmi < BMI_UNDERWEIGHT) return 'underweight';
@@ -135,22 +152,35 @@ export function validateTargetWeight(ctx: TargetWeightContext & { targetWeightKg
  * profile, where the current weight may be stale): BMI ≥ BMI_TARGET_MIN and
  * inside the DB's `0 < target_weight_kg < 500` constraint.
  */
-export function isAcceptableTargetWeight(targetWeightKg: number, heightCm: number): boolean {
-  if (!(targetWeightKg > 0 && targetWeightKg < 500) || !(heightCm > 0)) return false;
+export function isAcceptableTargetWeight(
+  targetWeightKg: number,
+  heightCm: number,
+): boolean {
+  if (!(targetWeightKg > 0 && targetWeightKg < 500) || !(heightCm > 0))
+    return false;
   return calculateBMI(targetWeightKg, heightCm) >= BMI_TARGET_MIN;
 }
 
 /** Weeks until the target is reached at a constant weekly rate; null if unreachable (0 rate / wrong sign). */
-export function weeksToReachTarget(currentWeightKg: number, targetWeightKg: number, rateKgPerWeek: number): number | null {
+export function weeksToReachTarget(
+  currentWeightKg: number,
+  targetWeightKg: number,
+  rateKgPerWeek: number,
+): number | null {
   const diff = targetWeightKg - currentWeightKg;
   if (diff === 0) return 0;
-  if (rateKgPerWeek === 0 || Math.sign(diff) !== Math.sign(rateKgPerWeek)) return null;
+  if (rateKgPerWeek === 0 || Math.sign(diff) !== Math.sign(rateKgPerWeek))
+    return null;
   return diff / rateKgPerWeek;
 }
 
 /** Calendar date `weeks` after `startDate` (rounded to whole days, local time). */
 export function projectDateAfterWeeks(startDate: Date, weeks: number): Date {
-  return new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + Math.round(weeks * 7));
+  return new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate() + Math.round(weeks * 7),
+  );
 }
 
 export type PaceLevel = 'gentle' | 'balanced' | 'aggressive';
@@ -159,7 +189,10 @@ export type PaceLevel = 'gentle' | 'balanced' | 'aggressive';
  * Pace as % of bodyweight per week. Loss: ≤0.5 % gentle, ≤1 % balanced, above aggressive.
  * Gain (slower is better for lean mass): ≤0.25 % gentle, ≤0.5 % balanced, above aggressive.
  */
-export function classifyPace(rateKgPerWeek: number, weightKg: number): PaceLevel {
+export function classifyPace(
+  rateKgPerWeek: number,
+  weightKg: number,
+): PaceLevel {
   if (rateKgPerWeek === 0 || weightKg <= 0) return 'gentle';
   const percent = (Math.abs(rateKgPerWeek) / weightKg) * 100;
   const [gentleMax, balancedMax] = rateKgPerWeek < 0 ? [0.5, 1.0] : [0.25, 0.5];
@@ -187,7 +220,9 @@ export function projectWeightCurve(params: {
   const { currentWeightKg, targetWeightKg, rateKgPerWeek } = params;
   const samples = Math.max(params.samples ?? 24, 2);
   const weeks =
-    targetWeightKg == null ? null : weeksToReachTarget(currentWeightKg, targetWeightKg, rateKgPerWeek);
+    targetWeightKg == null
+      ? null
+      : weeksToReachTarget(currentWeightKg, targetWeightKg, rateKgPerWeek);
 
   if (weeks == null || weeks === 0 || targetWeightKg == null) {
     return [
@@ -202,6 +237,9 @@ export function projectWeightCurve(params: {
     points.push({ week, weightKg: currentWeightKg + rateKgPerWeek * week });
   }
   points[points.length - 1] = { week: weeks, weightKg: targetWeightKg };
-  points.push({ week: weeks + Math.max(weeks * 0.2, 2), weightKg: targetWeightKg });
+  points.push({
+    week: weeks + Math.max(weeks * 0.2, 2),
+    weightKg: targetWeightKg,
+  });
   return points;
 }

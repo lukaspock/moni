@@ -22,14 +22,22 @@ import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation
 
 const STEP_KG = 0.5;
 
-function StepButton({ symbol, onPress, label }: { symbol: 'minus' | 'plus'; onPress: () => void; label: string }) {
+function StepButton({
+  symbol,
+  onPress,
+  label,
+}: {
+  symbol: 'minus' | 'plus';
+  onPress: () => void;
+  label: string;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={8}
-      className="h-12 w-12 items-center justify-center rounded-full bg-secondary-system-background"
+      className="bg-secondary-system-background h-12 w-12 items-center justify-center rounded-full"
     >
       <SymbolView name={symbol} size={18} weight="semibold" />
     </Pressable>
@@ -53,9 +61,16 @@ export default function TargetWeightScreen() {
   useEffect(() => {
     const { draft: d } = useOnboardingStore.getState();
     if (!d.goal || d.goal === 'maintain' || !d.weightKg || !d.heightCm) return;
-    const c = { goal: d.goal, currentWeightKg: d.weightKg, heightCm: d.heightCm };
+    const c = {
+      goal: d.goal,
+      currentWeightKg: d.weightKg,
+      heightCm: d.heightCm,
+    };
     const valid =
-      d.targetWeightKg != null && ['ok', 'underweight'].includes(validateTargetWeight({ ...c, targetWeightKg: d.targetWeightKg }));
+      d.targetWeightKg != null &&
+      ['ok', 'underweight'].includes(
+        validateTargetWeight({ ...c, targetWeightKg: d.targetWeightKg }),
+      );
     if (!valid) update({ targetWeightKg: suggestTargetWeight(c) });
   }, [update]);
 
@@ -87,20 +102,30 @@ export default function TargetWeightScreen() {
     >
       <View className="items-center gap-1 pt-2">
         <View className="flex-row items-center gap-6">
-          <StepButton symbol="minus" label={t('account.common.decrease')} onPress={() => setTarget(target - STEP_KG)} />
+          <StepButton
+            symbol="minus"
+            label={t('account.common.decrease')}
+            onPress={() => setTarget(target - STEP_KG)}
+          />
           <CountUpText
             value={target}
             duration={200}
             format={(v) => formatWeight(v, unit)}
-            className="min-w-40 text-center text-5xl font-bold text-label"
+            className="text-label min-w-40 text-center text-5xl font-bold"
           />
-          <StepButton symbol="plus" label={t('account.common.increase')} onPress={() => setTarget(target + STEP_KG)} />
+          <StepButton
+            symbol="plus"
+            label={t('account.common.increase')}
+            onPress={() => setTarget(target + STEP_KG)}
+          />
         </View>
         <View className="flex-row gap-2 pt-2">
-          <Text className="rounded-full bg-secondary-system-background px-3 py-1 text-sm text-secondary-label">
-            {t('account.onboarding.targetWeight.current', { value: formatWeight(currentWeightKg, unit) })}
+          <Text className="bg-secondary-system-background text-secondary-label rounded-full px-3 py-1 text-sm">
+            {t('account.onboarding.targetWeight.current', {
+              value: formatWeight(currentWeightKg, unit),
+            })}
           </Text>
-          <Text className="rounded-full bg-secondary-system-background px-3 py-1 text-sm font-semibold text-tint">
+          <Text className="bg-secondary-system-background text-tint rounded-full px-3 py-1 text-sm font-semibold">
             {t('account.onboarding.targetWeight.difference', {
               value: formatWeight(Math.abs(currentWeightKg - target), unit),
             })}
@@ -110,11 +135,17 @@ export default function TargetWeightScreen() {
 
       {noRange ? null : (
         <Host style={{ width: '100%', height: 44 }}>
-          <Slider value={target} min={bounds.minKg} max={bounds.maxKg} step={STEP_KG} onValueChange={setTarget} />
+          <Slider
+            value={target}
+            min={bounds.minKg}
+            max={bounds.maxKg}
+            step={STEP_KG}
+            onValueChange={setTarget}
+          />
         </Host>
       )}
 
-      <Text className="text-center text-sm text-secondary-label">
+      <Text className="text-secondary-label text-center text-sm">
         {t('account.onboarding.targetWeight.healthyRange', {
           min: formatWeight(healthy.minKg, unit, 0),
           max: formatWeight(healthy.maxKg, unit, 0),
@@ -122,17 +153,28 @@ export default function TargetWeightScreen() {
       </Text>
 
       {noRange ? (
-        <Text className="text-center text-base text-label">{t('account.onboarding.targetWeight.noRange')}</Text>
+        <Text className="text-label text-center text-base">
+          {t('account.onboarding.targetWeight.noRange')}
+        </Text>
       ) : status === 'tooLow' ? (
-        <Text className="text-center text-sm text-destructive">{t('account.onboarding.targetWeight.warnTooLow')}</Text>
+        <Text className="text-destructive text-center text-sm">
+          {t('account.onboarding.targetWeight.warnTooLow')}
+        </Text>
       ) : status === 'underweight' ? (
-        <Text className="text-center text-sm text-destructive">{t('account.onboarding.targetWeight.warnUnderweight')}</Text>
+        <Text className="text-destructive text-center text-sm">
+          {t('account.onboarding.targetWeight.warnUnderweight')}
+        </Text>
       ) : null}
 
       {projection?.targetDate && status !== 'tooLow' ? (
-        <Animated.View entering={FadeIn.duration(250)} className="rounded-2xl bg-secondary-system-background p-4">
-          <Text className="text-center text-base text-label">
-            {t('account.onboarding.targetWeight.projection', { date: formatLongDate(projection.targetDate) })}
+        <Animated.View
+          entering={FadeIn.duration(250)}
+          className="bg-secondary-system-background rounded-2xl p-4"
+        >
+          <Text className="text-label text-center text-base">
+            {t('account.onboarding.targetWeight.projection', {
+              date: formatLongDate(projection.targetDate),
+            })}
           </Text>
         </Animated.View>
       ) : null}

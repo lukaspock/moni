@@ -19,26 +19,39 @@ const BAR_AREA_HEIGHT = 96;
 export function DailyKcalBars({ bars }: { bars: readonly DailyKcalBar[] }) {
   const CAP = 1.3;
   return (
-    <View className="flex-row items-end gap-1.5" style={{ height: BAR_AREA_HEIGHT + 18 }}>
+    <View
+      className="flex-row items-end gap-1.5"
+      style={{ height: BAR_AREA_HEIGHT + 18 }}
+    >
       {bars.map((b) => {
-        const ratio = b.targetKcal && b.targetKcal > 0 ? Math.min(b.eatenKcal / b.targetKcal, CAP) / CAP : 0;
+        const ratio =
+          b.targetKcal && b.targetKcal > 0
+            ? Math.min(b.eatenKcal / b.targetKcal, CAP) / CAP
+            : 0;
         const over = !!b.targetKcal && b.eatenKcal > b.targetKcal * 1.1;
         return (
           <View key={b.key} className="flex-1 items-center gap-1">
-            <View className="w-full justify-end overflow-hidden rounded-md bg-secondary-system-background" style={{ height: BAR_AREA_HEIGHT }}>
+            <View
+              className="bg-secondary-system-background w-full justify-end overflow-hidden rounded-md"
+              style={{ height: BAR_AREA_HEIGHT }}
+            >
               {b.logged && (
                 <View
-                  className={over ? 'w-full rounded-md bg-destructive' : 'w-full rounded-md bg-tint'}
+                  className={
+                    over
+                      ? 'bg-destructive w-full rounded-md'
+                      : 'bg-tint w-full rounded-md'
+                  }
                   style={{ height: Math.max(ratio * BAR_AREA_HEIGHT, 3) }}
                 />
               )}
               <View
                 pointerEvents="none"
-                className="absolute w-full border-t border-dashed border-secondary-label"
-                style={{ bottom: (BAR_AREA_HEIGHT / CAP) }}
+                className="border-secondary-label absolute w-full border-t border-dashed"
+                style={{ bottom: BAR_AREA_HEIGHT / CAP }}
               />
             </View>
-            <Text className="text-[10px] text-secondary-label">{b.label}</Text>
+            <Text className="text-secondary-label text-[10px]">{b.label}</Text>
           </View>
         );
       })}

@@ -64,7 +64,9 @@ export interface AdaptivePrerequisiteInput {
   foodLogCoverage: number;
 }
 
-export function checkAdaptivePrerequisites(input: AdaptivePrerequisiteInput): boolean {
+export function checkAdaptivePrerequisites(
+  input: AdaptivePrerequisiteInput,
+): boolean {
   return (
     input.daysOfData >= ADAPTIVE_MIN_DAYS &&
     input.weightEntryCount >= ADAPTIVE_MIN_WEIGHT_ENTRIES &&
@@ -76,7 +78,10 @@ export function checkAdaptivePrerequisites(input: AdaptivePrerequisiteInput): bo
  * Exponential moving average of a weight series (chronological order),
  * used to smooth day-to-day water-weight noise. alpha defaults to 0.1.
  */
-export function calculateWeightEMA(weights: number[], alpha: number = WEIGHT_EMA_ALPHA): number[] {
+export function calculateWeightEMA(
+  weights: number[],
+  alpha: number = WEIGHT_EMA_ALPHA,
+): number[] {
   if (weights.length === 0) return [];
   const result: number[] = [weights[0]];
   for (let i = 1; i < weights.length; i++) {
@@ -85,14 +90,21 @@ export function calculateWeightEMA(weights: number[], alpha: number = WEIGHT_EMA
   return result;
 }
 
-export function calculateObservedTDEE(avgIntakeKcal: number, trendWeightDeltaKg: number, days: number): number {
+export function calculateObservedTDEE(
+  avgIntakeKcal: number,
+  trendWeightDeltaKg: number,
+  days: number,
+): number {
   if (days <= 0) return avgIntakeKcal;
   return avgIntakeKcal - (trendWeightDeltaKg * KCAL_PER_KG) / days;
 }
 
 export function calculateDataScore(input: AdaptivePrerequisiteInput): number {
   const daysFactor = Math.min(1, input.daysOfData / BLEND_FULL_DATA_DAYS);
-  const entriesFactor = Math.min(1, input.weightEntryCount / BLEND_FULL_WEIGHT_ENTRIES);
+  const entriesFactor = Math.min(
+    1,
+    input.weightEntryCount / BLEND_FULL_WEIGHT_ENTRIES,
+  );
   const coverageFactor = Math.min(1, Math.max(0, input.foodLogCoverage));
   return (daysFactor + entriesFactor + coverageFactor) / 3;
 }
@@ -101,7 +113,11 @@ export function calculateBlendWeight(input: AdaptivePrerequisiteInput): number {
   return MAX_BLEND_WEIGHT * calculateDataScore(input);
 }
 
-export function blendTDEE(observedTDEE: number, formulaTDEE: number, w: number): number {
+export function blendTDEE(
+  observedTDEE: number,
+  formulaTDEE: number,
+  w: number,
+): number {
   const clampedW = Math.min(1, Math.max(0, w));
   return clampedW * observedTDEE + (1 - clampedW) * formulaTDEE;
 }
@@ -154,7 +170,9 @@ export interface ComputeAdaptiveTDEEInput {
 /** Threshold (kcal) above which observed vs. formula TDEE is reported as meaningfully different. */
 const ALIGNMENT_THRESHOLD_KCAL = 50;
 
-export function computeAdaptiveTDEE(input: ComputeAdaptiveTDEEInput): AdaptiveTDEEResult {
+export function computeAdaptiveTDEE(
+  input: ComputeAdaptiveTDEEInput,
+): AdaptiveTDEEResult {
   const prereqsMet =
     checkAdaptivePrerequisites(input.prerequisites) &&
     input.days >= MIN_TREND_SPAN_DAYS &&
@@ -171,10 +189,17 @@ export function computeAdaptiveTDEE(input: ComputeAdaptiveTDEEInput): AdaptiveTD
     };
   }
 
-  const observed = calculateObservedTDEE(input.avgIntakeKcal, input.trendWeightDeltaKg, input.days);
+  const observed = calculateObservedTDEE(
+    input.avgIntakeKcal,
+    input.trendWeightDeltaKg,
+    input.days,
+  );
   const w = calculateBlendWeight(input.prerequisites);
   const blendedRaw = blendTDEE(observed, input.formulaTDEE, w);
-  const weeklyClamped = clampWeeklyChange(blendedRaw, input.previousBlendedTDEE);
+  const weeklyClamped = clampWeeklyChange(
+    blendedRaw,
+    input.previousBlendedTDEE,
+  );
   const clamped = clampToSafetyBand(weeklyClamped, input.formulaTDEE);
   const wasClamped = Math.abs(weeklyClamped - blendedRaw) > 0.01;
   const confidence = calculateDataScore(input.prerequisites);
@@ -232,7 +257,9 @@ export interface AdaptiveWindowSummary {
 export function daysBetween(a: string, b: string): number {
   const [ay, am, ad] = a.split('-').map(Number);
   const [by, bm, bd] = b.split('-').map(Number);
-  return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86_400_000);
+  return Math.round(
+    (Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86_400_000,
+  );
 }
 
 /** YYYY-MM-DD shifted by `delta` days (UTC arithmetic). */
@@ -255,14 +282,17 @@ export function weekStartOf(isoDate: string): string {
  * average towards zero). `daysOfData` runs from the earliest weight/food day in the window to
  * windowEnd; coverage = logged days / daysOfData.
  */
-export function summarizeAdaptiveWindow(input: AdaptiveWindowInput): AdaptiveWindowSummary {
+export function summarizeAdaptiveWindow(
+  input: AdaptiveWindowInput,
+): AdaptiveWindowSummary {
   const { windowStart, windowEnd } = input;
   const inWindow = (d: string) => d >= windowStart && d <= windowEnd;
 
   const perDay = new Map<string, number[]>();
   let weightEntryCount = 0;
   for (const w of input.weights) {
-    if (!inWindow(w.date) || !Number.isFinite(w.weightKg) || w.weightKg <= 0) continue;
+    if (!inWindow(w.date) || !Number.isFinite(w.weightKg) || w.weightKg <= 0)
+      continue;
     weightEntryCount += 1;
     const arr = perDay.get(w.date) ?? [];
     arr.push(w.weightKg);
@@ -279,8 +309,10 @@ export function summarizeAdaptiveWindow(input: AdaptiveWindowInput): AdaptiveWin
     .sort();
 
   const allDays = [...weightDays, ...loggedDays].sort();
-  const daysOfData = allDays.length === 0 ? 0 : daysBetween(allDays[0], windowEnd) + 1;
-  const foodLogCoverage = daysOfData === 0 ? 0 : Math.min(1, loggedDays.length / daysOfData);
+  const daysOfData =
+    allDays.length === 0 ? 0 : daysBetween(allDays[0], windowEnd) + 1;
+  const foodLogCoverage =
+    daysOfData === 0 ? 0 : Math.min(1, loggedDays.length / daysOfData);
 
   let trendWeightDeltaKg = 0;
   let days = 0;
@@ -293,7 +325,9 @@ export function summarizeAdaptiveWindow(input: AdaptiveWindowInput): AdaptiveWin
     const spanLogged = loggedDays.filter((d) => d >= first && d <= last);
     if (spanLogged.length > 0) {
       days = daysBetween(first, last);
-      avgIntakeKcal = spanLogged.reduce((s, d) => s + input.intakeKcalByDate[d], 0) / spanLogged.length;
+      avgIntakeKcal =
+        spanLogged.reduce((s, d) => s + input.intakeKcalByDate[d], 0) /
+        spanLogged.length;
     }
   }
 

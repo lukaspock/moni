@@ -1,7 +1,19 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from 'zustand/middleware';
 
-import type { ActivityLevel, Diet, Goal, Motivation, Sex, TrainingExperience, UnitSystem } from '../../domain';
+import type {
+  ActivityLevel,
+  Diet,
+  Goal,
+  Motivation,
+  Sex,
+  TrainingExperience,
+  UnitSystem,
+} from '../../domain';
 import { storage } from '../../lib/storage';
 
 /**
@@ -83,12 +95,16 @@ const mmkvStorage: StateStorage = {
  */
 const STORE_VERSION = 1;
 
-type PersistedShape = Partial<Pick<OnboardingState, 'completed' | 'appliedToProfile' | 'wantsSignIn'>> & {
+type PersistedShape = Partial<
+  Pick<OnboardingState, 'completed' | 'appliedToProfile' | 'wantsSignIn'>
+> & {
   draft?: Partial<OnboardingDraft>;
 };
 
 function hydrate(persisted: unknown): PersistedShape {
-  const p = (persisted && typeof persisted === 'object' ? persisted : {}) as PersistedShape;
+  const p = (
+    persisted && typeof persisted === 'object' ? persisted : {}
+  ) as PersistedShape;
   return {
     completed: !!p.completed,
     appliedToProfile: !!p.appliedToProfile,
@@ -104,9 +120,17 @@ export const useOnboardingStore = create<OnboardingState>()(
       completed: false,
       appliedToProfile: false,
       wantsSignIn: false,
-      update: (patch) => set((state) => ({ draft: { ...state.draft, ...patch } })),
-      reset: () => set({ draft: initialOnboardingDraft, completed: false, appliedToProfile: false, wantsSignIn: false }),
-      finishOnboarding: () => set({ completed: true, appliedToProfile: false, wantsSignIn: false }),
+      update: (patch) =>
+        set((state) => ({ draft: { ...state.draft, ...patch } })),
+      reset: () =>
+        set({
+          draft: initialOnboardingDraft,
+          completed: false,
+          appliedToProfile: false,
+          wantsSignIn: false,
+        }),
+      finishOnboarding: () =>
+        set({ completed: true, appliedToProfile: false, wantsSignIn: false }),
       markAppliedToProfile: () => set({ appliedToProfile: true }),
       setWantsSignIn: (value) => set({ wantsSignIn: value }),
     }),
@@ -132,5 +156,12 @@ export const useOnboardingStore = create<OnboardingState>()(
 
 /** All answers the calorie math needs are present (the v2 personalization fields are optional). */
 export function isDraftComplete(draft: OnboardingDraft): boolean {
-  return !!(draft.sex && draft.birthDate && draft.heightCm && draft.weightKg && draft.activityLevel && draft.goal);
+  return !!(
+    draft.sex &&
+    draft.birthDate &&
+    draft.heightCm &&
+    draft.weightKg &&
+    draft.activityLevel &&
+    draft.goal
+  );
 }

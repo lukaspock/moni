@@ -44,7 +44,9 @@ export function ChoiceStep<T extends string>({
     <OnboardingScreen
       title={title}
       subtitle={subtitle}
-      continueLabel={hadAnswerOnMount ? t('account.common.continue') : undefined}
+      continueLabel={
+        hadAnswerOnMount ? t('account.common.continue') : undefined
+      }
       onContinue={() => goNext()}
       continueDisabled={!selected}
     >

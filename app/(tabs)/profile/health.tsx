@@ -2,7 +2,13 @@ import { Host, Toggle } from '@expo/ui/swift-ui';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import {
   isHealthAvailable,
@@ -14,24 +20,36 @@ import {
 import { themeColor } from '@/theme/colors';
 
 function SectionHeader({ label }: { label: string }) {
-  return <Text className="px-1 pb-1 pt-5 text-sm font-semibold uppercase text-secondary-label">{label}</Text>;
+  return (
+    <Text className="text-secondary-label px-1 pb-1 pt-5 text-sm font-semibold uppercase">
+      {label}
+    </Text>
+  );
 }
 
 function SectionBody({ children }: { children: React.ReactNode }) {
-  return <View className="gap-px overflow-hidden rounded-xl bg-secondary-system-background">{children}</View>;
+  return (
+    <View className="bg-secondary-system-background gap-px overflow-hidden rounded-xl">
+      {children}
+    </View>
+  );
 }
 
 function Footnote({ children }: { children: React.ReactNode }) {
-  return <Text className="px-1 pt-2 text-xs text-secondary-label">{children}</Text>;
+  return (
+    <Text className="text-secondary-label px-1 pt-2 text-xs">{children}</Text>
+  );
 }
 
 /** Apple Health settings (PLAN §7.5): connect, enable, nutrition write-back, manual sync. */
 export default function HealthSettingsScreen() {
   const { t, i18n } = useTranslation();
-  const { enabled, writeNutrition, setEnabled, setWriteNutrition } = useHealthSettings();
+  const { enabled, writeNutrition, setEnabled, setWriteNutrition } =
+    useHealthSettings();
   const { syncNow, isSyncing, lastSyncedAt } = useHealthSync();
   const [available] = useState(() => isHealthAvailable());
-  const [authResult, setAuthResult] = useState<HealthAuthorizationResult | null>(null);
+  const [authResult, setAuthResult] =
+    useState<HealthAuthorizationResult | null>(null);
   const [requesting, setRequesting] = useState(false);
 
   async function handleConnect() {
@@ -57,40 +75,57 @@ export default function HealthSettingsScreen() {
 
   const lastSyncedLabel = lastSyncedAt
     ? t('health.settings.lastSynced', {
-        time: new Date(lastSyncedAt).toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }),
+        time: new Date(lastSyncedAt).toLocaleString(i18n.language, {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
       })
     : t('health.settings.neverSynced');
 
   if (!available) {
     return (
-      <ScrollView className="flex-1 bg-system-background" contentContainerClassName="px-4 pb-12 pt-4">
-        <Text className="text-base text-label">{t('health.settings.intro')}</Text>
-        <Text className="pt-4 text-base text-secondary-label">{t('health.settings.unavailable')}</Text>
+      <ScrollView
+        className="bg-system-background flex-1"
+        contentContainerClassName="px-4 pb-12 pt-4"
+      >
+        <Text className="text-label text-base">
+          {t('health.settings.intro')}
+        </Text>
+        <Text className="text-secondary-label pt-4 text-base">
+          {t('health.settings.unavailable')}
+        </Text>
       </ScrollView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-system-background" contentContainerClassName="px-4 pb-12 pt-4">
-      <Text className="text-base text-label">{t('health.settings.intro')}</Text>
+    <ScrollView
+      className="bg-system-background flex-1"
+      contentContainerClassName="px-4 pb-12 pt-4"
+    >
+      <Text className="text-label text-base">{t('health.settings.intro')}</Text>
 
       {!enabled ? (
         <Pressable
           accessibilityRole="button"
           disabled={requesting}
           onPress={handleConnect}
-          className={`mt-5 h-14 flex-row items-center justify-center rounded-full bg-tint ${requesting ? 'opacity-40' : ''}`}
+          className={`bg-tint mt-5 h-14 flex-row items-center justify-center rounded-full ${requesting ? 'opacity-40' : ''}`}
         >
           {requesting ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-lg font-semibold text-white">{t('health.settings.connect')}</Text>
+            <Text className="text-lg font-semibold text-white">
+              {t('health.settings.connect')}
+            </Text>
           )}
         </Pressable>
       ) : null}
       {authResult === 'denied' || authResult === 'unavailable' ? (
-        <Text className="pt-3 text-sm text-destructive">
-          {authResult === 'unavailable' ? t('health.settings.unavailable') : t('health.settings.denied')}
+        <Text className="text-destructive pt-3 text-sm">
+          {authResult === 'unavailable'
+            ? t('health.settings.unavailable')
+            : t('health.settings.denied')}
         </Text>
       ) : null}
 
@@ -98,7 +133,11 @@ export default function HealthSettingsScreen() {
       <SectionBody>
         <View className="bg-secondary-system-background px-4 py-2">
           <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
-            <Toggle isOn={enabled} label={t('health.settings.enabled')} onIsOnChange={(v) => void handleToggleEnabled(v)} />
+            <Toggle
+              isOn={enabled}
+              label={t('health.settings.enabled')}
+              onIsOnChange={(v) => void handleToggleEnabled(v)}
+            />
           </Host>
         </View>
         <View className="bg-secondary-system-background px-4 py-2">
@@ -114,13 +153,15 @@ export default function HealthSettingsScreen() {
           accessibilityRole="button"
           disabled={!enabled || isSyncing}
           onPress={() => void syncNow()}
-          className="min-h-12 flex-row items-center justify-between bg-secondary-system-background px-4 py-3"
+          className="bg-secondary-system-background min-h-12 flex-row items-center justify-between px-4 py-3"
         >
           <Text
-            className={enabled ? 'text-base' : 'text-base text-secondary-label'}
+            className={enabled ? 'text-base' : 'text-secondary-label text-base'}
             style={enabled ? { color: themeColor('accent') } : undefined}
           >
-            {isSyncing ? t('health.settings.syncing') : t('health.settings.syncNow')}
+            {isSyncing
+              ? t('health.settings.syncing')
+              : t('health.settings.syncNow')}
           </Text>
           {isSyncing ? <ActivityIndicator /> : null}
         </Pressable>
@@ -130,17 +171,23 @@ export default function HealthSettingsScreen() {
 
       <SectionHeader label={t('health.settings.sections.data')} />
       <SectionBody>
-        <View className="gap-2 bg-secondary-system-background px-4 py-3">
-          <Text className="text-sm text-label">{t('health.settings.reads')}</Text>
-          <Text className="text-sm text-label">{t('health.settings.writes')}</Text>
-          <Text className="text-sm text-secondary-label">{t('health.settings.bonusHint')}</Text>
+        <View className="bg-secondary-system-background gap-2 px-4 py-3">
+          <Text className="text-label text-sm">
+            {t('health.settings.reads')}
+          </Text>
+          <Text className="text-label text-sm">
+            {t('health.settings.writes')}
+          </Text>
+          <Text className="text-secondary-label text-sm">
+            {t('health.settings.bonusHint')}
+          </Text>
         </View>
         {enabled ? (
           <Pressable
             accessibilityRole="button"
             disabled={requesting}
             onPress={handleConnect}
-            className="min-h-12 justify-center bg-secondary-system-background px-4 py-3"
+            className="bg-secondary-system-background min-h-12 justify-center px-4 py-3"
           >
             <Text className="text-base" style={{ color: themeColor('accent') }}>
               {t('health.settings.reconnect')}

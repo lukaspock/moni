@@ -1,7 +1,20 @@
-import { Canvas, Circle, LinearGradient, Path, Skia, vec } from '@shopify/react-native-skia';
+import {
+  Canvas,
+  Circle,
+  LinearGradient,
+  Path,
+  Skia,
+  vec,
+} from '@shopify/react-native-skia';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import { Easing, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import {
+  Easing,
+  useDerivedValue,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 
 import type { ProjectionPoint } from '@/domain';
 import { useThemeHex } from '@/theme/colors';
@@ -35,7 +48,10 @@ export function WeightProjectionChart({
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withDelay(150, withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }));
+    progress.value = withDelay(
+      150,
+      withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }),
+    );
   }, [progress]);
 
   const geometry = useMemo(() => {
@@ -57,7 +73,9 @@ export function WeightProjectionChart({
     const xy = points.map(toXY);
 
     const line = Skia.Path.Make();
-    xy.forEach((pt, i) => (i === 0 ? line.moveTo(pt.x, pt.y) : line.lineTo(pt.x, pt.y)));
+    xy.forEach((pt, i) =>
+      i === 0 ? line.moveTo(pt.x, pt.y) : line.lineTo(pt.x, pt.y),
+    );
 
     const fill = line.copy();
     fill.lineTo(xy[xy.length - 1].x, height);
@@ -69,16 +87,25 @@ export function WeightProjectionChart({
     return { line, fill, start: xy[0], goal };
   }, [points, width, height]);
 
-  const goalOpacity = useDerivedValue(() => (progress.value > 0.85 ? (progress.value - 0.85) / 0.15 : 0));
+  const goalOpacity = useDerivedValue(() =>
+    progress.value > 0.85 ? (progress.value - 0.85) / 0.15 : 0,
+  );
   const fillOpacity = useDerivedValue(() => progress.value);
 
   return (
     <View className="gap-2">
-      <View style={{ height }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      <View
+        style={{ height }}
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      >
         {geometry ? (
           <Canvas style={{ width, height }}>
             <Path path={geometry.fill} opacity={fillOpacity}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, height)} colors={[`${accent}55`, `${accent}00`]} />
+              <LinearGradient
+                start={vec(0, 0)}
+                end={vec(0, height)}
+                colors={[`${accent}55`, `${accent}00`]}
+              />
             </Path>
             <Path
               path={geometry.line}
@@ -90,17 +117,38 @@ export function WeightProjectionChart({
               start={0}
               end={progress}
             />
-            <Circle cx={geometry.start.x} cy={geometry.start.y} r={5} color={accent} />
-            <Circle cx={geometry.goal.x} cy={geometry.goal.y} r={8} color={accent} opacity={goalOpacity} />
-            <Circle cx={geometry.goal.x} cy={geometry.goal.y} r={3.5} color="white" opacity={goalOpacity} />
+            <Circle
+              cx={geometry.start.x}
+              cy={geometry.start.y}
+              r={5}
+              color={accent}
+            />
+            <Circle
+              cx={geometry.goal.x}
+              cy={geometry.goal.y}
+              r={8}
+              color={accent}
+              opacity={goalOpacity}
+            />
+            <Circle
+              cx={geometry.goal.x}
+              cy={geometry.goal.y}
+              r={3.5}
+              color="white"
+              opacity={goalOpacity}
+            />
           </Canvas>
         ) : null}
       </View>
       <View className="flex-row items-start justify-between">
-        <Text className="text-sm font-semibold text-secondary-label">{startLabel}</Text>
+        <Text className="text-secondary-label text-sm font-semibold">
+          {startLabel}
+        </Text>
         <View className="items-end">
-          <Text className="text-sm font-semibold text-tint">{endLabel}</Text>
-          {endCaption ? <Text className="text-xs text-secondary-label">{endCaption}</Text> : null}
+          <Text className="text-tint text-sm font-semibold">{endLabel}</Text>
+          {endCaption ? (
+            <Text className="text-secondary-label text-xs">{endCaption}</Text>
+          ) : null}
         </View>
       </View>
     </View>

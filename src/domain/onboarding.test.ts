@@ -31,16 +31,23 @@ describe('computeOnboardingPreview', () => {
     const result = computeOnboardingPreview(baseInput);
     expect(result.restDay.workoutBonusKcal).toBe(0);
     expect(result.trainingDay.workoutBonusKcal).toBeGreaterThan(0);
-    expect(result.trainingDay.totalKcal).toBeGreaterThan(result.restDay.totalKcal);
+    expect(result.trainingDay.totalKcal).toBeGreaterThan(
+      result.restDay.totalKcal,
+    );
   });
 
   it('training day protein is higher than rest day protein (2.0 vs 1.6 g/kg + deficit bonus)', () => {
     const result = computeOnboardingPreview(baseInput);
-    expect(result.trainingDay.proteinG).toBeGreaterThan(result.restDay.proteinG);
+    expect(result.trainingDay.proteinG).toBeGreaterThan(
+      result.restDay.proteinG,
+    );
   });
 
   it('with no training days, training/rest previews match (no bonus)', () => {
-    const result = computeOnboardingPreview({ ...baseInput, hasTrainingDays: false });
+    const result = computeOnboardingPreview({
+      ...baseInput,
+      hasTrainingDays: false,
+    });
     expect(result.trainingDay.workoutBonusKcal).toBe(0);
     expect(result.trainingDay.totalKcal).toBe(result.restDay.totalKcal);
   });
@@ -90,7 +97,11 @@ describe('computeGoalProjection', () => {
   });
 
   it('maintain: no target date, flat curve', () => {
-    const r = computeGoalProjection({ ...baseInput, goal: 'maintain', goalRateKgPerWeek: 0 });
+    const r = computeGoalProjection({
+      ...baseInput,
+      goal: 'maintain',
+      goalRateKgPerWeek: 0,
+    });
     expect(r.weeksToTarget).toBeNull();
     expect(r.targetDate).toBeNull();
     expect(r.effectiveRateKgPerWeek).toBe(0);

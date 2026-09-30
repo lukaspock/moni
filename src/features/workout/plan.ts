@@ -15,10 +15,14 @@ import { estimatePlannedStrengthKcal } from '@/domain/met';
 import { useRoutines } from './routines';
 import type { TrainingPlanDayRow } from './types';
 
-export const planQueryKey = (userId: string | null) => ['workout', 'plan', userId] as const;
+export const planQueryKey = (userId: string | null) =>
+  ['workout', 'plan', userId] as const;
 
 async function fetchPlan(userId: string): Promise<TrainingPlanDayRow[]> {
-  const { data, error } = await supabase.from('training_plan_days').select('*').eq('user_id', userId);
+  const { data, error } = await supabase
+    .from('training_plan_days')
+    .select('*')
+    .eq('user_id', userId);
   if (error) throw error;
   return data ?? [];
 }
@@ -40,7 +44,11 @@ export function useWeeklyPlan(): {
     for (const row of query.data ?? []) map.set(row.weekday, row);
     return map;
   }, [query.data]);
-  return { planByWeekday, isLoading: query.isLoading, refresh: () => void query.refetch() };
+  return {
+    planByWeekday,
+    isLoading: query.isLoading,
+    refresh: () => void query.refetch(),
+  };
 }
 
 /** Estimates `expected_kcal` for a routine using a typical-session model (src/domain/met), for display before saving. */
@@ -57,14 +65,21 @@ export function useSaveWeekdayPlan() {
   const { userId } = useSession();
   const queryClient = useQueryClient();
 
-  return async (weekday: number, routineId: string | null, expectedKcal: number | null): Promise<void> => {
+  return async (
+    weekday: number,
+    routineId: string | null,
+    expectedKcal: number | null,
+  ): Promise<void> => {
     if (!userId) throw new Error('not signed in');
-    const { error } = await supabase
-      .from('training_plan_days')
-      .upsert(
-        { user_id: userId, weekday, routine_id: routineId, expected_kcal: expectedKcal },
-        { onConflict: 'user_id,weekday' },
-      );
+    const { error } = await supabase.from('training_plan_days').upsert(
+      {
+        user_id: userId,
+        weekday,
+        routine_id: routineId,
+        expected_kcal: expectedKcal,
+      },
+      { onConflict: 'user_id,weekday' },
+    );
     if (error) throw error;
     void queryClient.invalidateQueries({ queryKey: planQueryKey(userId) });
   };
@@ -72,19 +87,29 @@ export function useSaveWeekdayPlan() {
 
 /** Convenience: weekly plan joined with routine names, for the training tab's weekly view. */
 export function usePlannedDaysWithRoutineNames(): {
-  days: { weekday: number; routineId: string | null; routineName: string | null; expectedKcal: number | null }[];
+  days: {
+    weekday: number;
+    routineId: string | null;
+    routineName: string | null;
+    expectedKcal: number | null;
+  }[];
   isLoading: boolean;
 } {
   const { planByWeekday, isLoading: planLoading } = useWeeklyPlan();
   const { routines, isLoading: routinesLoading } = useRoutines();
-  const routineNameById = useMemo(() => new Map(routines.map((r) => [r.id, r.name])), [routines]);
+  const routineNameById = useMemo(
+    () => new Map(routines.map((r) => [r.id, r.name])),
+    [routines],
+  );
 
   const days = Array.from({ length: 7 }, (_, weekday) => {
     const row = planByWeekday.get(weekday);
     return {
       weekday,
       routineId: row?.routine_id ?? null,
-      routineName: row?.routine_id ? (routineNameById.get(row.routine_id) ?? null) : null,
+      routineName: row?.routine_id
+        ? (routineNameById.get(row.routine_id) ?? null)
+        : null,
       expectedKcal: row?.expected_kcal ?? null,
     };
   });

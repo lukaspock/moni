@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
 
-import { defaultGoalRate, suggestTargetWeight, validateTargetWeight, type Goal } from '@/domain';
+import {
+  defaultGoalRate,
+  suggestTargetWeight,
+  validateTargetWeight,
+  type Goal,
+} from '@/domain';
 import { useOnboardingStore } from '@/features/auth';
 import { ChoiceStep } from '@/features/auth/components/ChoiceStep';
 
@@ -13,10 +18,17 @@ export default function GoalScreen() {
     const draft = useOnboardingStore.getState().draft;
     let targetWeightKg: number | null = null;
     if (nextGoal !== 'maintain' && draft.weightKg && draft.heightCm) {
-      const ctx = { goal: nextGoal, currentWeightKg: draft.weightKg, heightCm: draft.heightCm };
+      const ctx = {
+        goal: nextGoal,
+        currentWeightKg: draft.weightKg,
+        heightCm: draft.heightCm,
+      };
       const previous = draft.targetWeightKg;
       const previousStillFits =
-        previous != null && ['ok', 'underweight'].includes(validateTargetWeight({ ...ctx, targetWeightKg: previous }));
+        previous != null &&
+        ['ok', 'underweight'].includes(
+          validateTargetWeight({ ...ctx, targetWeightKg: previous }),
+        );
       targetWeightKg = previousStillFits ? previous : suggestTargetWeight(ctx);
     }
     update({

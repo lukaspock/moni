@@ -52,7 +52,7 @@ Finally: `generate_typescript_types` → `src/types/database.ts`.
   only; there is **no** insert/update/delete policy for `authenticated` on either table. All
   writes happen through Edge Functions using the **service role** key, which bypasses RLS.
 - **Views** `v_daily_summary` / `v_exercise_progress` are created `with (security_invoker =
-  true)` so they run with the querying user's RLS, not the view owner's — otherwise they'd leak
+true)` so they run with the querying user's RLS, not the view owner's — otherwise they'd leak
   all users' data. See the Supabase RLS/view security linter docs referenced in
   `20260927120500_views.sql`.
 
@@ -66,6 +66,7 @@ only read/write inside their own folder. The client should compress images to ~1
 ## 4. Edge Functions
 
 Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/`:
+
 - `cors.ts` — CORS headers + preflight handling.
 - `supabase.ts` — `createUserClient` (forwards the caller's JWT, RLS applies),
   `createServiceClient` (service role, bypasses RLS), `getAuthenticatedUser`.
@@ -74,6 +75,7 @@ Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/
   whenever the domain agent changes the formula — see the comment at the top of that file.
 
 ### `analyze-food` (Phase 2)
+
 - `verify_jwt = true` (default) — expects the user's Supabase JWT in `Authorization`.
 - Input: `{ image_path?: string, text?: string, locale?: string }` (exactly one of
   `image_path`/`text` required). `image_path` must start with `"{caller's user id}/"`.
@@ -87,6 +89,7 @@ Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/
   (optional, default `3`).
 
 ### `revenuecat-webhook` (Phase 7)
+
 - **`verify_jwt = false`** — RevenueCat does not send a Supabase JWT. Auth is a shared secret
   read from the `Authorization` header and compared to the `REVENUECAT_WEBHOOK_SECRET` secret.
   **The lead must set `verify_jwt = false` explicitly when deploying this function** (also
@@ -104,6 +107,7 @@ Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/
   dashboard's webhook config.
 
 ### `recompute-targets` (Phase 6, implemented)
+
 - Adaptive TDEE per PLAN §6.7. Window = last 28 days ending yesterday. Weights -> daily mean ->
   EMA(0.1); observed TDEE = avg intake (logged days in the weigh-in span) − Δtrend·7700/days;
   blended with the formula TDEE (w ≤ 0.8), clamped to ±150 kcal/week vs. the previous estimate
@@ -124,11 +128,11 @@ Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/
 
 ## 5. Secrets checklist (owner/lead to set via Supabase dashboard or MCP)
 
-| Secret | Used by | Notes |
-|---|---|---|
-| `GEMINI_API_KEY` | `analyze-food` | Google AI Studio / Vertex API key. Never in the client. |
-| `GEMINI_MODEL` | `analyze-food` | Optional, default `gemini-2.5-flash`. |
-| `FREE_AI_LIMIT_PER_DAY` | `analyze-food` | Optional, default `3`. |
+| Secret                      | Used by              | Notes                                                    |
+| --------------------------- | -------------------- | -------------------------------------------------------- |
+| `GEMINI_API_KEY`            | `analyze-food`       | Google AI Studio / Vertex API key. Never in the client.  |
+| `GEMINI_MODEL`              | `analyze-food`       | Optional, default `gemini-2.5-flash`.                    |
+| `FREE_AI_LIMIT_PER_DAY`     | `analyze-food`       | Optional, default `3`.                                   |
 | `REVENUECAT_WEBHOOK_SECRET` | `revenuecat-webhook` | Shared secret, also entered in the RevenueCat dashboard. |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` are injected automatically for
@@ -136,11 +140,11 @@ every Edge Function by the platform — do not set them manually.
 
 ## 6. Function deploy settings
 
-| Function | `verify_jwt` |
-|---|---|
-| `analyze-food` | `true` (default) |
-| `revenuecat-webhook` | **`false`** — must be set explicitly |
-| `recompute-targets` | `true` (default) — cron calls authenticate via the service-role bearer token, checked in code, not via platform JWT verification |
+| Function             | `verify_jwt`                                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `analyze-food`       | `true` (default)                                                                                                                 |
+| `revenuecat-webhook` | **`false`** — must be set explicitly                                                                                             |
+| `recompute-targets`  | `true` (default) — cron calls authenticate via the service-role bearer token, checked in code, not via platform JWT verification |
 
 (`supabase/config.toml` documents the same table for local `supabase start`/CLI use; the
 hosted project's function settings are separate and must be set when deploying via

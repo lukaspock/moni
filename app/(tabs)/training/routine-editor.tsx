@@ -36,10 +36,17 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
 
   const [name, setName] = useState(existing?.name ?? '');
   const [exercises, setExercises] = useState<RoutineExerciseInput[]>(
-    existing?.exercises.map((e) => ({ exerciseId: e.exerciseId, targetSets: e.targetSets, targetReps: e.targetReps })) ?? [],
+    existing?.exercises.map((e) => ({
+      exerciseId: e.exerciseId,
+      targetSets: e.targetSets,
+      targetReps: e.targetReps,
+    })) ?? [],
   );
 
-  const catalogById = useMemo(() => new Map(catalog.map((e) => [e.id, e])), [catalog]);
+  const catalogById = useMemo(
+    () => new Map(catalog.map((e) => [e.id, e])),
+    [catalog],
+  );
 
   const resultVersion = useExercisePickerStore((s) => s.resultVersion);
   const lastHandledVersion = useRef(resultVersion);
@@ -67,7 +74,9 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   }
 
   function updateExercise(index: number, patch: Partial<RoutineExerciseInput>) {
-    setExercises((prev) => prev.map((e, i) => (i === index ? { ...e, ...patch } : e)));
+    setExercises((prev) =>
+      prev.map((e, i) => (i === index ? { ...e, ...patch } : e)),
+    );
   }
 
   function removeExercise(index: number) {
@@ -81,32 +90,58 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   }
 
   return (
-    <ScrollView className="flex-1 bg-system-background" contentContainerClassName="gap-4 p-4">
+    <ScrollView
+      className="bg-system-background flex-1"
+      contentContainerClassName="gap-4 p-4"
+    >
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder={t('workout.routine.namePlaceholder')}
         placeholderTextColor="gray"
-        className="rounded-xl bg-secondary-system-background px-4 py-3 text-base text-label"
+        className="bg-secondary-system-background text-label rounded-xl px-4 py-3 text-base"
       />
 
-      <Text className="text-sm font-semibold uppercase text-secondary-label">{t('workout.routine.exercises')}</Text>
-      {exercises.length === 0 && <Text className="text-sm text-secondary-label">{t('workout.routine.empty')}</Text>}
+      <Text className="text-secondary-label text-sm font-semibold uppercase">
+        {t('workout.routine.exercises')}
+      </Text>
+      {exercises.length === 0 && (
+        <Text className="text-secondary-label text-sm">
+          {t('workout.routine.empty')}
+        </Text>
+      )}
 
       {exercises.map((ex, index) => {
         const exercise = catalogById.get(ex.exerciseId);
         return (
-          <View key={ex.exerciseId} className="rounded-xl bg-secondary-system-background p-3">
+          <View
+            key={ex.exerciseId}
+            className="bg-secondary-system-background rounded-xl p-3"
+          >
             <View className="mb-2 flex-row items-center justify-between">
-              <Text className="flex-1 text-base text-label">{exercise ? exerciseDisplayName(exercise, t) : '…'}</Text>
+              <Text className="text-label flex-1 text-base">
+                {exercise ? exerciseDisplayName(exercise, t) : '…'}
+              </Text>
               <Pressable onPress={() => move(index, -1)} className="px-1">
-                <SymbolView name="chevron.up" size={14} tintColor="secondaryLabel" />
+                <SymbolView
+                  name="chevron.up"
+                  size={14}
+                  tintColor="secondaryLabel"
+                />
               </Pressable>
               <Pressable onPress={() => move(index, 1)} className="px-1">
-                <SymbolView name="chevron.down" size={14} tintColor="secondaryLabel" />
+                <SymbolView
+                  name="chevron.down"
+                  size={14}
+                  tintColor="secondaryLabel"
+                />
               </Pressable>
               <Pressable onPress={() => removeExercise(index)} className="px-1">
-                <SymbolView name="trash" size={14} tintColor={themeColor('danger')} />
+                <SymbolView
+                  name="trash"
+                  size={14}
+                  tintColor={themeColor('danger')}
+                />
               </Pressable>
             </View>
             <View className="flex-row gap-3">
@@ -133,10 +168,12 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
           );
           router.push('/exercise-picker');
         }}
-        className="flex-row items-center justify-center gap-2 rounded-xl bg-secondary-system-background py-3"
+        className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
       >
         <SymbolView name="plus" size={16} />
-        <Text className="text-base text-label">{t('workout.routine.addExercise')}</Text>
+        <Text className="text-label text-base">
+          {t('workout.routine.addExercise')}
+        </Text>
       </Pressable>
 
       <Pressable
@@ -144,21 +181,31 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
         onPress={handleSave}
         className={`mt-2 items-center rounded-xl py-3.5 ${name.trim() ? 'bg-tint' : 'bg-secondary-system-background'}`}
       >
-        <Text className="text-base font-semibold text-white">{t('workout.routine.save')}</Text>
+        <Text className="text-base font-semibold text-white">
+          {t('workout.routine.save')}
+        </Text>
       </Pressable>
     </ScrollView>
   );
 }
 
-function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
+function NumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
   return (
     <View className="flex-1">
-      <Text className="mb-1 text-[11px] text-secondary-label">{label}</Text>
+      <Text className="text-secondary-label mb-1 text-[11px]">{label}</Text>
       <TextInput
         value={value !== null ? String(value) : ''}
         onChangeText={(text) => onChange(text === '' ? null : Number(text))}
         keyboardType="number-pad"
-        className="rounded-lg bg-system-background px-3 py-1.5 text-center text-base text-label"
+        className="bg-system-background text-label rounded-lg px-3 py-1.5 text-center text-base"
       />
     </View>
   );

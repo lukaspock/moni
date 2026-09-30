@@ -51,7 +51,7 @@
     },
     "sex": {
       "title": "Welches Geschlecht hast du?",
-      "subtitle": "Brauchen wir für eine genaue Kalorienformel (Mifflin-St Jeor).",
+      "subtitle": "Brauchen wir für eine genaue Kalorienformel (Mifflin‑St Jeor).",
       "male": "Männlich",
       "female": "Weiblich"
     },
@@ -83,7 +83,7 @@
     },
     "goal": {
       "title": "Was möchtest du erreichen?",
-      "subtitle": "Entscheidet, ob wir auf ein Defizit, Erhaltung oder einen Überschuss abzielen.",
+      "subtitle": "Bestimmt, ob wir auf ein Defizit, Erhaltung oder einen Überschuss abzielen.",
       "lose": "Abnehmen",
       "loseDescription": "Moderates Kaloriendefizit",
       "maintain": "Gewicht halten",

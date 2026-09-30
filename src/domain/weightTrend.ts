@@ -4,6 +4,8 @@
  * local `YYYY-MM-DD` strings. No RN/Expo imports.
  */
 
+import { shiftIsoDate } from './adaptive';
+
 export interface WeightPoint {
   /** local YYYY-MM-DD */
   date: string;
@@ -20,12 +22,10 @@ export function dayNumber(isoDate: string): number {
   return Math.round(Date.UTC(y, m - 1, d) / MS_PER_DAY);
 }
 
-export function shiftIsoDate(isoDate: string, days: number): string {
-  return new Date((dayNumber(isoDate) + days) * MS_PER_DAY).toISOString().slice(0, 10);
-}
-
 export function mean(values: readonly number[]): number {
-  return values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length;
+  return values.length === 0
+    ? 0
+    : values.reduce((a, b) => a + b, 0) / values.length;
 }
 
 /** Collapses several entries of one day to their mean, sorted ascending by date. */
@@ -47,7 +47,10 @@ export function dailyAverages(points: readonly WeightPoint[]): WeightPoint[] {
  * smoothing time constant: a gap of `dt` days weights the new reading with
  * `1 - exp(-dt / tauDays)`, so irregular logging behaves sensibly.
  */
-export function smoothTrend(points: readonly WeightPoint[], tauDays = 7): WeightPoint[] {
+export function smoothTrend(
+  points: readonly WeightPoint[],
+  tauDays = 7,
+): WeightPoint[] {
   const out: WeightPoint[] = [];
   let trend: number | null = null;
   let prevDay = 0;
@@ -66,14 +69,21 @@ export function smoothTrend(points: readonly WeightPoint[], tauDays = 7): Weight
 }
 
 /** Keeps points within the range ending at `today` (inclusive). */
-export function filterByRange<T extends { date: string }>(points: readonly T[], range: WeightRange, today: string): T[] {
+export function filterByRange<T extends { date: string }>(
+  points: readonly T[],
+  range: WeightRange,
+  today: string,
+): T[] {
   if (range === 'all') return [...points];
   const weeks = range === '4w' ? 4 : 12;
   const from = shiftIsoDate(today, -weeks * 7 + 1);
   return points.filter((p) => p.date >= from && p.date <= today);
 }
 
-export function linearSlope(xs: readonly number[], ys: readonly number[]): number | null {
+export function linearSlope(
+  xs: readonly number[],
+  ys: readonly number[],
+): number | null {
   const n = xs.length;
   if (n < 2 || n !== ys.length) return null;
   const mx = mean(xs);
@@ -92,7 +102,11 @@ export function linearSlope(xs: readonly number[], ys: readonly number[]): numbe
  * smoothed) points over the last `windowDays`. Null with fewer than 2 points
  * or when they span less than `minSpanDays`.
  */
-export function weeklyRateKg(points: readonly WeightPoint[], windowDays = 28, minSpanDays = 6): number | null {
+export function weeklyRateKg(
+  points: readonly WeightPoint[],
+  windowDays = 28,
+  minSpanDays = 6,
+): number | null {
   if (points.length < 2) return null;
   const lastDay = dayNumber(points[points.length - 1].date);
   const win = points.filter((p) => dayNumber(p.date) > lastDay - windowDays);
@@ -105,7 +119,10 @@ export function weeklyRateKg(points: readonly WeightPoint[], windowDays = 28, mi
 }
 
 /** Pearson correlation; null when fewer than 3 pairs or zero variance. */
-export function pearson(xs: readonly number[], ys: readonly number[]): number | null {
+export function pearson(
+  xs: readonly number[],
+  ys: readonly number[],
+): number | null {
   const n = xs.length;
   if (n < 3 || n !== ys.length) return null;
   const mx = mean(xs);
@@ -145,20 +162,32 @@ export interface KcalAdherence {
 }
 
 /** Only logged days with a target count. Null when there are none. */
-export function kcalAdherence(days: readonly DaySummary[], tolerance = 0.1): KcalAdherence | null {
-  const used = days.filter((d) => d.logged && d.targetKcal !== null && d.targetKcal > 0);
+export function kcalAdherence(
+  days: readonly DaySummary[],
+  tolerance = 0.1,
+): KcalAdherence | null {
+  const used = days.filter(
+    (d) => d.logged && d.targetKcal !== null && d.targetKcal > 0,
+  );
   if (used.length === 0) return null;
   return {
     loggedDays: used.length,
     avgEatenKcal: mean(used.map((d) => d.kcalEaten)),
     avgTargetKcal: mean(used.map((d) => d.targetKcal as number)),
     avgDeltaKcal: mean(used.map((d) => d.kcalEaten - (d.targetKcal as number))),
-    daysOnTarget: used.filter((d) => Math.abs(d.kcalEaten - (d.targetKcal as number)) <= tolerance * (d.targetKcal as number)).length,
+    daysOnTarget: used.filter(
+      (d) =>
+        Math.abs(d.kcalEaten - (d.targetKcal as number)) <=
+        tolerance * (d.targetKcal as number),
+    ).length,
   };
 }
 
 /** Consecutive days ending at `today` (or yesterday, if today has no entry yet) contained in `dates`. */
-export function currentStreak(dates: ReadonlySet<string>, today: string): number {
+export function currentStreak(
+  dates: ReadonlySet<string>,
+  today: string,
+): number {
   let day = dates.has(today) ? today : shiftIsoDate(today, -1);
   let streak = 0;
   while (dates.has(day)) {
@@ -178,12 +207,16 @@ export interface TrainingComparison {
 }
 
 /** Protein / kcal-vs-target on training vs. rest days. Null unless both groups have ≥ `minPerGroup` logged days. */
-export function compareTrainingDays(days: readonly DaySummary[], minPerGroup = 3): TrainingComparison | null {
+export function compareTrainingDays(
+  days: readonly DaySummary[],
+  minPerGroup = 3,
+): TrainingComparison | null {
   const logged = days.filter((d) => d.logged);
   const t = logged.filter((d) => d.hadWorkout);
   const r = logged.filter((d) => !d.hadWorkout);
   if (t.length < minPerGroup || r.length < minPerGroup) return null;
-  const delta = (d: DaySummary) => (d.targetKcal === null ? 0 : d.kcalEaten - d.targetKcal);
+  const delta = (d: DaySummary) =>
+    d.targetKcal === null ? 0 : d.kcalEaten - d.targetKcal;
   return {
     trainingDays: t.length,
     restDays: r.length,
@@ -195,7 +228,11 @@ export function compareTrainingDays(days: readonly DaySummary[], minPerGroup = 3
 }
 
 /** Workout days per rolling 7-day bucket ending at `today`, oldest first. */
-export function workoutDaysPerWeek(days: readonly DaySummary[], today: string, weeks: number): number[] {
+export function workoutDaysPerWeek(
+  days: readonly DaySummary[],
+  today: string,
+  weeks: number,
+): number[] {
   const out: number[] = new Array<number>(weeks).fill(0);
   const t = dayNumber(today);
   for (const d of days) {
@@ -207,7 +244,10 @@ export function workoutDaysPerWeek(days: readonly DaySummary[], today: string, w
   return out;
 }
 
-function trendAtOrBefore(trend: readonly WeightPoint[], day: number): number | null {
+function trendAtOrBefore(
+  trend: readonly WeightPoint[],
+  day: number,
+): number | null {
   let v: number | null = null;
   for (const p of trend) {
     if (dayNumber(p.date) <= day) v = p.weightKg;

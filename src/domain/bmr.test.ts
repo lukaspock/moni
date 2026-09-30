@@ -1,4 +1,9 @@
-import { calculateBMR, ageFromBirthDate, MALE_BMR_OFFSET, FEMALE_BMR_OFFSET } from './bmr';
+import {
+  calculateBMR,
+  ageFromBirthDate,
+  MALE_BMR_OFFSET,
+  FEMALE_BMR_OFFSET,
+} from './bmr';
 
 describe('calculateBMR', () => {
   it('matches hand-calculated value for a male', () => {

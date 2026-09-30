@@ -66,7 +66,10 @@ function findIndex(queue: OutboxEntry[], table: string, id: string): number {
  *   the upsert replaces the delete.
  * - delete followed by delete: no-op, the existing pending delete stands.
  */
-export function enqueue(queue: OutboxEntry[], entry: NewOutboxEntry): OutboxEntry[] {
+export function enqueue(
+  queue: OutboxEntry[],
+  entry: NewOutboxEntry,
+): OutboxEntry[] {
   const idx = findIndex(queue, entry.table, entry.id);
   if (idx === -1) {
     const next: OutboxEntry = {
@@ -108,12 +111,19 @@ export function enqueue(queue: OutboxEntry[], entry: NewOutboxEntry): OutboxEntr
 }
 
 /** Removes an entry (after it has synced successfully). */
-export function removeEntry(queue: OutboxEntry[], table: string, id: string): OutboxEntry[] {
+export function removeEntry(
+  queue: OutboxEntry[],
+  table: string,
+  id: string,
+): OutboxEntry[] {
   return queue.filter((e) => !(e.table === table && e.id === id));
 }
 
 /** Entries due for (re)processing now, in FIFO (`createdAt`) order. */
-export function selectReadyEntries(queue: OutboxEntry[], now: number): OutboxEntry[] {
+export function selectReadyEntries(
+  queue: OutboxEntry[],
+  now: number,
+): OutboxEntry[] {
   return queue
     .filter((e) => e.nextAttemptAt <= now)
     .slice()
@@ -121,7 +131,10 @@ export function selectReadyEntries(queue: OutboxEntry[], now: number): OutboxEnt
 }
 
 /** Whether an entry has exceeded the retry budget and should be treated as permanently failed. */
-export function isExhausted(entry: OutboxEntry, maxAttempts: number = MAX_ATTEMPTS): boolean {
+export function isExhausted(
+  entry: OutboxEntry,
+  maxAttempts: number = MAX_ATTEMPTS,
+): boolean {
   return entry.attempts >= maxAttempts;
 }
 
@@ -141,7 +154,10 @@ export function markFailure(
 }
 
 /** Replaces an entry in the queue by table+id (used to persist markFailure's result). */
-export function replaceEntry(queue: OutboxEntry[], updated: OutboxEntry): OutboxEntry[] {
+export function replaceEntry(
+  queue: OutboxEntry[],
+  updated: OutboxEntry,
+): OutboxEntry[] {
   const idx = findIndex(queue, updated.table, updated.id);
   if (idx === -1) return queue;
   const next = [...queue];

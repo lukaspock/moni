@@ -42,13 +42,21 @@ export type DailyTargets = {
  * Signed-in user's profile, or null while loading / before onboarding.
  * `isError` = the fetch failed (e.g. offline) — "unknown", not "no profile".
  */
-export function useProfile(): { profile: Profile | null; isLoading: boolean; isError: boolean } {
+export function useProfile(): {
+  profile: Profile | null;
+  isLoading: boolean;
+  isError: boolean;
+} {
   const { userId } = useSession();
 
   const query = useQuery({
     queryKey: ['profile', userId],
     queryFn: async (): Promise<Profile | null> => {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId!).maybeSingle();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId!)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -59,7 +67,11 @@ export function useProfile(): { profile: Profile | null; isLoading: boolean; isE
     retryDelay: 800,
   });
 
-  return { profile: query.data ?? null, isLoading: !!userId && query.isLoading, isError: query.isError };
+  return {
+    profile: query.data ?? null,
+    isLoading: !!userId && query.isLoading,
+    isError: query.isError,
+  };
 }
 
 /** Most recent `weight_logs` entry at or before `date`, or null if none yet. */
@@ -90,7 +102,11 @@ function useLatestWeightKg(userId: string | null, date: string) {
  * updates the user's existing *manual* row for `date` if there is one and
  * inserts otherwise. `created_at` is bumped so the value counts as the latest.
  */
-export async function logManualWeight(userId: string, weightKg: number, date: string = toISODate()): Promise<void> {
+export async function logManualWeight(
+  userId: string,
+  weightKg: number,
+  date: string = toISODate(),
+): Promise<void> {
   const { data: existing, error: selectError } = await supabase
     .from('weight_logs')
     .select('id')
@@ -104,8 +120,16 @@ export async function logManualWeight(userId: string, weightKg: number, date: st
 
   const now = new Date().toISOString();
   const { error } = existing
-    ? await supabase.from('weight_logs').update({ weight_kg: weightKg, created_at: now }).eq('id', existing.id)
-    : await supabase.from('weight_logs').insert({ user_id: userId, date, weight_kg: weightKg, source: 'manual' });
+    ? await supabase
+        .from('weight_logs')
+        .update({ weight_kg: weightKg, created_at: now })
+        .eq('id', existing.id)
+    : await supabase.from('weight_logs').insert({
+        user_id: userId,
+        date,
+        weight_kg: weightKg,
+        source: 'manual',
+      });
   if (error) throw error;
 }
 
@@ -116,7 +140,12 @@ export async function logManualWeight(userId: string, weightKg: number, date: st
  * screens/Insights, not the source of truth (that's this hook's own
  * computation from src/domain).
  */
-function useUpsertDailyTargets(userId: string | null, date: string, targets: DailyTargets | null, tdeeUsed: number | null) {
+function useUpsertDailyTargets(
+  userId: string | null,
+  date: string,
+  targets: DailyTargets | null,
+  tdeeUsed: number | null,
+) {
   const lastWrittenRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -146,7 +175,10 @@ function useUpsertDailyTargets(userId: string | null, date: string, targets: Dai
         if (error) {
           // Non-fatal: the UI already has the freshly computed value from src/domain.
           lastWrittenRef.current = null;
-          console.warn('[targets] failed to cache daily_targets', error.message);
+          console.warn(
+            '[targets] failed to cache daily_targets',
+            error.message,
+          );
         }
       });
   }, [userId, date, targets, tdeeUsed]);
@@ -166,9 +198,16 @@ export function useDailyTargets(date: string): {
   useRecomputeTargetsIfDue();
 
   const isLoading =
-    profileLoading || plannedLoading || workoutsLoading || adaptiveLoading || (!!userId && weightQuery.isLoading);
+    profileLoading ||
+    plannedLoading ||
+    workoutsLoading ||
+    adaptiveLoading ||
+    (!!userId && weightQuery.isLoading);
 
-  const computed = useMemo((): { targets: DailyTargets; tdeeUsed: number } | null => {
+  const computed = useMemo((): {
+    targets: DailyTargets;
+    tdeeUsed: number;
+  } | null => {
     if (
       !profile ||
       !profile.sex ||
@@ -184,8 +223,16 @@ export function useDailyTargets(date: string): {
     if (!weightKg) return null; // no weight logged yet — nothing to compute macros/BMR against
 
     const age = ageFromBirthDate(new Date(profile.birth_date));
-    const bmr = calculateBMR(profile.sex as Sex, weightKg, profile.height_cm, age);
-    const formulaTdee = calculateBaseTDEE(bmr, profile.activity_level as ActivityLevel);
+    const bmr = calculateBMR(
+      profile.sex as Sex,
+      weightKg,
+      profile.height_cm,
+      age,
+    );
+    const formulaTdee = calculateBaseTDEE(
+      bmr,
+      profile.activity_level as ActivityLevel,
+    );
     // PLAN §6.7: once enough data exists, the server-side adaptive (blended) TDEE replaces the formula.
     const tdee = adaptive ? adaptive.blendedTdee : formulaTdee;
     const base = calculateBaseTarget({
@@ -197,7 +244,10 @@ export function useDailyTargets(date: string): {
     const isTrainingDay = !!plannedDay;
     const completedWorkouts = workouts.filter((w) => w.endedAt != null);
     const workoutCompleted = completedWorkouts.length > 0;
-    const actualKcalBurned = completedWorkouts.reduce((sum, w) => sum + (w.kcalBurned ?? 0), 0);
+    const actualKcalBurned = completedWorkouts.reduce(
+      (sum, w) => sum + (w.kcalBurned ?? 0),
+      0,
+    );
     const isDayOver = date < toISODate();
 
     const bonus = calculateWorkoutBonus({
@@ -233,7 +283,12 @@ export function useDailyTargets(date: string): {
     };
   }, [profile, plannedDay, workouts, weightQuery.data, date, adaptive]);
 
-  useUpsertDailyTargets(userId, date, computed?.targets ?? null, computed?.tdeeUsed ?? null);
+  useUpsertDailyTargets(
+    userId,
+    date,
+    computed?.targets ?? null,
+    computed?.tdeeUsed ?? null,
+  );
 
   return { targets: computed?.targets ?? null, isLoading };
 }

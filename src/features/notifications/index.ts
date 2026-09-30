@@ -24,10 +24,15 @@ export const DEFAULT_MEAL_REMINDERS: MealReminder[] = [
 
 const ID_PREFIX = 'moeni-meal-';
 
-function toPermission(status: Notifications.NotificationPermissionsStatus): ReminderPermission {
+function toPermission(
+  status: Notifications.NotificationPermissionsStatus,
+): ReminderPermission {
   if (status.granted) return 'granted';
   const ios = status.ios?.status;
-  if (ios === Notifications.IosAuthorizationStatus.PROVISIONAL || ios === Notifications.IosAuthorizationStatus.EPHEMERAL) {
+  if (
+    ios === Notifications.IosAuthorizationStatus.PROVISIONAL ||
+    ios === Notifications.IosAuthorizationStatus.EPHEMERAL
+  ) {
     return 'granted';
   }
   return status.canAskAgain ? 'undetermined' : 'denied';
@@ -45,15 +50,26 @@ export async function requestReminderPermission(): Promise<ReminderPermission> {
   return toPermission(status);
 }
 
-function reminderContent(meal: MealReminder['meal']): Notifications.NotificationContentInput {
+function reminderContent(
+  meal: MealReminder['meal'],
+): Notifications.NotificationContentInput {
   const t = i18n.t.bind(i18n);
   switch (meal) {
     case 'breakfast':
-      return { title: t('notifications.meal.breakfast.title'), body: t('notifications.meal.breakfast.body') };
+      return {
+        title: t('notifications.meal.breakfast.title'),
+        body: t('notifications.meal.breakfast.body'),
+      };
     case 'lunch':
-      return { title: t('notifications.meal.lunch.title'), body: t('notifications.meal.lunch.body') };
+      return {
+        title: t('notifications.meal.lunch.title'),
+        body: t('notifications.meal.lunch.body'),
+      };
     case 'dinner':
-      return { title: t('notifications.meal.dinner.title'), body: t('notifications.meal.dinner.body') };
+      return {
+        title: t('notifications.meal.dinner.title'),
+        body: t('notifications.meal.dinner.body'),
+      };
   }
 }
 
@@ -72,14 +88,23 @@ export async function cancelMealReminders(): Promise<void> {
  * (cancels ours first). Call again after a language change to re-localize.
  * Requires permission — call `requestReminderPermission()` first.
  */
-export async function scheduleMealReminders(reminders: MealReminder[] = DEFAULT_MEAL_REMINDERS): Promise<void> {
+export async function scheduleMealReminders(
+  reminders: MealReminder[] = DEFAULT_MEAL_REMINDERS,
+): Promise<void> {
   await cancelMealReminders();
   await Promise.all(
     reminders.map((r) =>
       Notifications.scheduleNotificationAsync({
         identifier: `${ID_PREFIX}${r.meal}`,
-        content: { ...reminderContent(r.meal), data: { url: '/', kind: 'meal-reminder', meal: r.meal } },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: r.hour, minute: r.minute },
+        content: {
+          ...reminderContent(r.meal),
+          data: { url: '/', kind: 'meal-reminder', meal: r.meal },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: r.hour,
+          minute: r.minute,
+        },
       }),
     ),
   );
@@ -90,7 +115,10 @@ export async function scheduleMealReminders(reminders: MealReminder[] = DEFAULT_
  * needed and schedules the defaults; resolves to the resulting state (false
  * if permission was denied). `setEnabled(false)` cancels them.
  */
-export function useMealReminders(): { enabled: boolean; setEnabled: (value: boolean) => Promise<boolean> } {
+export function useMealReminders(): {
+  enabled: boolean;
+  setEnabled: (value: boolean) => Promise<boolean>;
+} {
   const enabled = useReminderStore((s) => s.enabled);
   const setEnabled = useCallback(async (value: boolean) => {
     const { setEnabledFlag } = useReminderStore.getState();
@@ -100,7 +128,8 @@ export function useMealReminders(): { enabled: boolean; setEnabled: (value: bool
       return false;
     }
     let permission = await getReminderPermission();
-    if (permission !== 'granted') permission = await requestReminderPermission();
+    if (permission !== 'granted')
+      permission = await requestReminderPermission();
     if (permission !== 'granted') {
       setEnabledFlag(false);
       return false;
@@ -136,7 +165,8 @@ export function initNotifications(): void {
     if (!useReminderStore.getState().enabled) return;
     void (async () => {
       try {
-        if ((await getReminderPermission()) === 'granted') await scheduleMealReminders();
+        if ((await getReminderPermission()) === 'granted')
+          await scheduleMealReminders();
       } catch (e) {
         console.warn('[notifications] failed to re-localize meal reminders', e);
       }

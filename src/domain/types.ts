@@ -16,15 +16,19 @@ export type WorkoutCategory = 'strength' | 'cardio' | 'sport' | 'other';
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
-export type FoodSource = 'photo' | 'text' | 'voice' | 'barcode' | 'favorite' | 'manual';
+export type FoodSource =
+  'photo' | 'text' | 'voice' | 'barcode' | 'favorite' | 'manual';
 
 export type WorkoutKcalSource = 'met' | 'healthkit' | 'manual';
 
-export type TrackingType = 'weight_reps' | 'reps' | 'duration' | 'distance_duration';
+export type TrackingType =
+  'weight_reps' | 'reps' | 'duration' | 'distance_duration';
 
 /** Onboarding v2 personalization — mirrors the `profiles` CHECK constraints (migration 20260929100000). */
-export type Motivation = 'health' | 'look' | 'performance' | 'energy' | 'confidence';
+export type Motivation =
+  'health' | 'look' | 'performance' | 'energy' | 'confidence';
 
-export type Diet = 'omnivore' | 'flexitarian' | 'pescetarian' | 'vegetarian' | 'vegan';
+export type Diet =
+  'omnivore' | 'flexitarian' | 'pescetarian' | 'vegetarian' | 'vegan';
 
 export type TrainingExperience = 'beginner' | 'intermediate' | 'advanced';

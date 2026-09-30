@@ -18,8 +18,19 @@ import {
 } from '@/features/workout';
 import { useSession } from '@/features/auth';
 
-const CATEGORIES: (ExerciseCategory | 'all')[] = ['all', 'strength', 'cardio', 'sport', 'other'];
-const TRACKING_TYPES: TrackingType[] = ['weight_reps', 'reps', 'duration', 'distance_duration'];
+const CATEGORIES: (ExerciseCategory | 'all')[] = [
+  'all',
+  'strength',
+  'cardio',
+  'sport',
+  'other',
+];
+const TRACKING_TYPES: TrackingType[] = [
+  'weight_reps',
+  'reps',
+  'duration',
+  'distance_duration',
+];
 const TRACKING_LABEL_KEYS = {
   weight_reps: 'workout.exercisePicker.trackingWeightReps',
   reps: 'workout.exercisePicker.trackingReps',
@@ -32,7 +43,9 @@ export default function ExercisePickerScreen() {
   const { userId } = useSession();
   const { exercises, isLoading, refresh } = useExerciseCatalog();
   const mode = useExercisePickerStore((s) => s.mode);
-  const initialSelectedIds = useExercisePickerStore((s) => s.initialSelectedIds);
+  const initialSelectedIds = useExercisePickerStore(
+    (s) => s.initialSelectedIds,
+  );
   const confirm = useExercisePickerStore((s) => s.confirm);
 
   const [query, setQuery] = useState('');
@@ -53,7 +66,11 @@ export default function ExercisePickerScreen() {
       router.back();
       return;
     }
-    setSelectedIds((ids) => (ids.includes(exercise.id) ? ids.filter((i) => i !== exercise.id) : [...ids, exercise.id]));
+    setSelectedIds((ids) =>
+      ids.includes(exercise.id)
+        ? ids.filter((i) => i !== exercise.id)
+        : [...ids, exercise.id],
+    );
   }
 
   function handleConfirm() {
@@ -62,17 +79,23 @@ export default function ExercisePickerScreen() {
   }
 
   return (
-    <View className="flex-1 bg-system-background pt-4">
+    <View className="bg-system-background flex-1 pt-4">
       <View className="px-4">
-        <Text className="mb-3 text-center text-lg font-semibold text-label">{t('workout.exercisePicker.title')}</Text>
-        <View className="mb-3 flex-row items-center gap-2 rounded-xl bg-secondary-system-background px-3 py-2">
-          <SymbolView name="magnifyingglass" size={16} tintColor="secondaryLabel" />
+        <Text className="text-label mb-3 text-center text-lg font-semibold">
+          {t('workout.exercisePicker.title')}
+        </Text>
+        <View className="bg-secondary-system-background mb-3 flex-row items-center gap-2 rounded-xl px-3 py-2">
+          <SymbolView
+            name="magnifyingglass"
+            size={16}
+            tintColor="secondaryLabel"
+          />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder={t('workout.exercisePicker.searchPlaceholder')}
             placeholderTextColor="gray"
-            className="flex-1 text-base text-label"
+            className="text-label flex-1 text-base"
           />
         </View>
         <FlatList
@@ -87,7 +110,9 @@ export default function ExercisePickerScreen() {
               className={`rounded-full px-3 py-1.5 ${category === item ? 'bg-tint' : 'bg-secondary-system-background'}`}
             >
               <Text className={category === item ? 'text-white' : 'text-label'}>
-                {item === 'all' ? t('workout.exercisePicker.categoryAll') : t(`workout.category.${item}`)}
+                {item === 'all'
+                  ? t('workout.exercisePicker.categoryAll')
+                  : t(`workout.category.${item}`)}
               </Text>
             </Pressable>
           )}
@@ -104,7 +129,9 @@ export default function ExercisePickerScreen() {
                 onPress={() => setMuscleGroup(item)}
                 className={`rounded-full px-3 py-1 ${muscleGroup === item ? 'bg-tint' : 'bg-secondary-system-background'}`}
               >
-                <Text className={`text-xs ${muscleGroup === item ? 'text-white' : 'text-secondary-label'}`}>
+                <Text
+                  className={`text-xs ${muscleGroup === item ? 'text-white' : 'text-secondary-label'}`}
+                >
                   {item ?? t('workout.exercisePicker.muscleGroupAll')}
                 </Text>
               </Pressable>
@@ -119,7 +146,9 @@ export default function ExercisePickerScreen() {
         contentContainerClassName="px-4 pb-4"
         ListEmptyComponent={
           !isLoading ? (
-            <Text className="mt-8 text-center text-secondary-label">{t('workout.exercisePicker.noResults')}</Text>
+            <Text className="text-secondary-label mt-8 text-center">
+              {t('workout.exercisePicker.noResults')}
+            </Text>
           ) : null
         }
         renderItem={({ item }) => {
@@ -127,12 +156,16 @@ export default function ExercisePickerScreen() {
           return (
             <Pressable
               onPress={() => toggle(item)}
-              className="flex-row items-center justify-between border-b border-separator py-3"
+              className="border-separator flex-row items-center justify-between border-b py-3"
             >
               <View className="flex-1 pr-2">
-                <Text className="text-base text-label">{exerciseDisplayName(item, t)}</Text>
+                <Text className="text-label text-base">
+                  {exerciseDisplayName(item, t)}
+                </Text>
                 {item.muscleGroups.length > 0 && (
-                  <Text className="text-xs text-secondary-label">{item.muscleGroups.join(', ')}</Text>
+                  <Text className="text-secondary-label text-xs">
+                    {item.muscleGroups.join(', ')}
+                  </Text>
                 )}
               </View>
               {mode === 'multi' && (
@@ -146,9 +179,14 @@ export default function ExercisePickerScreen() {
           );
         }}
         ListFooterComponent={
-          <Pressable onPress={() => setShowCreate((v) => !v)} className="mt-2 flex-row items-center gap-2 py-3">
+          <Pressable
+            onPress={() => setShowCreate((v) => !v)}
+            className="mt-2 flex-row items-center gap-2 py-3"
+          >
             <SymbolView name="plus.circle" size={20} />
-            <Text className="text-base text-tint">{t('workout.exercisePicker.createCustom')}</Text>
+            <Text className="text-tint text-base">
+              {t('workout.exercisePicker.createCustom')}
+            </Text>
           </Pressable>
         }
       />
@@ -165,10 +203,15 @@ export default function ExercisePickerScreen() {
       )}
 
       {mode === 'multi' && (
-        <View className="border-t border-separator bg-system-background px-4 py-3">
-          <Pressable onPress={handleConfirm} className="items-center rounded-xl bg-tint py-3">
+        <View className="border-separator bg-system-background border-t px-4 py-3">
+          <Pressable
+            onPress={handleConfirm}
+            className="bg-tint items-center rounded-xl py-3"
+          >
             <Text className="text-base font-semibold text-white">
-              {t('workout.exercisePicker.confirm', { count: selectedIds.length })}
+              {t('workout.exercisePicker.confirm', {
+                count: selectedIds.length,
+              })}
             </Text>
           </Pressable>
         </View>
@@ -177,37 +220,51 @@ export default function ExercisePickerScreen() {
   );
 }
 
-function CreateCustomExerciseForm({ userId, onCreated }: { userId: string; onCreated: (e: Exercise) => void }) {
+function CreateCustomExerciseForm({
+  userId,
+  onCreated,
+}: {
+  userId: string;
+  onCreated: (e: Exercise) => void;
+}) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<ExerciseCategory>('strength');
   const [trackingType, setTrackingType] = useState<TrackingType>('weight_reps');
 
   return (
-    <View className="gap-3 border-t border-separator bg-secondary-system-background px-4 py-4">
+    <View className="border-separator bg-secondary-system-background gap-3 border-t px-4 py-4">
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder={t('workout.exercisePicker.customName')}
         placeholderTextColor="gray"
-        className="rounded-lg bg-system-background px-3 py-2 text-base text-label"
+        className="bg-system-background text-label rounded-lg px-3 py-2 text-base"
       />
       <View>
-        <Text className="mb-1 text-xs text-secondary-label">{t('workout.exercisePicker.customCategory')}</Text>
+        <Text className="text-secondary-label mb-1 text-xs">
+          {t('workout.exercisePicker.customCategory')}
+        </Text>
         <View className="flex-row gap-2">
-          {(['strength', 'cardio', 'sport', 'other'] as ExerciseCategory[]).map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => setCategory(c)}
-              className={`rounded-full px-3 py-1 ${category === c ? 'bg-tint' : 'bg-system-background'}`}
-            >
-              <Text className={category === c ? 'text-white' : 'text-label'}>{t(`workout.category.${c}`)}</Text>
-            </Pressable>
-          ))}
+          {(['strength', 'cardio', 'sport', 'other'] as ExerciseCategory[]).map(
+            (c) => (
+              <Pressable
+                key={c}
+                onPress={() => setCategory(c)}
+                className={`rounded-full px-3 py-1 ${category === c ? 'bg-tint' : 'bg-system-background'}`}
+              >
+                <Text className={category === c ? 'text-white' : 'text-label'}>
+                  {t(`workout.category.${c}`)}
+                </Text>
+              </Pressable>
+            ),
+          )}
         </View>
       </View>
       <View>
-        <Text className="mb-1 text-xs text-secondary-label">{t('workout.exercisePicker.customTracking')}</Text>
+        <Text className="text-secondary-label mb-1 text-xs">
+          {t('workout.exercisePicker.customTracking')}
+        </Text>
         <View className="flex-row flex-wrap gap-2">
           {TRACKING_TYPES.map((tt) => (
             <Pressable
@@ -215,7 +272,11 @@ function CreateCustomExerciseForm({ userId, onCreated }: { userId: string; onCre
               onPress={() => setTrackingType(tt)}
               className={`rounded-full px-3 py-1 ${trackingType === tt ? 'bg-tint' : 'bg-system-background'}`}
             >
-              <Text className={trackingType === tt ? 'text-white' : 'text-label'}>{t(TRACKING_LABEL_KEYS[tt])}</Text>
+              <Text
+                className={trackingType === tt ? 'text-white' : 'text-label'}
+              >
+                {t(TRACKING_LABEL_KEYS[tt])}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -223,12 +284,18 @@ function CreateCustomExerciseForm({ userId, onCreated }: { userId: string; onCre
       <Pressable
         disabled={!name.trim()}
         onPress={() => {
-          const exercise = createCustomExercise(userId, { name: name.trim(), category, trackingType });
+          const exercise = createCustomExercise(userId, {
+            name: name.trim(),
+            category,
+            trackingType,
+          });
           onCreated(exercise);
         }}
         className={`items-center rounded-xl py-2.5 ${name.trim() ? 'bg-tint' : 'bg-secondary-system-background'}`}
       >
-        <Text className="font-semibold text-white">{t('workout.exercisePicker.createCustom')}</Text>
+        <Text className="font-semibold text-white">
+          {t('workout.exercisePicker.createCustom')}
+        </Text>
       </Pressable>
     </View>
   );

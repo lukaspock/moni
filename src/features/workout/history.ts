@@ -7,7 +7,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { localDayBoundsUtc } from '@/lib/date';
 import { storage } from '@/lib/storage';
-import { enqueueUpsert, pendingUpsertsForTable, subscribeOutbox } from '@/lib/outbox';
+import {
+  enqueueUpsert,
+  pendingUpsertsForTable,
+  subscribeOutbox,
+} from '@/lib/outbox';
 import { useSession } from '@/features/auth';
 import { exportWorkoutToHealth } from '@/features/health';
 import {
@@ -68,7 +72,10 @@ export function getBestOneRepMaxKg(exerciseId: string): number | null {
   return all[exerciseId] ?? null;
 }
 
-function updateBestOneRepMaxKg(exerciseId: string, candidateKg: number): { isPR: boolean; previous: number | null } {
+function updateBestOneRepMaxKg(
+  exerciseId: string,
+  candidateKg: number,
+): { isPR: boolean; previous: number | null } {
   const all = readJSON<Record<string, number>>(BEST_1RM_KEY, {});
   const previous = all[exerciseId] ?? null;
   const isPR = previous === null || candidateKg > previous;
@@ -89,14 +96,23 @@ export interface FinishWorkoutResult {
   kcalBurned: number;
   volumeKg: number;
   workoutBonusKcal: number;
-  prs: { exerciseId: string; newOneRepMaxKg: number; previousOneRepMaxKg: number | null }[];
+  prs: {
+    exerciseId: string;
+    newOneRepMaxKg: number;
+    previousOneRepMaxKg: number | null;
+  }[];
 }
 
-function metForNonStrength(category: WorkoutCategory, exercises: ActiveExercise[], catalog: Exercise[]): number {
+function metForNonStrength(
+  category: WorkoutCategory,
+  exercises: ActiveExercise[],
+  catalog: Exercise[],
+): number {
   const withMet = exercises
     .map((e) => catalog.find((c) => c.id === e.exerciseId)?.metValue)
     .filter((m): m is number => typeof m === 'number');
-  if (withMet.length > 0) return withMet.reduce((a, b) => a + b, 0) / withMet.length;
+  if (withMet.length > 0)
+    return withMet.reduce((a, b) => a + b, 0) / withMet.length;
   return defaultMetForCategory(category) ?? 5;
 }
 
@@ -116,27 +132,44 @@ export function finishActiveWorkout(opts: {
 
   const endedAt = new Date();
   const startedAt = new Date(session.startedAt);
-  const durationMinutes = Math.max(1 / 60, (endedAt.getTime() - startedAt.getTime()) / 60000);
+  const durationMinutes = Math.max(
+    1 / 60,
+    (endedAt.getTime() - startedAt.getTime()) / 60000,
+  );
   const weightKg = opts.latestWeightKg ?? FALLBACK_WEIGHT_KG;
 
   const completedSets = session.exercises.flatMap((e) =>
-    e.sets.filter((s) => s.completedAt !== null).map((s) => ({ exercise: e, set: s })),
+    e.sets
+      .filter((s) => s.completedAt !== null)
+      .map((s) => ({ exercise: e, set: s })),
   );
 
   let metValue: number;
   if (session.category === 'strength') {
-    const density = calculateSessionDensity(completedSets.length, durationMinutes);
+    const density = calculateSessionDensity(
+      completedSets.length,
+      durationMinutes,
+    );
     metValue = estimateStrengthMET(density);
   } else {
-    metValue = metForNonStrength(session.category, session.exercises, opts.exerciseCatalog);
+    metValue = metForNonStrength(
+      session.category,
+      session.exercises,
+      opts.exerciseCatalog,
+    );
   }
-  const kcalBurned = Math.round(calculateKcalBurned(metValue, weightKg, durationMinutes / 60));
+  const kcalBurned = Math.round(
+    calculateKcalBurned(metValue, weightKg, durationMinutes / 60),
+  );
   const workoutBonusKcal = Math.round(kcalBurned * opts.eatBackFactor);
 
   const volumeKg = calculateSetVolume(
     completedSets
       .filter((cs) => cs.set.reps !== null && cs.set.weightKg !== null)
-      .map((cs) => ({ reps: cs.set.reps as number, weightKg: cs.set.weightKg as number })),
+      .map((cs) => ({
+        reps: cs.set.reps as number,
+        weightKg: cs.set.weightKg as number,
+      })),
   );
 
   // Queue the workout row.
@@ -150,13 +183,23 @@ export function finishActiveWorkout(opts: {
     kcal_source: 'met',
   });
   // Apple Health write-back (fire-and-forget; no-op unless enabled in settings, never blocks this offline flow).
-  void exportWorkoutToHealth({ workoutId: session.workoutId, category: session.category, startedAt: session.startedAt, endedAt: endedAt.toISOString(), kcalBurned });
+  void exportWorkoutToHealth({
+    workoutId: session.workoutId,
+    category: session.category,
+    startedAt: session.startedAt,
+    endedAt: endedAt.toISOString(),
+    kcalBurned,
+  });
 
   // Queue every set that has any data entered (not just untouched placeholders).
   for (const exercise of session.exercises) {
     for (const set of exercise.sets) {
       const hasData =
-        set.reps !== null || set.weightKg !== null || set.durationS !== null || set.distanceM !== null || set.completedAt !== null;
+        set.reps !== null ||
+        set.weightKg !== null ||
+        set.durationS !== null ||
+        set.distanceM !== null ||
+        set.completedAt !== null;
       if (!hasData) continue;
       enqueueUpsert('workout_sets', set.id, {
         workout_id: session.workoutId,
@@ -193,14 +236,28 @@ export function finishActiveWorkout(opts: {
         })),
     );
 
-    const weightRepsSets = sets.filter((cs) => cs.set.reps !== null && cs.set.weightKg !== null);
+    const weightRepsSets = sets.filter(
+      (cs) => cs.set.reps !== null && cs.set.weightKg !== null,
+    );
     if (weightRepsSets.length === 0) continue;
     const best1RmThisSession = Math.max(
-      ...weightRepsSets.map((cs) => estimateOneRepMaxEpley(cs.set.weightKg as number, cs.set.reps as number)),
+      ...weightRepsSets.map((cs) =>
+        estimateOneRepMaxEpley(
+          cs.set.weightKg as number,
+          cs.set.reps as number,
+        ),
+      ),
     );
-    const { isPR, previous } = updateBestOneRepMaxKg(exerciseId, best1RmThisSession);
+    const { isPR, previous } = updateBestOneRepMaxKg(
+      exerciseId,
+      best1RmThisSession,
+    );
     if (isPR) {
-      prs.push({ exerciseId, newOneRepMaxKg: best1RmThisSession, previousOneRepMaxKg: previous });
+      prs.push({
+        exerciseId,
+        newOneRepMaxKg: best1RmThisSession,
+        previousOneRepMaxKg: previous,
+      });
     }
   }
 
@@ -220,14 +277,18 @@ export function finishActiveWorkout(opts: {
 // History reads (contract: useWorkoutsForDate)
 // -------------------------------------------------------------------------
 
-function rowToSummary(row: {
-  id: string;
-  started_at: string;
-  ended_at: string | null;
-  category: string;
-  kcal_burned: number | null;
-  healthkit_uuid?: string | null;
-}, routineNameById: Map<string, string>, routineId: string | null): WorkoutSummary {
+function rowToSummary(
+  row: {
+    id: string;
+    started_at: string;
+    ended_at: string | null;
+    category: string;
+    kcal_burned: number | null;
+    healthkit_uuid?: string | null;
+  },
+  routineNameById: Map<string, string>,
+  routineId: string | null,
+): WorkoutSummary {
   return {
     isFromHealth: !!row.healthkit_uuid,
     id: row.id,
@@ -250,7 +311,10 @@ function localDateOf(iso: string): string {
 async function fetchRoutineNames(ids: string[]): Promise<Map<string, string>> {
   const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
   if (uniqueIds.length === 0) return new Map();
-  const { data } = await supabase.from('routines').select('id, name').in('id', uniqueIds);
+  const { data } = await supabase
+    .from('routines')
+    .select('id, name')
+    .in('id', uniqueIds);
   return new Map((data ?? []).map((r) => [r.id, r.name]));
 }
 
@@ -279,7 +343,9 @@ export function useWorkoutsForDateImpl(
       const { start: dayStart, end: dayEnd } = localDayBoundsUtc(date);
       const { data } = await supabase
         .from('workouts')
-        .select('id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid')
+        .select(
+          'id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid',
+        )
         .eq('user_id', uid)
         .gte('started_at', dayStart)
         .lt('started_at', dayEnd)
@@ -290,7 +356,9 @@ export function useWorkoutsForDateImpl(
       // Overlay unsynced local workouts for this date (offline-finished sessions still in the outbox).
       const pending = pendingUpsertsForTable('workouts').filter((p) => {
         const startedAt = p.started_at as string | undefined;
-        return p.user_id === uid && startedAt && localDateOf(startedAt) === date;
+        return (
+          p.user_id === uid && startedAt && localDateOf(startedAt) === date
+        );
       });
 
       const serverIds = new Set(serverRows.map((r) => r.id));
@@ -307,10 +375,14 @@ export function useWorkoutsForDateImpl(
         }));
 
       const allRows = [...serverRows, ...pendingRows];
-      const routineNameById = await fetchRoutineNames(allRows.map((r) => r.routine_id).filter((x): x is string => !!x));
+      const routineNameById = await fetchRoutineNames(
+        allRows.map((r) => r.routine_id).filter((x): x is string => !!x),
+      );
 
       if (!cancelled) {
-        setWorkouts(allRows.map((r) => rowToSummary(r, routineNameById, r.routine_id)));
+        setWorkouts(
+          allRows.map((r) => rowToSummary(r, routineNameById, r.routine_id)),
+        );
         setIsLoading(false);
       }
     }
@@ -327,7 +399,10 @@ export function useWorkoutsForDateImpl(
 }
 
 /** Recent workout history (all dates, newest first), for the training tab's history screen. */
-export function useWorkoutHistory(limit: number = 50): { workouts: WorkoutSummary[]; isLoading: boolean } {
+export function useWorkoutHistory(limit: number = 50): {
+  workouts: WorkoutSummary[];
+  isLoading: boolean;
+} {
   const { userId } = useSession();
   return useWorkoutHistoryImpl(userId, limit);
 }
@@ -353,7 +428,9 @@ export function useWorkoutHistoryImpl(
       setIsLoading(true);
       const { data } = await supabase
         .from('workouts')
-        .select('id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid')
+        .select(
+          'id, started_at, ended_at, category, kcal_burned, routine_id, healthkit_uuid',
+        )
         .eq('user_id', uid)
         .order('started_at', { ascending: false })
         .limit(limit);
@@ -372,11 +449,17 @@ export function useWorkoutHistoryImpl(
           healthkit_uuid: (p.healthkit_uuid as string) ?? null,
         }));
 
-      const allRows = [...serverRows, ...pendingRows].sort((a, b) => (a.started_at < b.started_at ? 1 : -1));
-      const routineNameById = await fetchRoutineNames(allRows.map((r) => r.routine_id).filter((x): x is string => !!x));
+      const allRows = [...serverRows, ...pendingRows].sort((a, b) =>
+        a.started_at < b.started_at ? 1 : -1,
+      );
+      const routineNameById = await fetchRoutineNames(
+        allRows.map((r) => r.routine_id).filter((x): x is string => !!x),
+      );
 
       if (!cancelled) {
-        setWorkouts(allRows.map((r) => rowToSummary(r, routineNameById, r.routine_id)));
+        setWorkouts(
+          allRows.map((r) => rowToSummary(r, routineNameById, r.routine_id)),
+        );
         setIsLoading(false);
       }
     }

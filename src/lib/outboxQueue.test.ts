@@ -36,12 +36,28 @@ describe('enqueue', () => {
       createdAt: 100,
     });
     expect(queue).toHaveLength(1);
-    expect(queue[0]).toMatchObject({ id: 'a', attempts: 0, nextAttemptAt: 100 });
+    expect(queue[0]).toMatchObject({
+      id: 'a',
+      attempts: 0,
+      nextAttemptAt: 100,
+    });
   });
 
   it('preserves FIFO order across different rows', () => {
-    let queue = enqueue([], { id: 'a', table: 't', op: 'upsert', payload: {}, createdAt: 100 });
-    queue = enqueue(queue, { id: 'b', table: 't', op: 'upsert', payload: {}, createdAt: 200 });
+    let queue = enqueue([], {
+      id: 'a',
+      table: 't',
+      op: 'upsert',
+      payload: {},
+      createdAt: 100,
+    });
+    queue = enqueue(queue, {
+      id: 'b',
+      table: 't',
+      op: 'upsert',
+      payload: {},
+      createdAt: 200,
+    });
     expect(queue.map((e) => e.id)).toEqual(['a', 'b']);
   });
 
@@ -77,7 +93,13 @@ describe('enqueue', () => {
         nextAttemptAt: 9999,
       },
     ];
-    queue = enqueue(queue, { id: 'a', table: 't', op: 'upsert', payload: { x: 2 }, createdAt: 500 });
+    queue = enqueue(queue, {
+      id: 'a',
+      table: 't',
+      op: 'upsert',
+      payload: { x: 2 },
+      createdAt: 500,
+    });
     expect(queue[0].attempts).toBe(0);
     expect(queue[0].nextAttemptAt).toBe(500);
   });
@@ -90,37 +112,91 @@ describe('enqueue', () => {
       payload: { name: 'Push' },
       createdAt: 100,
     });
-    queue = enqueue(queue, { id: 'a', table: 'workouts', op: 'delete', payload: {}, createdAt: 200 });
+    queue = enqueue(queue, {
+      id: 'a',
+      table: 'workouts',
+      op: 'delete',
+      payload: {},
+      createdAt: 200,
+    });
     expect(queue).toHaveLength(1);
     expect(queue[0].op).toBe('delete');
     expect(queue[0].payload).toEqual({});
   });
 
   it('a delete followed by a delete is a no-op', () => {
-    let queue = enqueue([], { id: 'a', table: 't', op: 'delete', payload: {}, createdAt: 100 });
+    let queue = enqueue([], {
+      id: 'a',
+      table: 't',
+      op: 'delete',
+      payload: {},
+      createdAt: 100,
+    });
     const before = queue;
-    queue = enqueue(queue, { id: 'a', table: 't', op: 'delete', payload: {}, createdAt: 200 });
+    queue = enqueue(queue, {
+      id: 'a',
+      table: 't',
+      op: 'delete',
+      payload: {},
+      createdAt: 200,
+    });
     expect(queue).toBe(before);
   });
 
   it('a delete followed by an upsert replaces it with the upsert (id reuse)', () => {
-    let queue = enqueue([], { id: 'a', table: 't', op: 'delete', payload: {}, createdAt: 100 });
-    queue = enqueue(queue, { id: 'a', table: 't', op: 'upsert', payload: { x: 1 }, createdAt: 200 });
+    let queue = enqueue([], {
+      id: 'a',
+      table: 't',
+      op: 'delete',
+      payload: {},
+      createdAt: 100,
+    });
+    queue = enqueue(queue, {
+      id: 'a',
+      table: 't',
+      op: 'upsert',
+      payload: { x: 1 },
+      createdAt: 200,
+    });
     expect(queue[0].op).toBe('upsert');
     expect(queue[0].payload).toEqual({ x: 1 });
   });
 
   it('keeps entries for the same id in different tables separate', () => {
-    let queue = enqueue([], { id: 'a', table: 'workouts', op: 'upsert', payload: { x: 1 }, createdAt: 100 });
-    queue = enqueue(queue, { id: 'a', table: 'workout_sets', op: 'upsert', payload: { y: 2 }, createdAt: 100 });
+    let queue = enqueue([], {
+      id: 'a',
+      table: 'workouts',
+      op: 'upsert',
+      payload: { x: 1 },
+      createdAt: 100,
+    });
+    queue = enqueue(queue, {
+      id: 'a',
+      table: 'workout_sets',
+      op: 'upsert',
+      payload: { y: 2 },
+      createdAt: 100,
+    });
     expect(queue).toHaveLength(2);
   });
 });
 
 describe('removeEntry', () => {
   it('removes only the matching table+id', () => {
-    let queue = enqueue([], { id: 'a', table: 't', op: 'upsert', payload: {}, createdAt: 1 });
-    queue = enqueue(queue, { id: 'b', table: 't', op: 'upsert', payload: {}, createdAt: 2 });
+    let queue = enqueue([], {
+      id: 'a',
+      table: 't',
+      op: 'upsert',
+      payload: {},
+      createdAt: 1,
+    });
+    queue = enqueue(queue, {
+      id: 'b',
+      table: 't',
+      op: 'upsert',
+      payload: {},
+      createdAt: 2,
+    });
     queue = removeEntry(queue, 't', 'a');
     expect(queue.map((e) => e.id)).toEqual(['b']);
   });
@@ -129,9 +205,33 @@ describe('removeEntry', () => {
 describe('selectReadyEntries', () => {
   it('returns only entries whose nextAttemptAt has passed, sorted by createdAt', () => {
     const queue: OutboxEntry[] = [
-      { id: 'b', table: 't', op: 'upsert', payload: {}, createdAt: 200, attempts: 0, nextAttemptAt: 0 },
-      { id: 'a', table: 't', op: 'upsert', payload: {}, createdAt: 100, attempts: 1, nextAttemptAt: 5000 },
-      { id: 'c', table: 't', op: 'upsert', payload: {}, createdAt: 300, attempts: 0, nextAttemptAt: 0 },
+      {
+        id: 'b',
+        table: 't',
+        op: 'upsert',
+        payload: {},
+        createdAt: 200,
+        attempts: 0,
+        nextAttemptAt: 0,
+      },
+      {
+        id: 'a',
+        table: 't',
+        op: 'upsert',
+        payload: {},
+        createdAt: 100,
+        attempts: 1,
+        nextAttemptAt: 5000,
+      },
+      {
+        id: 'c',
+        table: 't',
+        op: 'upsert',
+        payload: {},
+        createdAt: 300,
+        attempts: 0,
+        nextAttemptAt: 0,
+      },
     ];
     const ready = selectReadyEntries(queue, 1000);
     expect(ready.map((e) => e.id)).toEqual(['b', 'c']);

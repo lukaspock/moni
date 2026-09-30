@@ -46,7 +46,9 @@ function round1(value: number): number {
 export function calculateMacros(input: MacroInput): MacroResult {
   const { totalKcal, weightKg, isStrengthDay, isDeficit } = input;
 
-  let proteinPerKg = isStrengthDay ? STRENGTH_DAY_PROTEIN_G_PER_KG : REST_DAY_PROTEIN_G_PER_KG;
+  let proteinPerKg = isStrengthDay
+    ? STRENGTH_DAY_PROTEIN_G_PER_KG
+    : REST_DAY_PROTEIN_G_PER_KG;
   if (isDeficit) proteinPerKg += DEFICIT_PROTEIN_BONUS_G_PER_KG;
   proteinPerKg = Math.min(proteinPerKg, MAX_PROTEIN_G_PER_KG);
   const proteinG = proteinPerKg * weightKg;
@@ -55,8 +57,13 @@ export function calculateMacros(input: MacroInput): MacroResult {
   const fatFromFloor = MIN_FAT_G_PER_KG * weightKg;
   const fatG = Math.max(fatFromPercent, fatFromFloor);
 
-  const remainingKcal = totalKcal - proteinG * KCAL_PER_G_PROTEIN - fatG * KCAL_PER_G_FAT;
+  const remainingKcal =
+    totalKcal - proteinG * KCAL_PER_G_PROTEIN - fatG * KCAL_PER_G_FAT;
   const carbsG = Math.max(0, remainingKcal / KCAL_PER_G_CARB);
 
-  return { proteinG: round1(proteinG), fatG: round1(fatG), carbsG: round1(carbsG) };
+  return {
+    proteinG: round1(proteinG),
+    fatG: round1(fatG),
+    carbsG: round1(carbsG),
+  };
 }

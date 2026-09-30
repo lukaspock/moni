@@ -22,14 +22,30 @@ import type { Database } from '../../../types/database';
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
-const MOTIVATIONS: Motivation[] = ['health', 'look', 'performance', 'energy', 'confidence'];
-const DIETS: Diet[] = ['omnivore', 'flexitarian', 'pescetarian', 'vegetarian', 'vegan'];
-const EXPERIENCES: TrainingExperience[] = ['beginner', 'intermediate', 'advanced'];
+const MOTIVATIONS: Motivation[] = [
+  'health',
+  'look',
+  'performance',
+  'energy',
+  'confidence',
+];
+const DIETS: Diet[] = [
+  'omnivore',
+  'flexitarian',
+  'pescetarian',
+  'vegetarian',
+  'vegan',
+];
+const EXPERIENCES: TrainingExperience[] = [
+  'beginner',
+  'intermediate',
+  'advanced',
+];
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <View className="min-h-12 flex-row items-center justify-between gap-3 bg-secondary-system-background px-4 py-2">
-      <Text className="text-base text-label">{label}</Text>
+    <View className="bg-secondary-system-background min-h-12 flex-row items-center justify-between gap-3 px-4 py-2">
+      <Text className="text-label text-base">{label}</Text>
       <View className="flex-shrink items-end">{children}</View>
     </View>
   );
@@ -78,12 +94,22 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
   const [name, setName] = useState(profile.display_name ?? '');
   const [targetText, setTargetText] = useState(() =>
     profile.target_weight_kg != null
-      ? String(roundTo(isImperial ? kgToLb(profile.target_weight_kg) : profile.target_weight_kg, 1))
+      ? String(
+          roundTo(
+            isImperial
+              ? kgToLb(profile.target_weight_kg)
+              : profile.target_weight_kg,
+            1,
+          ),
+        )
       : '',
   );
 
   async function save(patch: ProfileUpdate) {
-    const { error } = await supabase.from('profiles').update(patch).eq('id', profile.id);
+    const { error } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', profile.id);
     if (error) {
       Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
       return;
@@ -101,16 +127,30 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
   function saveTarget() {
     const raw = targetText.trim().replace(',', '.');
     if (raw === '') {
-      if (profile.target_weight_kg != null) void save({ target_weight_kg: null });
+      if (profile.target_weight_kg != null)
+        void save({ target_weight_kg: null });
       return;
     }
     const value = Number(raw);
-    const kg = Number.isNaN(value) ? NaN : roundTo(isImperial ? lbToKg(value) : value, 1);
-    if (!profile.height_cm || Number.isNaN(kg) || !isAcceptableTargetWeight(kg, profile.height_cm)) {
+    const kg = Number.isNaN(value)
+      ? NaN
+      : roundTo(isImperial ? lbToKg(value) : value, 1);
+    if (
+      !profile.height_cm ||
+      Number.isNaN(kg) ||
+      !isAcceptableTargetWeight(kg, profile.height_cm)
+    ) {
       Alert.alert(t('account.onboarding.targetWeight.warnTooLow'));
       setTargetText(
         profile.target_weight_kg != null
-          ? String(roundTo(isImperial ? kgToLb(profile.target_weight_kg) : profile.target_weight_kg, 1))
+          ? String(
+              roundTo(
+                isImperial
+                  ? kgToLb(profile.target_weight_kg)
+                  : profile.target_weight_kg,
+                1,
+              ),
+            )
           : '',
       );
       return;
@@ -122,7 +162,9 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
   // change (permission denied → stays false), SwiftUI would leave the switch
   // "on". Show the requested value while the permission prompt is up, then
   // remount the Toggle (key bump) so it re-syncs to the real store value.
-  const [pendingReminders, setPendingReminders] = useState<boolean | null>(null);
+  const [pendingReminders, setPendingReminders] = useState<boolean | null>(
+    null,
+  );
   const [reminderToggleKey, setReminderToggleKey] = useState(0);
 
   async function toggleReminders(value: boolean) {
@@ -130,7 +172,8 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
     const enabled = await reminders.setEnabled(value);
     setPendingReminders(null);
     if (enabled !== value) setReminderToggleKey((k) => k + 1);
-    if (value && !enabled) Alert.alert(t('account.profile.personal.remindersDenied'));
+    if (value && !enabled)
+      Alert.alert(t('account.profile.personal.remindersDenied'));
   }
 
   const motivationLabels: Record<Motivation, string> = {
@@ -155,10 +198,10 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
 
   return (
     <View>
-      <Text className="px-1 pb-1 pt-5 text-sm font-semibold uppercase text-secondary-label">
+      <Text className="text-secondary-label px-1 pb-1 pt-5 text-sm font-semibold uppercase">
         {t('account.profile.sections.personal')}
       </Text>
-      <View className="gap-px overflow-hidden rounded-xl bg-secondary-system-background">
+      <View className="bg-secondary-system-background gap-px overflow-hidden rounded-xl">
         <Row label={t('account.profile.personal.name')}>
           <TextInput
             value={name}
@@ -169,7 +212,7 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
             autoCorrect={false}
             maxLength={40}
             returnKeyType="done"
-            className="min-w-32 text-right text-base text-secondary-label"
+            className="text-secondary-label min-w-32 text-right text-base"
           />
         </Row>
         <Row label={t('account.profile.personal.motivation')}>
@@ -190,7 +233,9 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
         </Row>
         <Row label={t('account.profile.personal.experience')}>
           <MenuPicker
-            value={(profile.training_experience as TrainingExperience | null) ?? null}
+            value={
+              (profile.training_experience as TrainingExperience | null) ?? null
+            }
             options={EXPERIENCES}
             labelFor={(v) => experienceLabels[v]}
             onChange={(v) => void save({ training_experience: v })}
@@ -204,9 +249,13 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
               onEndEditing={saveTarget}
               placeholder={t('account.profile.personal.notSet')}
               keyboardType="decimal-pad"
-              className="min-w-20 text-right text-base text-secondary-label"
+              className="text-secondary-label min-w-20 text-right text-base"
             />
-            {targetText ? <Text className="text-base text-secondary-label">{isImperial ? 'lb' : 'kg'}</Text> : null}
+            {targetText ? (
+              <Text className="text-secondary-label text-base">
+                {isImperial ? 'lb' : 'kg'}
+              </Text>
+            ) : null}
           </View>
         </Row>
         <Row label={t('account.profile.personal.reminders')}>

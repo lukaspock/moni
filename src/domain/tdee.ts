@@ -13,6 +13,9 @@ export const NEAT_FACTORS: Record<ActivityLevel, number> = {
   active: 1.65,
 };
 
-export function calculateBaseTDEE(bmr: number, activityLevel: ActivityLevel): number {
+export function calculateBaseTDEE(
+  bmr: number,
+  activityLevel: ActivityLevel,
+): number {
   return bmr * NEAT_FACTORS[activityLevel];
 }

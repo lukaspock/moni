@@ -16,10 +16,15 @@ export interface WeightEntry {
   createdAt: string;
 }
 
-export const weightLogsKey = (userId: string | null) => ['weightLogs', userId] as const;
+export const weightLogsKey = (userId: string | null) =>
+  ['weightLogs', userId] as const;
 
 /** All weight entries of the user, oldest first (several per day are legit). */
-export function useWeightEntries(): { entries: WeightEntry[]; isLoading: boolean; isError: boolean } {
+export function useWeightEntries(): {
+  entries: WeightEntry[];
+  isLoading: boolean;
+  isError: boolean;
+} {
   const { userId } = useSession();
   const query = useQuery({
     queryKey: weightLogsKey(userId),
@@ -42,7 +47,11 @@ export function useWeightEntries(): { entries: WeightEntry[]; isLoading: boolean
     },
     enabled: !!userId,
   });
-  return { entries: query.data ?? [], isLoading: !!userId && query.isLoading, isError: query.isError };
+  return {
+    entries: query.data ?? [],
+    isLoading: !!userId && query.isLoading,
+    isError: query.isError,
+  };
 }
 
 /** Raw (daily-averaged) and smoothed points for charting. */
@@ -54,7 +63,10 @@ export function useWeightTrend(): {
 } {
   const { entries, isLoading } = useWeightEntries();
   const { raw, trend } = useMemo(() => {
-    const rawPoints = entries.map((e) => ({ date: e.date, weightKg: e.weightKg }));
+    const rawPoints = entries.map((e) => ({
+      date: e.date,
+      weightKg: e.weightKg,
+    }));
     return { raw: rawPoints, trend: smoothTrend(rawPoints) };
   }, [entries]);
   return { entries, raw, trend, isLoading };
@@ -68,7 +80,9 @@ function useInvalidateWeight() {
     // the dashboard/targets and workout kcal hooks read the latest weight
     void queryClient.invalidateQueries({ queryKey: ['latestWeight'] });
     void queryClient.invalidateQueries({ queryKey: ['targets'] });
-    void queryClient.invalidateQueries({ queryKey: ['workout', 'latestWeight'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['workout', 'latestWeight'],
+    });
   };
 }
 
@@ -95,7 +109,11 @@ export function useAddWeight() {
 export function useUpdateWeight() {
   const invalidate = useInvalidateWeight();
   return useMutation({
-    mutationFn: async (input: { id: string; weightKg: number; date: string }) => {
+    mutationFn: async (input: {
+      id: string;
+      weightKg: number;
+      date: string;
+    }) => {
       const { error } = await supabase
         .from('weight_logs')
         .update({ weight_kg: input.weightKg, date: input.date })
@@ -110,7 +128,10 @@ export function useDeleteWeight() {
   const invalidate = useInvalidateWeight();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('weight_logs').delete().eq('id', id);
+      const { error } = await supabase
+        .from('weight_logs')
+        .delete()
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: invalidate,
