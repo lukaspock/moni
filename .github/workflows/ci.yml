@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   app:
-    name: App (typecheck, lint, test)
+    name: App (typecheck, lint, format, test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run format:check
       - run: npm test -- --ci
       - name: Expo doctor
         run: npx expo-doctor

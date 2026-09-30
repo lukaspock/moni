@@ -20,8 +20,9 @@
  *   immutable, so insert-or-skip is enough).
  * - Deletions from the anchor: imported workouts (deterministic id) and
  *   imported weights are deleted. A deleted Health workout that had been
- *   *merged* into a møni workout leaves that møni workout (and its
- *   Health-measured kcal) untouched — the session itself was recorded in møni.
+ *   *merged* into a møni workout keeps the møni workout, but the link is
+ *   dropped (`healthkit_uuid` null) and the Health-measured kcal is replaced
+ *   by a MET estimate (`kcal_source 'met'`).
  */
 import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
@@ -235,10 +236,48 @@ async function syncWorkouts(userId: string, own: string | null): Promise<Omit<He
       enqueueDelete('workouts', id);
       result.deletedWorkouts += 1;
     }
+    await unmergeDeletedWorkouts(userId, deletedUuids, new Set(candidateIds));
   }
 
   storage.set(key, response.newAnchor);
   return result;
+}
+
+/**
+ * A Health workout that was merged into a møni workout was deleted in Health:
+ * the row stays (the session was recorded in møni) but loses the Health link
+ * and its Health kcal → MET estimate again.
+ */
+async function unmergeDeletedWorkouts(userId: string, uuids: string[], importedIds: Set<string>): Promise<void> {
+  const rows: WorkoutRowForMerge[] = [];
+  for (const chunk of chunks(uuids, IN_CHUNK)) {
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('id, user_id, routine_id, started_at, ended_at, category, kcal_burned, kcal_source, healthkit_uuid, notes')
+      .eq('user_id', userId)
+      .in('healthkit_uuid', chunk);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+  }
+  let weightKg: number | null = null;
+  for (const row of rows) {
+    if (importedIds.has(row.id)) continue; // plain imports are deleted above
+    weightKg ??= await latestWeightKg(userId);
+    const met = row.category === 'strength' ? STRENGTH_MET_MIN : metForIntensity('moderate');
+    const end = row.ended_at ? Date.parse(row.ended_at) : Date.parse(row.started_at);
+    const hours = Math.max(0, (end - Date.parse(row.started_at)) / 3_600_000);
+    enqueueUpsert('workouts', row.id, {
+      user_id: row.user_id,
+      routine_id: row.routine_id,
+      started_at: row.started_at,
+      ended_at: row.ended_at,
+      category: row.category,
+      notes: row.notes,
+      kcal_burned: Math.round(calculateKcalBurned(met, weightKg, hours)),
+      kcal_source: 'met',
+      healthkit_uuid: null,
+    });
+  }
 }
 
 /** Of the given candidate ids, those that exist on the server or in the outbox. */

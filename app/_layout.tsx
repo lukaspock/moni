@@ -43,6 +43,9 @@ type ApplyPhase = 'idle' | 'applying' | 'failed';
  * - signed in + no/incomplete profile and no draft to apply (new account via
  *   the returning-user path, or a second account on this device) → (onboarding)
  */
+/** Max time the gate waits for the profile before falling back to the tabs. */
+const PROFILE_GATE_TIMEOUT_MS = 2500;
+
 function RootNavigator() {
   const client = useQueryClient();
   const { session, userId, isLoading: sessionLoading } = useSession();
@@ -56,6 +59,18 @@ function RootNavigator() {
   const [applyAttempt, setApplyAttempt] = useState(0);
 
   const hasSession = !!session;
+
+  // Offline cold start: a hanging profile fetch must not keep the gate on a
+  // spinner — after PROFILE_GATE_TIMEOUT_MS fall back like a failed fetch.
+  const [profileTimedOut, setProfileTimedOut] = useState(false);
+  const waitingOnProfile = hasSession && profileLoading;
+  useEffect(() => {
+    if (!waitingOnProfile) return;
+    const timer = setTimeout(() => setProfileTimedOut(true), PROFILE_GATE_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [waitingOnProfile]);
+  const profileGaveUp = waitingOnProfile && profileTimedOut;
+
   const draftReady = onboardingCompleted && !appliedToProfile && draftComplete;
 
   useEffect(() => {
@@ -81,7 +96,7 @@ function RootNavigator() {
     };
   }, [userId, draftReady, applyAttempt, client]);
 
-  if (sessionLoading || (hasSession && profileLoading)) {
+  if (sessionLoading || (waitingOnProfile && !profileGaveUp)) {
     // Avoid flashing (onboarding) or (auth) before we know where the user belongs.
     // `useProfile` retries only once, so an offline start falls through to the tabs quickly.
     return (
@@ -93,7 +108,7 @@ function RootNavigator() {
 
   // Profile fetch failed (e.g. offline cold start): don't bounce an existing
   // user into onboarding — fall back to the tabs like before v2.
-  const profileComplete = isProfileComplete(profile) || (profileError && !profile && !draftReady);
+  const profileComplete = isProfileComplete(profile) || ((profileError || profileGaveUp) && !profile && !draftReady);
 
   if (hasSession && !profileComplete && (draftReady || applyPhase !== 'idle')) {
     return (
