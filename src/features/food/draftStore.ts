@@ -1,7 +1,12 @@
 import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
 
-import { suggestMealType, type FoodItemMacros, type FoodSource, type MealType } from '@/domain';
+import {
+  suggestMealType,
+  type FoodItemMacros,
+  type FoodSource,
+  type MealType,
+} from '@/domain';
 import { toISODate } from '@/lib/date';
 
 /**
@@ -31,6 +36,8 @@ interface FoodDraftState {
   imagePath: string | null;
   aiConfidence: number | null;
   aiRaw: unknown | null;
+  /** Follow-up question from the AI when the input was ambiguous (shown as a hint on review). */
+  clarification: string | null;
   saveAsFavorite: boolean;
   /** Overall portion slider, 0.25–3x. Applied on top of individually-edited item grams. */
   portionMultiplier: number;
@@ -56,6 +63,7 @@ interface FoodDraftState {
     items: DraftFoodItem[];
     confidence: number;
     aiRaw: unknown;
+    clarification?: string | null;
   }) => void;
   reset: () => void;
 }
@@ -89,6 +97,7 @@ function emptyState(): Omit<
     imagePath: null,
     aiConfidence: null,
     aiRaw: null,
+    clarification: null,
     saveAsFavorite: false,
     portionMultiplier: 1,
     status: 'idle',
@@ -119,7 +128,9 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
     })),
   updateItem: (id, patch) =>
     set((state) => ({
-      items: state.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, ...patch } : item,
+      ),
     })),
   removeItem: (id) =>
     set((state) => ({ items: state.items.filter((item) => item.id !== id) })),
@@ -138,13 +149,21 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
   setPortionMultiplier: (multiplier) => set({ portionMultiplier: multiplier }),
   setSaveAsFavorite: (value) => set({ saveAsFavorite: value }),
   setImagePath: (imagePath) => set({ imagePath }),
-  applyAiResult: ({ title, mealType, items, confidence, aiRaw }) =>
+  applyAiResult: ({
+    title,
+    mealType,
+    items,
+    confidence,
+    aiRaw,
+    clarification,
+  }) =>
     set((state) => ({
       title,
       mealType: mealType ?? state.mealType,
       items,
       aiConfidence: confidence,
       aiRaw,
+      clarification: clarification ?? null,
       status: 'ready',
       errorKind: null,
     })),

@@ -37,6 +37,7 @@ export {
   useSaveFoodDraft,
   useBumpFavoriteUseCount,
   useAnalyzeFood,
+  useAnalyzeLabel,
   uploadFoodImage,
   AnalyzeFoodError,
 } from './queries';
@@ -48,9 +49,26 @@ export type {
   SaveFoodDraftInput,
   AnalyzeFoodInput,
   AnalyzeFoodResult,
+  AnalyzeLabelResult,
 } from './queries';
 export { lookupBarcode } from './openFoodFacts';
-export type { OpenFoodFactsProduct } from './openFoodFacts';
+export type {
+  OpenFoodFactsProduct,
+  BarcodeLookupResult,
+} from './openFoodFacts';
+export { useFoodAnalysis } from './analysisFlow';
+export type { AnalysisFailure } from './analysisFlow';
+export {
+  useQuickLogEntries,
+  useQuickLogMeal,
+  favoriteToItems,
+  logToItems,
+} from './quickLog';
+export type { QuickLogEntry } from './quickLog';
 export { useFoodDraftStore } from './draftStore';
-export type { DraftFoodItem, FoodDraftStatus, FoodDraftErrorKind } from './draftStore';
+export type {
+  DraftFoodItem,
+  FoodDraftStatus,
+  FoodDraftErrorKind,
+} from './draftStore';
 export { foodKeys } from './keys';

@@ -12,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { Host, Picker, Slider, Text as SwiftUIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
@@ -20,7 +21,12 @@ import { SymbolView } from 'expo-symbols';
 import { themeColor } from '@/theme/colors';
 
 import type { MealType } from '@/domain';
-import { sumFoodItems } from '@/domain';
+import {
+  PORTION_PRESETS,
+  clampPortionMultiplier,
+  scaleFoodItems,
+  sumFoodItems,
+} from '@/domain';
 import {
   useFoodDraftStore,
   useFoodLogById,
@@ -29,16 +35,6 @@ import {
 } from '@/features/food';
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
-
-function scaledItem(item: DraftFoodItem, factor: number): DraftFoodItem {
-  return {
-    ...item,
-    kcal: item.kcal * factor,
-    proteinG: item.proteinG * factor,
-    carbsG: item.carbsG * factor,
-    fatG: item.fatG * factor,
-  };
-}
 
 export default function FoodReviewScreen() {
   const { t } = useTranslation();
@@ -49,6 +45,8 @@ export default function FoodReviewScreen() {
   const start = useFoodDraftStore((s) => s.start);
   const setTitle = useFoodDraftStore((s) => s.setTitle);
   const setMealType = useFoodDraftStore((s) => s.setMealType);
+  const setItems = useFoodDraftStore((s) => s.setItems);
+  const setStatus = useFoodDraftStore((s) => s.setStatus);
   const addItem = useFoodDraftStore((s) => s.addItem);
   const updateItem = useFoodDraftStore((s) => s.updateItem);
   const removeItem = useFoodDraftStore((s) => s.removeItem);
@@ -56,7 +54,8 @@ export default function FoodReviewScreen() {
   const setPortionMultiplier = useFoodDraftStore((s) => s.setPortionMultiplier);
   const setSaveAsFavorite = useFoodDraftStore((s) => s.setSaveAsFavorite);
 
-  const { log: existingLog, isLoading: existingLoading } = useFoodLogById(editFoodLogId);
+  const { log: existingLog, isLoading: existingLoading } =
+    useFoodLogById(editFoodLogId);
 
   const saveDraft = useSaveFoodDraft();
   const [isSaving, setIsSaving] = useState(false);
@@ -92,12 +91,31 @@ export default function FoodReviewScreen() {
   }, [editFoodLogId, existingLog, start]);
 
   const isAnalyzing = draft.status === 'analyzing' && !editFoodLogId;
-  const scaledItems = draft.items.map((item) => scaledItem(item, draft.portionMultiplier));
+  const multiplier = draft.portionMultiplier;
+  // Rows show (and save) the portion-scaled values; edits are divided back into base values.
+  const scaledItems = scaleFoodItems(draft.items, multiplier);
   const totals = sumFoodItems(scaledItems);
   const showConfidenceNote =
-    draft.aiConfidence != null && draft.aiConfidence < 0.6 && draft.status === 'ready';
+    draft.aiConfidence != null &&
+    draft.aiConfidence < 0.6 &&
+    draft.status === 'ready';
 
   const handleClose = () => router.back();
+
+  const enterManually = () => {
+    setItems([
+      {
+        id: Crypto.randomUUID(),
+        name: '',
+        grams: 100,
+        kcal: 0,
+        proteinG: 0,
+        carbsG: 0,
+        fatG: 0,
+      },
+    ]);
+    setStatus('ready');
+  };
 
   const handleSave = () => {
     if (draft.items.length === 0) {
@@ -122,13 +140,18 @@ export default function FoodReviewScreen() {
       },
       {
         onSuccess: () => {
-          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          void Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
           useFoodDraftStore.getState().reset();
           router.dismissAll();
         },
         onError: (error) => {
           setIsSaving(false);
-          Alert.alert(t('food.review.saveErrorTitle'), (error as Error).message);
+          Alert.alert(
+            t('food.review.saveErrorTitle'),
+            (error as Error).message,
+          );
         },
       },
     );
@@ -136,7 +159,7 @@ export default function FoodReviewScreen() {
 
   if (editFoodLogId && existingLoading && draft.id !== editFoodLogId) {
     return (
-      <View className="flex-1 items-center justify-center bg-system-background">
+      <View className="bg-system-background flex-1 items-center justify-center">
         <ActivityIndicator />
       </View>
     );
@@ -150,7 +173,9 @@ export default function FoodReviewScreen() {
           headerShown: true,
           headerLeft: () => (
             <Pressable onPress={handleClose}>
-              <Text className="text-base text-tint">{t('food.logFood.cancel')}</Text>
+              <Text className="text-tint text-base">
+                {t('food.logFood.cancel')}
+              </Text>
             </Pressable>
           ),
           headerRight: () =>
@@ -159,7 +184,7 @@ export default function FoodReviewScreen() {
             ) : (
               <Pressable onPress={handleSave} disabled={isAnalyzing}>
                 <Text
-                  className="text-base font-semibold text-tint"
+                  className="text-tint text-base font-semibold"
                   style={{ opacity: isAnalyzing ? 0.4 : 1 }}
                 >
                   {t('food.review.save')}
@@ -170,39 +195,80 @@ export default function FoodReviewScreen() {
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1 bg-system-background"
+        className="bg-system-background flex-1"
       >
         {isAnalyzing ? (
           <View className="flex-1 items-center justify-center gap-4">
             <ActivityIndicator size="large" />
-            <Text className="text-base text-secondary-label">{t('food.review.analyzing')}</Text>
+            <Text className="text-secondary-label text-base">
+              {t('food.review.analyzing')}
+            </Text>
           </View>
         ) : draft.status === 'error' ? (
           <View className="flex-1 items-center justify-center gap-4 px-8">
             <SymbolView name="exclamationmark.triangle" size={32} />
-            <Text className="text-center text-base text-label">{t('food.logFood.analyzeErrorBody')}</Text>
+            <Text className="text-label text-center text-base">
+              {draft.errorKind === 'ai_limit_reached'
+                ? t('food.review.limitReachedBody')
+                : t('food.logFood.analyzeErrorBody')}
+            </Text>
+            {draft.errorKind === 'ai_limit_reached' && (
+              <Pressable
+                onPress={() => router.push('/paywall')}
+                className="bg-tint w-full items-center rounded-xl py-3.5"
+              >
+                <Text className="text-base font-semibold text-white">
+                  {t('food.review.getPremium')}
+                </Text>
+              </Pressable>
+            )}
+            <Pressable
+              onPress={enterManually}
+              className="bg-secondary-system-background w-full items-center rounded-xl py-3.5"
+            >
+              <Text className="text-label text-base font-medium">
+                {t('food.logFood.enterManually')}
+              </Text>
+            </Pressable>
+            <Pressable onPress={handleClose}>
+              <Text className="text-tint text-base">
+                {t('food.logFood.cancel')}
+              </Text>
+            </Pressable>
           </View>
         ) : (
-          <ScrollView contentContainerClassName="gap-6 p-4 pb-16" keyboardShouldPersistTaps="handled">
+          <ScrollView
+            contentContainerClassName="gap-6 p-4 pb-16"
+            keyboardShouldPersistTaps="handled"
+          >
             <TextInput
               value={draft.title}
               onChangeText={setTitle}
               placeholder={t('food.review.titlePlaceholder')}
               placeholderTextColor="rgba(120,120,128,0.6)"
-              className="text-2xl font-bold text-label"
+              className="text-label text-2xl font-bold"
             />
 
             {showConfidenceNote && (
-              <View className="flex-row items-start gap-2 rounded-xl bg-secondary-system-background p-3">
+              <View className="bg-secondary-system-background flex-row items-start gap-2 rounded-xl p-3">
                 <SymbolView name="exclamationmark.circle" size={16} />
-                <Text className="flex-1 text-sm text-secondary-label">
+                <Text className="text-secondary-label flex-1 text-sm">
                   {t('food.review.lowConfidenceNote')}
                 </Text>
               </View>
             )}
 
+            {draft.clarification && (
+              <View className="bg-secondary-system-background flex-row items-start gap-2 rounded-xl p-3">
+                <SymbolView name="questionmark.circle" size={16} />
+                <Text className="text-secondary-label flex-1 text-sm">
+                  {draft.clarification}
+                </Text>
+              </View>
+            )}
+
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-secondary-label">
+              <Text className="text-secondary-label text-sm font-semibold">
                 {t('food.review.mealCategory')}
               </Text>
               <Host matchContents style={{ width: '100%' }}>
@@ -222,27 +288,52 @@ export default function FoodReviewScreen() {
 
             <View className="gap-2">
               <View className="flex-row items-baseline justify-between">
-                <Text className="text-sm font-semibold text-secondary-label">
+                <Text className="text-secondary-label text-sm font-semibold">
                   {t('food.review.portion')}
                 </Text>
-                <Text className="text-sm text-secondary-label">
-                  {draft.portionMultiplier.toFixed(2)}×
+                <Text className="text-secondary-label text-sm">
+                  {multiplier.toFixed(2)}×
                 </Text>
+              </View>
+              <View className="flex-row gap-2">
+                {PORTION_PRESETS.map((preset) => {
+                  const selected = Math.abs(multiplier - preset) < 0.001;
+                  return (
+                    <Pressable
+                      key={preset}
+                      onPress={() => {
+                        void Haptics.selectionAsync();
+                        setPortionMultiplier(preset);
+                      }}
+                      className={`flex-1 items-center rounded-xl py-2.5 ${selected ? 'bg-tint' : 'bg-secondary-system-background'}`}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                    >
+                      <Text
+                        className={`text-base font-semibold ${selected ? 'text-white' : 'text-label'}`}
+                      >
+                        {preset === 0.5 ? '½' : `${preset}×`}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
               <Host matchContents style={{ width: '100%' }}>
                 <Slider
-                  value={draft.portionMultiplier}
+                  value={multiplier}
                   min={0.25}
                   max={3}
                   step={0.05}
-                  onValueChange={setPortionMultiplier}
+                  onValueChange={(v) =>
+                    setPortionMultiplier(clampPortionMultiplier(v))
+                  }
                 />
               </Host>
             </View>
 
             <View className="gap-3">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-secondary-label">
+                <Text className="text-secondary-label text-sm font-semibold">
                   {t('food.review.ingredients')}
                 </Text>
                 <Pressable
@@ -259,39 +350,48 @@ export default function FoodReviewScreen() {
                   className="flex-row items-center gap-1"
                 >
                   <SymbolView name="plus.circle.fill" size={18} />
-                  <Text className="text-sm font-medium text-tint">{t('food.review.addItem')}</Text>
+                  <Text className="text-tint text-sm font-medium">
+                    {t('food.review.addItem')}
+                  </Text>
                 </Pressable>
               </View>
 
-              {draft.items.map((item) => (
+              {scaledItems.map((item) => (
                 <IngredientRow
                   key={item.id}
                   item={item}
                   onChangeName={(name) => updateItem(item.id, { name })}
-                  onChangeGrams={(grams) => scaleItemGrams(item.id, grams)}
-                  onChangeField={(field, value) => updateItem(item.id, { [field]: value })}
+                  onChangeGrams={(grams) =>
+                    scaleItemGrams(item.id, grams / multiplier)
+                  }
+                  onChangeField={(field, value) =>
+                    updateItem(item.id, { [field]: value / multiplier })
+                  }
                   onDelete={() => removeItem(item.id)}
                 />
               ))}
               {draft.items.length === 0 && (
-                <Text className="py-4 text-center text-sm text-secondary-label">
+                <Text className="text-secondary-label py-4 text-center text-sm">
                   {t('food.review.noItems')}
                 </Text>
               )}
             </View>
 
-            <View className="gap-2 rounded-2xl bg-secondary-system-background p-4">
-              <Text className="text-sm font-semibold text-secondary-label">
+            <View className="bg-secondary-system-background gap-2 rounded-2xl p-4">
+              <Text className="text-secondary-label text-sm font-semibold">
                 {t('food.review.totals')}
               </Text>
-              <Text className="text-base text-label">
-                {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)}g · C{' '}
-                {Math.round(totals.carbsG)}g · F {Math.round(totals.fatG)}g
+              <Text className="text-label text-base">
+                {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)}
+                g · C {Math.round(totals.carbsG)}g · F {Math.round(totals.fatG)}
+                g
               </Text>
             </View>
 
-            <View className="flex-row items-center justify-between rounded-2xl bg-secondary-system-background p-4">
-              <Text className="text-base text-label">{t('food.review.saveAsFavorite')}</Text>
+            <View className="bg-secondary-system-background flex-row items-center justify-between rounded-2xl p-4">
+              <Text className="text-label text-base">
+                {t('food.review.saveAsFavorite')}
+              </Text>
               <Switch
                 value={draft.saveAsFavorite}
                 onValueChange={setSaveAsFavorite}
@@ -299,6 +399,23 @@ export default function FoodReviewScreen() {
               />
             </View>
           </ScrollView>
+        )}
+        {!isAnalyzing && draft.status === 'ready' && (
+          <View className="border-separator bg-system-background border-t px-4 pb-8 pt-3">
+            <Pressable
+              onPress={handleSave}
+              disabled={isSaving}
+              className="bg-tint flex-row items-center justify-center gap-2 rounded-2xl py-4"
+              style={{ opacity: isSaving ? 0.6 : 1 }}
+              accessibilityRole="button"
+            >
+              <Text className="text-base font-semibold text-white">
+                {t('food.review.saveWithKcal', {
+                  kcal: Math.round(totals.kcal),
+                })}
+              </Text>
+            </Pressable>
+          </View>
         )}
       </KeyboardAvoidingView>
     </>
@@ -315,26 +432,37 @@ function IngredientRow({
   item: DraftFoodItem;
   onChangeName: (name: string) => void;
   onChangeGrams: (grams: number) => void;
-  onChangeField: (field: 'kcal' | 'proteinG' | 'carbsG' | 'fatG', value: number) => void;
+  onChangeField: (
+    field: 'kcal' | 'proteinG' | 'carbsG' | 'fatG',
+    value: number,
+  ) => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
   return (
-    <View className="gap-2 rounded-2xl bg-secondary-system-background p-3">
+    <View className="bg-secondary-system-background gap-2 rounded-2xl p-3">
       <View className="flex-row items-center gap-2">
         <TextInput
           value={item.name}
           onChangeText={onChangeName}
           placeholder={t('food.review.ingredientNamePlaceholder')}
           placeholderTextColor="rgba(120,120,128,0.6)"
-          className="flex-1 text-base font-medium text-label"
+          className="text-label flex-1 text-base font-medium"
         />
         <Pressable onPress={onDelete} hitSlop={8}>
-          <SymbolView name="minus.circle.fill" size={20} tintColor={themeColor('danger')} />
+          <SymbolView
+            name="minus.circle.fill"
+            size={20}
+            tintColor={themeColor('danger')}
+          />
         </Pressable>
       </View>
       <View className="flex-row flex-wrap gap-2">
-        <NumberField label={t('food.review.grams')} value={item.grams} onChange={onChangeGrams} />
+        <NumberField
+          label={t('food.review.grams')}
+          value={item.grams}
+          onChange={onChangeGrams}
+        />
         <NumberField
           label="kcal"
           value={item.kcal}
@@ -350,7 +478,11 @@ function IngredientRow({
           value={item.carbsG}
           onChange={(v) => onChangeField('carbsG', v)}
         />
-        <NumberField label="F" value={item.fatG} onChange={(v) => onChangeField('fatG', v)} />
+        <NumberField
+          label="F"
+          value={item.fatG}
+          onChange={(v) => onChangeField('fatG', v)}
+        />
       </View>
     </View>
   );
@@ -393,13 +525,13 @@ function NumberFieldInput({
 
   return (
     <View className="min-w-[60px] gap-0.5">
-      <Text className="text-xs text-secondary-label">{label}</Text>
+      <Text className="text-secondary-label text-xs">{label}</Text>
       <TextInput
         value={text}
         onChangeText={setText}
         onEndEditing={() => onChange(Number(text) || 0)}
         keyboardType="decimal-pad"
-        className="rounded-lg bg-system-background px-2 py-1.5 text-sm text-label"
+        className="bg-system-background text-label rounded-lg px-2 py-1.5 text-sm"
       />
     </View>
   );

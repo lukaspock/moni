@@ -2,7 +2,10 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth';
-import { deleteFoodLogFromHealth, exportFoodLogToHealth } from '@/features/health';
+import {
+  deleteFoodLogFromHealth,
+  exportFoodLogToHealth,
+} from '@/features/health';
 import { supabase } from '@/lib/supabase';
 import type { Database, Json } from '@/types/database';
 
@@ -11,7 +14,8 @@ import type { DraftFoodItem } from './draftStore';
 
 export type FoodLogRow = Database['public']['Tables']['food_logs']['Row'];
 export type FoodItemRow = Database['public']['Tables']['food_items']['Row'];
-export type FavoriteMealRow = Database['public']['Tables']['favorite_meals']['Row'];
+export type FavoriteMealRow =
+  Database['public']['Tables']['favorite_meals']['Row'];
 
 export type FoodLogWithItems = FoodLogRow & { items: FoodItemRow[] };
 
@@ -33,7 +37,9 @@ export function useFoodLogsForDate(date: string) {
         .order('logged_at', { ascending: true });
       if (error) throw error;
       return (data ?? []).map((row) => {
-        const { food_items, ...rest } = row as FoodLogRow & { food_items: FoodItemRow[] };
+        const { food_items, ...rest } = row as FoodLogRow & {
+          food_items: FoodItemRow[];
+        };
         return { ...rest, items: food_items ?? [] } as FoodLogWithItems;
       });
     },
@@ -58,7 +64,9 @@ export function useRecentFoodLogs(limit = 15) {
         .limit(limit);
       if (error) throw error;
       return (data ?? []).map((row) => {
-        const { food_items, ...rest } = row as FoodLogRow & { food_items: FoodItemRow[] };
+        const { food_items, ...rest } = row as FoodLogRow & {
+          food_items: FoodItemRow[];
+        };
         return { ...rest, items: food_items ?? [] } as FoodLogWithItems;
       });
     },
@@ -101,7 +109,9 @@ export function useFoodLogById(id: string | null) {
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const { food_items, ...rest } = data as FoodLogRow & { food_items: FoodItemRow[] };
+      const { food_items, ...rest } = data as FoodLogRow & {
+        food_items: FoodItemRow[];
+      };
       return { ...rest, items: food_items ?? [] };
     },
   });
@@ -180,24 +190,18 @@ export function useSaveFoodDraft() {
         ai_raw: input.aiRaw,
       };
 
-      if (input.isEdit) {
-        const { error: updateError } = await supabase
-          .from('food_logs')
-          .update(logPayload)
-          .eq('id', input.id);
-        if (updateError) throw updateError;
+      // Upsert + clear items makes a retry after a half-failed save (log written, items not)
+      // idempotent instead of hitting a duplicate-key error on the client-generated id.
+      const { error: logError } = await supabase
+        .from('food_logs')
+        .upsert({ id: input.id, ...logPayload }, { onConflict: 'id' });
+      if (logError) throw logError;
 
-        const { error: clearItemsError } = await supabase
-          .from('food_items')
-          .delete()
-          .eq('food_log_id', input.id);
-        if (clearItemsError) throw clearItemsError;
-      } else {
-        const { error: logError } = await supabase
-          .from('food_logs')
-          .insert({ id: input.id, ...logPayload });
-        if (logError) throw logError;
-      }
+      const { error: clearItemsError } = await supabase
+        .from('food_items')
+        .delete()
+        .eq('food_log_id', input.id);
+      if (clearItemsError) throw clearItemsError;
 
       if (input.items.length > 0) {
         const { error: itemsError } = await supabase.from('food_items').insert(
@@ -216,23 +220,48 @@ export function useSaveFoodDraft() {
       }
 
       if (input.saveAsFavorite) {
-        const { error: favError } = await supabase.from('favorite_meals').insert({
-          user_id: userId,
-          title: input.title || 'Meal',
-          items: input.items.map((item) => ({
-            name: item.name,
-            grams: item.grams,
-            kcal: item.kcal,
-            protein_g: item.proteinG,
-            carbs_g: item.carbsG,
-            fat_g: item.fatG,
-          })) as unknown as Json,
-        });
+        const favoriteTitle = input.title || 'Meal';
+        const { data: existingFavorite } = await supabase
+          .from('favorite_meals')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('title', favoriteTitle)
+          .limit(1)
+          .maybeSingle();
+        const favoriteItems = input.items.map((item) => ({
+          name: item.name,
+          grams: item.grams,
+          kcal: item.kcal,
+          protein_g: item.proteinG,
+          carbs_g: item.carbsG,
+          fat_g: item.fatG,
+        })) as unknown as Json;
+        // Same title again -> refresh that favorite instead of piling up duplicates.
+        const { error: favError } = existingFavorite
+          ? await supabase
+              .from('favorite_meals')
+              .update({ items: favoriteItems })
+              .eq('id', existingFavorite.id)
+          : await supabase
+              .from('favorite_meals')
+              .insert({
+                user_id: userId,
+                title: favoriteTitle,
+                items: favoriteItems,
+              });
         if (favError) throw favError;
       }
 
       // Apple Health: write/replace kcal + macros (fire-and-forget; no-op unless "write nutrition" is on).
-      void exportFoodLogToHealth({ id: input.id, loggedAt: input.loggedAt, title: logPayload.title, kcal: logPayload.kcal, proteinG: logPayload.protein_g, carbsG: logPayload.carbs_g, fatG: logPayload.fat_g });
+      void exportFoodLogToHealth({
+        id: input.id,
+        loggedAt: input.loggedAt,
+        title: logPayload.title,
+        kcal: logPayload.kcal,
+        proteinG: logPayload.protein_g,
+        carbsG: logPayload.carbs_g,
+        fatG: logPayload.fat_g,
+      });
 
       return input.id;
     },
@@ -294,35 +323,75 @@ export class AnalyzeFoodError extends Error {
   }
 }
 
+async function invokeAnalyze<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('analyze-food', {
+    body,
+  });
+
+  if (error) {
+    // supabase-js FunctionsHttpError exposes the response on `context`.
+    const context = (error as { context?: Response }).context;
+    const status = context?.status ?? null;
+    let code: string | null = null;
+    try {
+      const errBody = context ? await context.clone().json() : null;
+      code = errBody?.error ?? null;
+    } catch {
+      // ignore parse failures, fall back to generic error
+    }
+    throw new AnalyzeFoodError(error.message, status, code);
+  }
+
+  if (!data) throw new AnalyzeFoodError('empty_response', null, null);
+  return data as T;
+}
+
 /** Calls the `analyze-food` Edge Function (PLAN §7.3). Throws `AnalyzeFoodError` on failure. */
 export function useAnalyzeFood() {
   return useMutation({
-    mutationFn: async (input: AnalyzeFoodInput): Promise<AnalyzeFoodResult> => {
-      const { data, error } = await supabase.functions.invoke('analyze-food', {
-        body: {
-          image_path: input.imagePath,
-          text: input.text,
-          locale: input.locale ?? 'en',
-        },
-      });
+    mutationFn: (input: AnalyzeFoodInput): Promise<AnalyzeFoodResult> =>
+      invokeAnalyze<AnalyzeFoodResult>({
+        image_path: input.imagePath,
+        text: input.text,
+        locale: input.locale ?? 'en',
+      }),
+  });
+}
 
-      if (error) {
-        // supabase-js FunctionsHttpError exposes the response on `context`.
-        const context = (error as { context?: Response }).context;
-        const status = context?.status ?? null;
-        let code: string | null = null;
-        try {
-          const body = context ? await context.clone().json() : null;
-          code = body?.error ?? null;
-        } catch {
-          // ignore parse failures, fall back to generic error
-        }
-        throw new AnalyzeFoodError(error.message, status, code);
-      }
+export interface NutritionLabelMacros {
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
 
-      if (!data) throw new AnalyzeFoodError('empty_response', null, null);
-      return data as AnalyzeFoodResult;
-    },
+export interface AnalyzeLabelResult {
+  mode: 'label';
+  label: {
+    product_name: string | null;
+    serving_size_g: number | null;
+    per_100g: NutritionLabelMacros;
+    per_serving: NutritionLabelMacros | null;
+    confidence: number;
+  };
+  usage: { used: number; limit: number | null };
+}
+
+/**
+ * Reads a photographed nutrition table via `analyze-food` (mode "label"). Counts toward the
+ * AI limit (402 = limit reached); an unreadable table is a 422 `label_not_readable` and is free.
+ */
+export function useAnalyzeLabel() {
+  return useMutation({
+    mutationFn: (input: {
+      imagePath: string;
+      locale?: string;
+    }): Promise<AnalyzeLabelResult> =>
+      invokeAnalyze<AnalyzeLabelResult>({
+        mode: 'label',
+        image_path: input.imagePath,
+        locale: input.locale ?? 'en',
+      }),
   });
 }
 
@@ -331,10 +400,12 @@ export async function uploadFoodImage(opts: {
   userId: string;
   foodLogId: string;
   localUri: string;
+  /** Output width in px (default 1024; nutrition labels need more, e.g. 1600, to stay legible). */
+  width?: number;
 }): Promise<string> {
   const manipulated = await ImageManipulator.manipulateAsync(
     opts.localUri,
-    [{ resize: { width: 1024 } }],
+    [{ resize: { width: opts.width ?? 1024 } }],
     { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
   );
 
@@ -342,10 +413,12 @@ export async function uploadFoodImage(opts: {
   const arrayBuffer = await response.arrayBuffer();
   const path = `${opts.userId}/${opts.foodLogId}.jpg`;
 
-  const { error } = await supabase.storage.from(FOOD_IMAGES_BUCKET).upload(path, arrayBuffer, {
-    contentType: 'image/jpeg',
-    upsert: true,
-  });
+  const { error } = await supabase.storage
+    .from(FOOD_IMAGES_BUCKET)
+    .upload(path, arrayBuffer, {
+      contentType: 'image/jpeg',
+      upsert: true,
+    });
   if (error) throw error;
 
   return path;

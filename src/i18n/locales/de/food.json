@@ -49,7 +49,12 @@
     "permissionDeniedBody": "møni benötigt Zugriff auf Kamera oder Fotobibliothek, um eine Mahlzeit per Foto zu erfassen.",
     "analyzeErrorTitle": "Analyse fehlgeschlagen",
     "analyzeErrorBody": "Bei der Analyse deiner Mahlzeit ist etwas schiefgelaufen. Du kannst es erneut versuchen oder manuell eingeben.",
-    "enterManually": "Manuell eingeben"
+    "enterManually": "Manuell eingeben",
+    "label": "Nährwerte",
+    "quickLogAs": "Schnell erfassen · {{meal}}",
+    "loggedTimes": "{{count}}× erfasst · {{kcal}} kcal",
+    "logNow": "Jetzt erfassen",
+    "quickLogError": "Die Mahlzeit konnte nicht gespeichert werden. Bitte versuche es erneut."
   },
   "barcode": {
     "permissionBody": "møni benötigt Kamerazugriff, um einen Barcode zu scannen.",
@@ -60,7 +65,15 @@
     "hint": "Kamera auf einen Barcode richten",
     "per100g": "{{kcal}} kcal · P {{protein}}g · K {{carbs}}g · F {{fat}}g pro 100g",
     "quantity": "Menge",
-    "use": "Übernehmen"
+    "use": "Übernehmen",
+    "itemsAdded": "{{count}} Produkte · {{kcal}} kcal",
+    "serving": "1 Portion ({{grams}} g)",
+    "addAndScan": "Weiter scannen",
+    "addAndReview": "Fertig",
+    "scanLabelInstead": "Nährwerttabelle scannen",
+    "scanAgain": "Erneut scannen",
+    "modeBarcode": "Barcode",
+    "modeLabel": "Nährwerte"
   },
   "review": {
     "title": "Überprüfen",
@@ -79,11 +92,43 @@
     "noItemsBody": "Füge mindestens eine Zutat hinzu, bevor du speicherst.",
     "saveErrorTitle": "Speichern fehlgeschlagen",
     "ingredientNamePlaceholder": "Zutat",
-    "grams": "g"
+    "grams": "g",
+    "limitReachedBody": "Du hast alle kostenlosen KI-Analysen für heute aufgebraucht. Erfasse dein Essen manuell, per Barcode oder aus deinen Favoriten, oder hole dir Premium.",
+    "getPremium": "Premium holen",
+    "saveWithKcal": "Speichern · {{kcal}} kcal"
   },
   "paywall": {
     "title": "Tageslimit erreicht",
     "body": "Du hast alle kostenlosen KI-Analysen für heute aufgebraucht. Hole dir møni Premium für unbegrenzte KI-Analysen oder erfasse dein Essen manuell, per Barcode oder aus deinen Favoriten.",
     "close": "Schließen"
+  },
+  "label": {
+    "unnamed": "Produkt",
+    "reading": "Tabelle wird gelesen…",
+    "hint": "Nährwerttabelle der Verpackung fotografieren",
+    "capture": "Foto aufnehmen",
+    "retake": "Erneut fotografieren"
+  },
+  "problem": {
+    "notFound": {
+      "title": "Produkt nicht gefunden",
+      "body": "Dieser Barcode ist nicht in Open Food Facts hinterlegt. Fotografiere die Nährwerttabelle, møni liest sie für dich aus."
+    },
+    "incomplete": {
+      "title": "Keine Nährwerte hinterlegt",
+      "body": "Für dieses Produkt fehlen Nährwertangaben. Fotografiere die Nährwerttabelle auf der Verpackung."
+    },
+    "offline": {
+      "title": "Keine Verbindung",
+      "body": "Die Produktsuche ist gerade nicht erreichbar. Versuche es erneut oder gib die Werte manuell ein."
+    },
+    "labelUnreadable": {
+      "title": "Tabelle nicht lesbar",
+      "body": "Es konnten keine Nährwerte erkannt werden. Fotografiere die Tabelle gerade, nah und gut beleuchtet. Dieser Versuch zählt nicht zum Limit."
+    },
+    "labelError": {
+      "title": "Analyse fehlgeschlagen",
+      "body": "Die Nährwerttabelle konnte nicht ausgewertet werden. Bitte versuche es erneut."
+    }
   }
 }

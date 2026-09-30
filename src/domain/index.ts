@@ -8,5 +8,7 @@ export * from './adaptive';
 export * from './units';
 export * from './mealType';
 export * from './food';
+export * from './nutrition';
+export * from './quickLog';
 export * from './onboarding';
 export * from './projection';
