@@ -18,6 +18,11 @@ import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
+import { useAdaptiveTdee, useRecomputeTargetsIfDue } from './adaptive';
+
+export { useAdaptiveTdee, useRecomputeTargetsIfDue } from './adaptive';
+export type { AdaptiveReason, AdaptiveTdeeEstimate } from './adaptive';
+
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export type DailyTargets = {
@@ -123,8 +128,11 @@ export function useDailyTargets(date: string): {
   const { plannedDay, isLoading: plannedLoading } = usePlannedDay(date);
   const { workouts, isLoading: workoutsLoading } = useWorkoutsForDate(date);
   const weightQuery = useLatestWeightKg(userId, date);
+  const { estimate: adaptive, isLoading: adaptiveLoading } = useAdaptiveTdee();
+  useRecomputeTargetsIfDue();
 
-  const isLoading = profileLoading || plannedLoading || workoutsLoading || (!!userId && weightQuery.isLoading);
+  const isLoading =
+    profileLoading || plannedLoading || workoutsLoading || adaptiveLoading || (!!userId && weightQuery.isLoading);
 
   const computed = useMemo((): { targets: DailyTargets; tdeeUsed: number } | null => {
     if (
@@ -143,7 +151,9 @@ export function useDailyTargets(date: string): {
 
     const age = ageFromBirthDate(new Date(profile.birth_date));
     const bmr = calculateBMR(profile.sex as Sex, weightKg, profile.height_cm, age);
-    const tdee = calculateBaseTDEE(bmr, profile.activity_level as ActivityLevel);
+    const formulaTdee = calculateBaseTDEE(bmr, profile.activity_level as ActivityLevel);
+    // PLAN §6.7: once enough data exists, the server-side adaptive (blended) TDEE replaces the formula.
+    const tdee = adaptive ? adaptive.blendedTdee : formulaTdee;
     const base = calculateBaseTarget({
       tdee,
       sex: profile.sex as Sex,
@@ -187,7 +197,7 @@ export function useDailyTargets(date: string): {
         isTrainingDay,
       },
     };
-  }, [profile, plannedDay, workouts, weightQuery.data, date]);
+  }, [profile, plannedDay, workouts, weightQuery.data, date, adaptive]);
 
   useUpsertDailyTargets(userId, date, computed?.targets ?? null, computed?.tdeeUsed ?? null);
 

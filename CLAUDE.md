@@ -68,8 +68,8 @@ supabase/functions/  analyze-food, revenuecat-webhook, recompute-targets
 - **Views** `v_daily_summary` / `v_exercise_progress` are created `with (security_invoker = true)` so they inherit the querying user's RLS.
 - **Secrets** (set as Supabase Edge Function secrets, never in the repo): `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), `FREE_AI_LIMIT_PER_DAY` (default `3`), `REVENUECAT_WEBHOOK_SECRET`. `SUPABASE_URL`/`SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected per function.
 - **`revenuecat-webhook` must deploy with `verify_jwt = false`** (shared-secret auth instead of a Supabase JWT) — see `supabase/config.toml` and the function's own header comment.
-- `supabase/functions/_shared/adaptive.ts` is a hand-ported duplicate of `src/domain/adaptive.ts`'s formula (Deno can't import `src/`) — keep both in sync manually when the formula changes.
-- `recompute-targets` is currently a Phase 6 skeleton (auth/dispatch wired, recompute logic is `TODO`).
+- `supabase/functions/_shared/adaptive.ts` is a verbatim copy of `src/domain/adaptive.ts` (Deno can't import `src/`; only the `KCAL_PER_KG` import differs) — edit the domain file, re-copy, `src/domain/adaptive.sync.test.ts` fails on drift. `_shared/formula.ts` ports BMR/NEAT TDEE by hand.
+- `recompute-targets` (Phase 6) writes `tdee_estimates` (adaptive TDEE, weekly cron + client `useRecomputeTargetsIfDue()` in `src/features/targets`); `useDailyTargets` uses the latest `blended_tdee`. Details: `supabase/README.md`.
 
 ## Commands
 ```bash

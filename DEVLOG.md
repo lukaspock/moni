@@ -68,7 +68,8 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - [ ] Permissions, workout + weight import, dedupe, write-back
 
 ## Phase 6 – Weight, adaptive TDEE, insights
-- [ ] Weight logging + chart, `recompute-targets` + pg_cron, Insights tab
+- [ ] Weight logging + chart, Insights tab
+- [x] Backend: `recompute-targets` (adaptive TDEE) + pg_cron + client `useRecomputeTargetsIfDue()` (vault secret for cron still to be created by owner)
 
 ## Phase 7 – Monetization
 - [ ] RevenueCat, paywall, `revenuecat-webhook`, server-side limit
@@ -131,3 +132,4 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - `scaffold`: `npm install`/`expo install` need `.npmrc`'s `legacy-peer-deps=true` on this SDK/React 19 combo (an unrelated `react-dom@19.3.0` peer creeps in transitively and ERESOLVEs otherwise). If a future Expo SDK bump resolves that peer graph cleanly, this can be removed.
 - `scaffold` → future (Phase 4): `supabase/seed-exercise-names.json` (DE/EN display names for the ~150 seeded exercises, from `backend`) is not yet merged into `src/i18n/locales/{de,en}.json` — left for whoever builds the exercise picker/catalog UI, since it's ~150 keys and out of scope for the Phase 0 tab skeleton.
 - `scaffold`: `app/(tabs)/*` deviates slightly from PLAN §4's sketch (which shows `insights.tsx` as a flat file) — all four tabs are folders (`index/`, `training/`, `insights/`, `profile/`) each with its own `_layout.tsx` (`Stack`, `headerLargeTitle: true`) + `index.tsx`, so every tab gets a native Large Title header (a flat `insights.tsx` route has no `Stack` ancestor to hang a header on). Functionally equivalent, and matches `training/`/`profile/` already being folders in the plan.
+- 2026-09-30 · targets-backend · Phase 6 backend: `recompute-targets` implemented (28-day window, EMA trend, observed/blended TDEE, ±150/week + 0.75–1.3×formula + 1200 floor clamps, no-op with reason on insufficient data, idempotent per Monday week, cron all-users + per-user JWT mode). Domain: `summarizeAdaptiveWindow`, `clampToSafetyBand`, `weekStartOf` etc. in `src/domain/adaptive.ts`, `recomputeSchedule.ts`; `_shared/adaptive.ts` now a verbatim copy with a sync test. Migration `20260930120000_tdee_estimates_explain` (reason_code, weekly_change_kcal, weight_trend_kg) pushed, advisors: only the pre-existing Auth leaked-password warning; types regenerated; function deployed. Client: `useAdaptiveTdee()` + `useRecomputeTargetsIfDue()` exported from `@/features/targets`, `useDailyTargets` uses blended TDEE (and triggers the recompute). Open: Vault secret `service_role_key` is missing on the live project (cron is a no-op until set); deno not installed locally so the function was not `deno check`ed; not exercised end-to-end with real data.
