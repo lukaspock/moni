@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useEffect } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { PlatformColor, Pressable, Text, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 
 import { themeColor } from '@/theme/colors';
@@ -64,7 +64,7 @@ export function OptionCard({
                 name={symbol}
                 size={24}
                 type="hierarchical"
-                tintColor={selected ? themeColor('accent') : undefined}
+                tintColor={selected ? themeColor('accent') : PlatformColor('secondaryLabel')}
               />
             ) : (
               <Text className="text-2xl">{emoji}</Text>

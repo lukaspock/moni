@@ -1,5 +1,5 @@
 import { DatePicker, Host } from '@expo/ui/swift-ui';
-import { datePickerStyle } from '@expo/ui/swift-ui/modifiers';
+import { accessibilityLabel, datePickerStyle, environment, labelsHidden } from '@expo/ui/swift-ui/modifiers';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -18,7 +18,7 @@ MAX_BIRTH_DATE.setFullYear(MAX_BIRTH_DATE.getFullYear() - 13); // sensible minim
 const DEFAULT_BIRTH_DATE = new Date(1995, 0, 1);
 
 export default function BirthDateScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const birthDate = useOnboardingStore((s) => s.draft.birthDate);
   const update = useOnboardingStore((s) => s.update);
   const { goNext } = useOnboardingNavigation('birth-date');
@@ -59,7 +59,14 @@ export default function BirthDateScreen() {
           selection={selected}
           displayedComponents={['date']}
           range={{ start: MIN_BIRTH_DATE, end: MAX_BIRTH_DATE }}
-          modifiers={[datePickerStyle('wheel')]}
+          modifiers={[
+            datePickerStyle('wheel'),
+            // The wheel would otherwise render the title inline and overflow the screen.
+            labelsHidden(),
+            accessibilityLabel(t('account.onboarding.birthDate.label')),
+            // Follow the in-app language, not the device locale (month names).
+            environment({ key: 'locale', value: i18n.language }),
+          ]}
           onDateChange={(date) => update({ birthDate: toISODate(date) })}
         />
       </Host>
