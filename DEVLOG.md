@@ -205,7 +205,7 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 
 ## Sprint 3 – UI bugs from owner testing + follow-ups (see `docs/sprint-3.md`, READ FIRST)
 
-- [ ] `lead` bring everything up to date first: merge `integration/sprint-2` into `main`, push, CI green, clean up old worktrees
+- [x] `lead` bring everything up to date first: merged into `main` and pushed (Dependabot #1–#5 still open, owner)
 - [ ] `ui-fixes` BUG-A: "+" (log food) FAB is hidden under the native Liquid Glass tab bar → make it part of the tab bar/nav bar
 - [ ] `ui-fixes` BUG-B: Today header title is always "Today" regardless of selected day → dynamic title (Today/Yesterday/Tomorrow/weekday+date)
 - [ ] `ui-fixes` BUG-C: app CRASHES when swiping left/right on Today to change day (suspected: `Gesture.Fling().onEnd(setState)` runs as UI-thread worklet, missing `.runOnJS(true)`; verify with a crash log and record the real cause)
@@ -214,3 +214,4 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - [ ] `food-followups` L3 label scans stored with `source='barcode'` → add `'label'` (new migration)
 
 - 2026-09-30 · lead · Owner feedback after first device test: documented BUG-A/B/C and follow-ups L1–L3 in `docs/sprint-3.md` before starting work.
+- 2026-09-30 · lead · HANDOFF: both Sprint 3 agents (`ui-fixes`, `food-followups`) died from a session rate limit (HTTP 429, resets 21:10 Vienna) before finishing; nothing committed. Partial uncommitted work lives in `.claude/worktrees/agent-a957e1883c887cc0f` (only `app/gesture-repro.tsx` repro helper, no crash log yet) and `.claude/worktrees/agent-a9948fe5f6aec970c` (logDate domain + tests, draftStore, analyze-food label-photo delete, `cleanup-label-photos` function, migration `20260930140000_food_source_label.sql` NOT applied to remote). `main` (6c05fd2) is pushed. Open: BUG-A/B/C, L1–L3, SEC-1 (auto security review flagged a rate-limit bypass in `analyze-food`, details not yet investigated). Full status table + next steps: `docs/sprint-3.md` §5.
