@@ -1,28 +1,153 @@
-// møni · recompute-targets Edge Function (Phase 6 — PLAN.md §6.7, §8)
+// møni · recompute-targets Edge Function (Phase 6 — PLAN.md §6.7)
 //
-// Intentionally a thin SKELETON for now: Phase 0-5 do not depend on this function, and the
-// full implementation belongs to Phase 6 together with the `domain` agent's
-// src/domain/adaptive.ts and the Insights tab. Wiring (auth, cron entry point, per-user vs.
-// all-users mode) is in place so the `lead` agent can deploy it early and flesh out the body
-// later without re-plumbing auth/cron.
+// Adaptive TDEE: smooths the weight trend (EMA), derives the observed energy expenditure from
+// intake + trend, blends it with the formula TDEE, clamps (±150 kcal/week, safety band) and
+// upserts one `tdee_estimates` row per user and week. The client (src/features/targets) reads
+// the latest row and uses `blended_tdee` as the TDEE behind the daily limit; `daily_targets`
+// is (re)written by the client from that value, not here.
 //
 // Two call modes:
-//  1. Cron (weekly, see supabase/migrations/20260927120700_cron_recompute_targets.sql): called
-//     with the SERVICE ROLE key via `Authorization: Bearer <service_role_key>`, no specific
-//     user — should recompute for ALL eligible users.
-//  2. Client (e.g. "recompute now" button, or on app start if due): called with the user's own
-//     JWT — should recompute for just `auth.getUser()`'s id.
+//  1. Cron (weekly, migration 20260927120700): `Authorization: Bearer <service_role_key>` ->
+//     all users that logged a weight in the window.
+//  2. Client: the user's own JWT -> only that user. Optional body `{ "today": "YYYY-MM-DD" }`
+//     (the user's local date; the window ends the day before). Cron uses the UTC date.
 //
-// Required secrets: none beyond the platform-injected SUPABASE_URL / SUPABASE_ANON_KEY /
-// SUPABASE_SERVICE_ROLE_KEY (see supabase/functions/_shared/supabase.ts).
+// Idempotent: the row is keyed on (user_id, week_start = Monday); re-running in the same week
+// with the same data overwrites it with the same values. The "previous" TDEE is always the
+// latest row of an EARLIER week, so a rerun never compounds the weekly clamp.
+// Not enough data -> no-op (nothing written), response carries reason `insufficient_data`.
 
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { handleCors, jsonResponse } from "../_shared/cors.ts";
 import { createServiceClient, getAuthenticatedUser } from "../_shared/supabase.ts";
-// TODO(Phase 6): import and call `computeAdaptiveTdee` from "../_shared/adaptive.ts" once the
-// loop below is implemented (see the sync note at the top of that file). Not imported yet to
-// avoid an unused-import lint warning in this skeleton.
+import {
+  ADAPTIVE_WINDOW_DAYS,
+  computeAdaptiveTDEE,
+  shiftIsoDate,
+  summarizeAdaptiveWindow,
+  weekStartOf,
+} from "../_shared/adaptive.ts";
+import { ageOn, type ActivityLevel, formulaTdee, type Sex } from "../_shared/formula.ts";
 
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const PAGE = 1000;
+
+type RecomputeResult =
+  | { status: "updated"; user_id: string; week_start: string; blended_tdee: number; observed_tdee: number | null; reason_code: string; weekly_change_kcal: number; confidence: number }
+  | { status: "skipped"; user_id: string; reason: string };
+
+/** Reads all rows of a query, paging past PostgREST's 1000-row cap. */
+async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    out.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return out;
+}
+
+function isIsoDate(v: unknown): v is string {
+  return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+}
+
+async function recomputeForUser(db: SupabaseClient, userId: string, today: string): Promise<RecomputeResult> {
+  const windowEnd = shiftIsoDate(today, -1); // today is still incomplete
+  const windowStart = shiftIsoDate(windowEnd, -(ADAPTIVE_WINDOW_DAYS - 1));
+  const weekStart = weekStartOf(today);
+
+  const { data: profile, error: pErr } = await db
+    .from("profiles")
+    .select("sex, birth_date, height_cm, activity_level")
+    .eq("id", userId)
+    .maybeSingle();
+  if (pErr) throw new Error(pErr.message);
+  if (!profile?.sex || !profile.birth_date || !profile.height_cm || !profile.activity_level) {
+    return { status: "skipped", user_id: userId, reason: "profile_incomplete" };
+  }
+
+  const weights = await fetchAll<{ date: string; weight_kg: number }>((from, to) =>
+    db.from("weight_logs").select("date, weight_kg").eq("user_id", userId)
+      .gte("date", windowStart).lte("date", windowEnd).order("date").range(from, to)
+  );
+  const foods = await fetchAll<{ date: string; kcal: number }>((from, to) =>
+    db.from("food_logs").select("date, kcal").eq("user_id", userId)
+      .gte("date", windowStart).lte("date", windowEnd).order("date").range(from, to)
+  );
+
+  const intakeKcalByDate: Record<string, number> = {};
+  for (const f of foods) intakeKcalByDate[f.date] = (intakeKcalByDate[f.date] ?? 0) + Number(f.kcal);
+
+  const summary = summarizeAdaptiveWindow({
+    weights: weights.map((w) => ({ date: w.date, weightKg: Number(w.weight_kg) })),
+    intakeKcalByDate,
+    windowStart,
+    windowEnd,
+  });
+
+  // Formula TDEE from the latest known weight (may be older than the window).
+  const { data: latest, error: lErr } = await db
+    .from("weight_logs").select("weight_kg").eq("user_id", userId).lte("date", today)
+    .order("date", { ascending: false }).limit(1).maybeSingle();
+  if (lErr) throw new Error(lErr.message);
+  if (!latest) return { status: "skipped", user_id: userId, reason: "no_weight" };
+
+  const formula = formulaTdee(
+    profile.sex as Sex,
+    Number(latest.weight_kg),
+    Number(profile.height_cm),
+    ageOn(profile.birth_date, today),
+    profile.activity_level as ActivityLevel,
+  );
+
+  // Previous blended value: the latest estimate of an earlier week, else the formula.
+  const { data: prev, error: vErr } = await db
+    .from("tdee_estimates").select("blended_tdee").eq("user_id", userId)
+    .lt("week_start", weekStart).order("week_start", { ascending: false }).limit(1).maybeSingle();
+  if (vErr) throw new Error(vErr.message);
+  const previousBlendedTDEE = prev?.blended_tdee != null ? Number(prev.blended_tdee) : formula;
+
+  const result = computeAdaptiveTDEE({
+    formulaTDEE: formula,
+    previousBlendedTDEE,
+    avgIntakeKcal: summary.avgIntakeKcal,
+    trendWeightDeltaKg: summary.trendWeightDeltaKg,
+    days: summary.days,
+    prerequisites: summary.prerequisites,
+  });
+
+  if (result.reasonCode === "insufficient_data") {
+    return { status: "skipped", user_id: userId, reason: "insufficient_data" };
+  }
+
+  const { error: uErr } = await db.from("tdee_estimates").upsert(
+    {
+      user_id: userId,
+      week_start: weekStart,
+      formula_tdee: result.formulaTDEE,
+      observed_tdee: result.observedTDEE,
+      blended_tdee: result.blendedTDEE,
+      confidence: result.confidence,
+      reason_code: result.reasonCode,
+      weekly_change_kcal: result.weeklyChangeKcal,
+      weight_trend_kg: Math.round(summary.trendWeightDeltaKg * 100) / 100,
+    },
+    { onConflict: "user_id,week_start" },
+  );
+  if (uErr) throw new Error(uErr.message);
+
+  return {
+    status: "updated",
+    user_id: userId,
+    week_start: weekStart,
+    blended_tdee: result.blendedTDEE,
+    observed_tdee: result.observedTDEE,
+    reason_code: result.reasonCode,
+    weekly_change_kcal: result.weeklyChangeKcal,
+    confidence: result.confidence,
+  };
+}
 
 Deno.serve(async (req: Request) => {
   const cors = handleCors(req);
@@ -32,54 +157,56 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "method_not_allowed" }, { status: 405 });
   }
 
+  let body: { today?: unknown } = {};
+  try {
+    body = await req.json();
+  } catch {
+    // empty body is fine
+  }
+  const utcToday = new Date().toISOString().slice(0, 10);
+
   const authHeader = req.headers.get("Authorization") ?? "";
-  const isServiceRoleCall =
-    !!SERVICE_ROLE_KEY && authHeader === `Bearer ${SERVICE_ROLE_KEY}`;
+  const isServiceRoleCall = !!SERVICE_ROLE_KEY && authHeader === `Bearer ${SERVICE_ROLE_KEY}`;
+  const db = createServiceClient();
 
-  // TODO(Phase 6): use `_serviceClient` (bypasses RLS) to write tdee_estimates/daily_targets in
-  // both branches below. Prefixed with `_` for now since it's otherwise unused in this skeleton.
-  const _serviceClient = createServiceClient();
+  try {
+    if (isServiceRoleCall) {
+      // --- Cron / all-users mode: everyone with a weight entry in the window. ----------
+      const windowStart = shiftIsoDate(utcToday, -ADAPTIVE_WINDOW_DAYS);
+      const rows = await fetchAll<{ user_id: string }>((from, to) =>
+        db.from("weight_logs").select("user_id").gte("date", windowStart).order("user_id").range(from, to)
+      );
+      const userIds = [...new Set(rows.map((r) => r.user_id))];
 
-  if (isServiceRoleCall) {
-    // --- Cron / all-users mode -------------------------------------------------------
-    // TODO(Phase 6):
-    //   1. Select all users eligible for recompute: profiles with >=14 days since signup
-    //      (or since last recompute) AND enough weight_logs/food_logs coverage (see
-    //      _shared/adaptive.ts MIN_* constants) — do the eligibility pre-filter in SQL where
-    //      possible to avoid loading unnecessary data.
-    //   2. For each eligible user: load the observation window (weight_logs, food_logs sums
-    //      per day), this week's formula TDEE (port of src/domain/tdee.ts, or read the most
-    //      recent daily_targets.tdee_used as a proxy), and last week's tdee_estimates row.
-    //   3. Call computeAdaptiveTdee(...) from _shared/adaptive.ts.
-    //   4. Upsert public.tdee_estimates (user_id, week_start) and recompute this week's
-    //      public.daily_targets rows from the new blended TDEE using the same
-    //      macro-split logic as src/domain/targets.ts / macros.ts (port or share via a
-    //      similar _shared file once that logic exists).
-    //   5. Return a summary ({ processed, updated, skipped, errors }) for observability.
-    console.log("recompute-targets: cron/service-role call received (not yet implemented)");
-    return jsonResponse({
-      ok: true,
-      mode: "all_users",
-      note: "recompute-targets is a Phase 6 skeleton; no targets were recomputed.",
-    });
+      let updated = 0;
+      let skipped = 0;
+      const errors: { user_id: string; error: string }[] = [];
+      for (const id of userIds) {
+        try {
+          const r = await recomputeForUser(db, id, utcToday);
+          if (r.status === "updated") updated++;
+          else skipped++;
+        } catch (e) {
+          errors.push({ user_id: id, error: (e as Error).message });
+        }
+      }
+      console.log(`recompute-targets cron: processed=${userIds.length} updated=${updated} skipped=${skipped} errors=${errors.length}`);
+      return jsonResponse({ ok: true, mode: "all_users", processed: userIds.length, updated, skipped, errors });
+    }
+
+    // --- Single-user mode (client JWT) --------------------------------------------------
+    const { user } = await getAuthenticatedUser(req);
+    if (!user) return jsonResponse({ error: "unauthorized" }, { status: 401 });
+
+    // The client may pass its local date; it may differ from UTC by at most a day.
+    const today = isIsoDate(body.today) && Math.abs(Date.parse(body.today) - Date.parse(utcToday)) <= 2 * 86_400_000
+      ? body.today
+      : utcToday;
+
+    const result = await recomputeForUser(db, user.id, today);
+    return jsonResponse({ ok: true, mode: "single_user", ...result });
+  } catch (e) {
+    console.error("recompute-targets failed:", (e as Error).message);
+    return jsonResponse({ error: "internal_error" }, { status: 500 });
   }
-
-  // --- Single-user mode (client JWT) ------------------------------------------------
-  const { user } = await getAuthenticatedUser(req);
-  if (!user) {
-    return jsonResponse({ error: "unauthorized" }, { status: 401 });
-  }
-
-  // TODO(Phase 6): same steps as above (2-4), scoped to this one user.id, using
-  // `serviceClient` (bypasses RLS, needed to write tdee_estimates/daily_targets which have no
-  // client insert-via-edge-function policy assumptions) or `createUserClient`/`userClient` if
-  // the write should go through the user's own RLS-checked policies instead.
-  console.log("recompute-targets: user call received for", user.id, "(not yet implemented)");
-
-  return jsonResponse({
-    ok: true,
-    mode: "single_user",
-    user_id: user.id,
-    note: "recompute-targets is a Phase 6 skeleton; no targets were recomputed.",
-  });
 });

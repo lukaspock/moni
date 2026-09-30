@@ -404,8 +404,11 @@ export type Database = {
           created_at: string;
           formula_tdee: number | null;
           observed_tdee: number | null;
+          reason_code: string | null;
           user_id: string;
           week_start: string;
+          weekly_change_kcal: number | null;
+          weight_trend_kg: number | null;
         };
         Insert: {
           blended_tdee?: number | null;
@@ -413,8 +416,11 @@ export type Database = {
           created_at?: string;
           formula_tdee?: number | null;
           observed_tdee?: number | null;
+          reason_code?: string | null;
           user_id: string;
           week_start: string;
+          weekly_change_kcal?: number | null;
+          weight_trend_kg?: number | null;
         };
         Update: {
           blended_tdee?: number | null;
@@ -422,8 +428,11 @@ export type Database = {
           created_at?: string;
           formula_tdee?: number | null;
           observed_tdee?: number | null;
+          reason_code?: string | null;
           user_id?: string;
           week_start?: string;
+          weekly_change_kcal?: number | null;
+          weight_trend_kg?: number | null;
         };
         Relationships: [];
       };

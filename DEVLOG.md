@@ -79,7 +79,8 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - [x] Permissions, workout + weight import, dedupe, write-back (simulator QA pending)
 
 ## Phase 6 – Weight, adaptive TDEE, insights
-- [ ] Weight logging + chart, `recompute-targets` + pg_cron, Insights tab
+- [ ] Weight logging + chart, Insights tab
+- [x] Backend: `recompute-targets` (adaptive TDEE) + pg_cron + client `useRecomputeTargetsIfDue()` (vault secret for cron still to be created by owner)
 
 ## Phase 7 – Monetization
 - [ ] RevenueCat, paywall, `revenuecat-webhook`, server-side limit
@@ -171,3 +172,4 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 ## Open items / blockers (health)
 - Simulator/device QA pending (permission sheet, import from the Health app's sample data, write-back visible in Health, nutrition toggle).
 - Premium gating, weight quick-log constraint bug, merged-then-deleted kcal, UTC day bounds → see "Sprint 2 QA" above.
+- 2026-09-30 · targets-backend · Phase 6 backend: `recompute-targets` implemented (28-day window, EMA trend, observed/blended TDEE, ±150/week + 0.75–1.3×formula + 1200 floor clamps, no-op with reason on insufficient data, idempotent per Monday week, cron all-users + per-user JWT mode). Domain: `summarizeAdaptiveWindow`, `clampToSafetyBand`, `weekStartOf` etc. in `src/domain/adaptive.ts`, `recomputeSchedule.ts`; `_shared/adaptive.ts` now a verbatim copy with a sync test. Migration `20260930120000_tdee_estimates_explain` (reason_code, weekly_change_kcal, weight_trend_kg) pushed, advisors: only the pre-existing Auth leaked-password warning; types regenerated; function deployed. Client: `useAdaptiveTdee()` + `useRecomputeTargetsIfDue()` exported from `@/features/targets`, `useDailyTargets` uses blended TDEE (and triggers the recompute). Open: Vault secret `service_role_key` is missing on the live project (cron is a no-op until set); deno not installed locally so the function was not `deno check`ed; not exercised end-to-end with real data.

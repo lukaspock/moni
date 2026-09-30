@@ -103,14 +103,24 @@ Located in `supabase/functions/`. Shared helpers in `supabase/functions/_shared/
 - Secret: `REVENUECAT_WEBHOOK_SECRET` (required) — set the same value in the RevenueCat
   dashboard's webhook config.
 
-### `recompute-targets` (Phase 6)
-- Deliberately a **thin skeleton** (Phase 6 is far out) — auth/dispatch plumbing is in place
-  (service-role call = all users / cron, user JWT = just that user), the actual recompute
-  logic is a `TODO` block. See the comments in `index.ts` before implementing.
-- Will be triggered weekly by pg_cron (see migration 008) and optionally by the client on app
-  start if a recompute is due.
-- `verify_jwt = true` for the client-call path; the cron path authenticates with the service
-  role key instead (checked manually in code, same function).
+### `recompute-targets` (Phase 6, implemented)
+- Adaptive TDEE per PLAN §6.7. Window = last 28 days ending yesterday. Weights -> daily mean ->
+  EMA(0.1); observed TDEE = avg intake (logged days in the weigh-in span) − Δtrend·7700/days;
+  blended with the formula TDEE (w ≤ 0.8), clamped to ±150 kcal/week vs. the previous estimate
+  and to 0.75–1.30 × formula (floor 1200). Needs ≥14 days of data, ≥8 weights, ≥80 % food-log
+  coverage and a ≥7-day weigh-in span, otherwise **no-op** (nothing written, response
+  `status: skipped, reason: insufficient_data`).
+- Writes one `tdee_estimates` row per (user, Monday week_start) incl. `reason_code`,
+  `weekly_change_kcal`, `weight_trend_kg` (migration `20260930120000`). Idempotent: reruns in
+  the same week overwrite the same row; "previous" is always an earlier week's row.
+  `daily_targets` is still written by the client (`useDailyTargets`), which now uses the latest
+  `blended_tdee` instead of the formula TDEE.
+- Modes: service-role bearer = all users with a weight in the window (cron, weekly Mon 03:00
+  UTC); user JWT = that user only, optional body `{ "today": "YYYY-MM-DD" }` (local date).
+  The client calls it via `useRecomputeTargetsIfDue()` (>7 days since last attempt, MMKV).
+- Logic lives in `src/domain/adaptive.ts` (tested); `_shared/adaptive.ts` is a verbatim copy
+  (guarded by `src/domain/adaptive.sync.test.ts`), `_shared/formula.ts` ports BMR/NEAT TDEE.
+- `verify_jwt = true`; the cron path authenticates with the service role key (checked in code).
 
 ## 5. Secrets checklist (owner/lead to set via Supabase dashboard or MCP)
 
@@ -162,7 +172,7 @@ since they're already dot-namespaced as `exercise.xxx`).
 ## 9. Open items for the lead / owner
 
 - Authenticate the Supabase MCP (`claude /mcp`) before any of this can actually be applied.
-- Create the `service_role_key` Vault secret for the cron job (§7) — or decide pg_cron/pg_net
+- **Still missing on the live project (checked 2026-09-30): `vault.secrets` is empty**, so the weekly cron call currently logs a warning and does nothing. Create the `service_role_key` Vault secret for the cron job (§7) — or decide pg_cron/pg_net
   aren't wanted yet and skip migration 008 for now.
 - Decide the final Gemini model + measure real cost per scan before calibrating
   `FREE_AI_LIMIT_PER_DAY` (PLAN.md §10).
