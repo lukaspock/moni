@@ -49,7 +49,7 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - [x] `workout` routines + weekly plan (training_plan_days)
 - [x] `workout` active workout (offline, MMKV + outbox), rest timer, haptics, summary with kcal (MET) + "+X kcal"
 - [x] `workout` history + `useWorkoutsForDate` / `usePlannedDay`
-- [ ] `lead` integration, rebuild (new native modules: camera, image-picker, skia …), test in the simulator
+- [x] `lead` integration, rebuild (new native modules: camera, image-picker, skia …), test in the simulator
 
 ## Sprint 2 – Branding, onboarding v2, Apple Health
 
@@ -90,10 +90,10 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 
 ## Phase 6 – Weight, adaptive TDEE, insights
 
-- [ ] Weight logging + chart, Insights tab
+- [x] Weight logging + chart, Insights tab
 - [x] Backend: `recompute-targets` (adaptive TDEE) + pg_cron + client `useRecomputeTargetsIfDue()` (vault secret for cron still to be created by owner)
 - [x] Phase 6 UI (insights-ui): weight logging + trend chart + Insights tab (simulator check pending)
-- [ ] `recompute-targets` + pg_cron (adaptive TDEE backend, other agent)
+- [x] `recompute-targets` + pg_cron (adaptive TDEE; cron needs Vault secret `service_role_key`, owner to-do)
 
 ## Phase 7 – Monetization
 
@@ -198,3 +198,4 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - Simulator/device QA pending (permission sheet, import from the Health app's sample data, write-back visible in Health, nutrition toggle).
 - Premium gating, weight quick-log constraint bug, merged-then-deleted kcal, UTC day bounds → see "Sprint 2 QA" above.
 - 2026-09-30 · targets-backend · Phase 6 backend: `recompute-targets` implemented (28-day window, EMA trend, observed/blended TDEE, ±150/week + 0.75–1.3×formula + 1200 floor clamps, no-op with reason on insufficient data, idempotent per Monday week, cron all-users + per-user JWT mode). Domain: `summarizeAdaptiveWindow`, `clampToSafetyBand`, `weekStartOf` etc. in `src/domain/adaptive.ts`, `recomputeSchedule.ts`; `_shared/adaptive.ts` now a verbatim copy with a sync test. Migration `20260930120000_tdee_estimates_explain` (reason_code, weekly_change_kcal, weight_trend_kg) pushed, advisors: only the pre-existing Auth leaked-password warning; types regenerated; function deployed. Client: `useAdaptiveTdee()` + `useRecomputeTargetsIfDue()` exported from `@/features/targets`, `useDailyTargets` uses blended TDEE (and triggers the recompute). Open: Vault secret `service_role_key` is missing on the live project (cron is a no-op until set); deno not installed locally so the function was not `deno check`ed; not exercised end-to-end with real data.
+- 2026-09-30 · lead · Integrated phase 6 branches + QA fixes (cherry-picked, prettier re-run), deployed analyze-food + recompute-targets, Release device build (Release-iphoneos, no Metro) installed on the owner's iPhone, moeni.ipa on Desktop for AltStore/SideStore.
