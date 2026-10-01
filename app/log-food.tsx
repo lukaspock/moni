@@ -356,7 +356,7 @@ function QuickSection({
           <Pressable
             onPress={() => onLog(entry)}
             hitSlop={6}
-            className="h-full items-center justify-center px-4"
+            className="items-center justify-center self-stretch px-4"
             accessibilityRole="button"
             accessibilityLabel={t('food.logFood.logNow')}
           >
