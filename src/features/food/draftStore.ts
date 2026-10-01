@@ -44,6 +44,8 @@ interface FoodDraftState {
   portionMultiplier: number;
   status: FoodDraftStatus;
   errorKind: FoodDraftErrorKind;
+  /** Technical error code of the last failed analysis (e.g. `502 ai_provider_error`), shown small on the error screen. */
+  errorCode: string | null;
 
   /** Resets the draft and opens it for a given date + source. */
   start: (opts: { date: string; source: FoodSource }) => void;
@@ -103,6 +105,7 @@ function emptyState(): Omit<
     portionMultiplier: 1,
     status: 'idle',
     errorKind: null,
+    errorCode: null,
   };
 }
 
@@ -169,6 +172,7 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
       clarification: clarification ?? null,
       status: 'ready',
       errorKind: null,
+      errorCode: null,
     })),
   reset: () => set(emptyState()),
 }));

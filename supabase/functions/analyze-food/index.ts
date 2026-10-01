@@ -21,7 +21,16 @@ import {
 } from '../_shared/supabase.ts';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+// Google retires models without much notice (gemini-2.5-flash started answering 404 "no longer
+// available" in Oct 2026). Try the configured model first, then fall back through the list on
+// 404 so a retired model name never takes the feature down.
+const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
+const GEMINI_MODEL_FALLBACKS = [
+  GEMINI_MODEL,
+  'gemini-3.8-flash',
+  'gemini-flash-latest',
+  'gemini-2.5-flash',
+].filter((m, i, all) => all.indexOf(m) === i);
 const FREE_AI_LIMIT_PER_DAY = Number(
   Deno.env.get('FREE_AI_LIMIT_PER_DAY') ?? '3',
 );
@@ -290,38 +299,55 @@ Deno.serve(async (req: Request) => {
   const parts: unknown[] = [{ text: prompt }];
   if (imagePart) parts.push(imagePart);
 
-  const geminiUrl =
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent` +
-    `?key=${GEMINI_API_KEY}`;
-
-  let geminiJson: GeminiGenerateContentResponse;
+  let geminiJson: GeminiGenerateContentResponse | null = null;
+  let lastStatus = 0;
+  let lastDetail = '';
   try {
-    const geminiResp = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema:
-            mode === 'label' ? GEMINI_LABEL_SCHEMA : GEMINI_RESPONSE_SCHEMA,
-          temperature: 0.2,
+    for (const model of GEMINI_MODEL_FALLBACKS) {
+      const geminiResp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': GEMINI_API_KEY,
+          },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts }],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              responseSchema:
+                mode === 'label' ? GEMINI_LABEL_SCHEMA : GEMINI_RESPONSE_SCHEMA,
+              temperature: 0.2,
+            },
+          }),
         },
-      }),
-    });
-
-    if (!geminiResp.ok) {
-      const errText = await geminiResp.text();
-      console.error('analyze-food: Gemini error', geminiResp.status, errText);
-      await refund();
-      return jsonResponse({ error: 'ai_provider_error' }, { status: 502 });
+      );
+      if (geminiResp.ok) {
+        geminiJson = await geminiResp.json();
+        break;
+      }
+      lastStatus = geminiResp.status;
+      lastDetail = (await geminiResp.text()).slice(0, 300);
+      console.error(
+        `analyze-food: Gemini error (model ${model})`,
+        lastStatus,
+        lastDetail,
+      );
+      if (lastStatus !== 404) break; // only a missing/retired model warrants the next candidate
     }
-
-    geminiJson = await geminiResp.json();
   } catch (err) {
     console.error('analyze-food: Gemini fetch failed', err);
     await refund();
     return jsonResponse({ error: 'ai_provider_unreachable' }, { status: 502 });
+  }
+
+  if (!geminiJson) {
+    await refund();
+    return jsonResponse(
+      { error: 'ai_provider_error', detail: `gemini ${lastStatus}` },
+      { status: 502 },
+    );
   }
 
   const rawText: string | undefined =

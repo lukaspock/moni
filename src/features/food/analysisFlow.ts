@@ -27,6 +27,30 @@ function failureKind(error: unknown): AnalysisFailure {
   return 'generic';
 }
 
+/** Short technical description of a failure for the owner/bug reports, e.g. `502 ai_provider_error`. */
+export function describeAnalysisError(error: unknown): string {
+  if (error instanceof AnalyzeFoodError) {
+    return [error.status, error.code ?? error.message]
+      .filter((v) => v != null && v !== '')
+      .join(' ');
+  }
+  if (error instanceof Error) return `client: ${error.message}`.slice(0, 160);
+  if (error && typeof error === 'object' && 'message' in error) {
+    return `client: ${String((error as { message: unknown }).message)}`.slice(
+      0,
+      160,
+    );
+  }
+  return 'unknown_error';
+}
+
+function recordFailure(draftId: string, error: unknown) {
+  console.warn('analyze-food failed', error);
+  if (useFoodDraftStore.getState().id === draftId) {
+    useFoodDraftStore.setState({ errorCode: describeAnalysisError(error) });
+  }
+}
+
 function toDraftItems(result: AnalyzeFoodResult): DraftFoodItem[] {
   return result.items.map((item) => ({
     id: Crypto.randomUUID(),
@@ -70,6 +94,7 @@ export function useFoodAnalysis() {
         });
         return null;
       } catch (error) {
+        recordFailure(draftId, error);
         return failureKind(error);
       }
     },
@@ -79,7 +104,10 @@ export function useFoodAnalysis() {
   /** Uploads + analyzes a meal photo into the current draft. */
   const analyzePhoto = useCallback(
     async (localUri: string): Promise<AnalysisFailure | null> => {
-      if (!userId) return 'generic';
+      if (!userId) {
+        useFoodDraftStore.setState({ errorCode: 'no_session' });
+        return 'generic';
+      }
       const draftId = useFoodDraftStore.getState().id;
       try {
         const path = await uploadFoodImage({
@@ -104,6 +132,7 @@ export function useFoodAnalysis() {
         });
         return null;
       } catch (error) {
+        recordFailure(draftId, error);
         return failureKind(error);
       }
     },
@@ -115,9 +144,10 @@ export function useFoodAnalysis() {
     async (
       localUri: string,
     ): Promise<
-      { label: AnalyzeLabelResult['label'] } | { failure: AnalysisFailure }
+      | { label: AnalyzeLabelResult['label'] }
+      | { failure: AnalysisFailure; code: string }
     > => {
-      if (!userId) return { failure: 'generic' };
+      if (!userId) return { failure: 'generic', code: 'no_session' };
       try {
         const path = await uploadFoodImage({
           userId,
@@ -131,7 +161,11 @@ export function useFoodAnalysis() {
         });
         return { label: result.label };
       } catch (error) {
-        return { failure: failureKind(error) };
+        console.warn('analyze-food label failed', error);
+        return {
+          failure: failureKind(error),
+          code: describeAnalysisError(error),
+        };
       }
     },
     [analyzeLabel, i18n.language, userId],
