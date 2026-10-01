@@ -49,7 +49,7 @@
     "title": "Choose exercise",
     "searchPlaceholder": "Search exercise…",
     "categoryAll": "All",
-    "muscleGroupAll": "All muscle groups",
+    "muscleGroupAll": "All muscles",
     "createCustom": "Create custom exercise",
     "customName": "Name",
     "customCategory": "Category",
@@ -59,7 +59,9 @@
     "trackingDuration": "Duration",
     "trackingDistanceDuration": "Distance & duration",
     "confirm": "Add ({{count}})",
-    "noResults": "No exercises found."
+    "noResults": "No exercises found.",
+    "hint": "Search, or pick a category or muscle group.",
+    "recent": "Recently used"
   },
   "active": {
     "finish": "Finish workout",
@@ -104,5 +106,22 @@
     "oneRepMax": "Estimated 1RM",
     "empty": "No data for this exercise yet.",
     "week": "Week {{week}}"
+  },
+  "muscle": {
+    "abductors": "Hip abductors",
+    "adductors": "Hip adductors",
+    "back": "Back",
+    "biceps": "Biceps",
+    "calves": "Calves",
+    "cardio": "Cardio",
+    "chest": "Chest",
+    "core": "Core",
+    "forearms": "Forearms",
+    "full_body": "Full body",
+    "glutes": "Glutes",
+    "hamstrings": "Hamstrings",
+    "quadriceps": "Quads",
+    "shoulders": "Shoulders",
+    "triceps": "Triceps"
   }
 }

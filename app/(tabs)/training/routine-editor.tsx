@@ -1,16 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { themeColor } from '@/theme/colors';
 
-import {
-  Card,
-  GlassActionButton,
-  SectionHeader,
-  SheetScreen,
-} from '@/components/ui';
+import { GlassActionButton, SectionHeader, SheetScreen } from '@/components/ui';
 import {
   exerciseDisplayName,
   openExercisePicker,
@@ -113,86 +108,91 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
           </Text>
         )}
 
-        {exercises.map((ex, index) => {
-          const exercise = catalogById.get(ex.exerciseId);
-          return (
-            <Card key={ex.exerciseId}>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-label flex-1 text-base font-semibold">
-                  {exercise ? exerciseDisplayName(exercise, t) : '…'}
-                </Text>
-                <Pressable
-                  accessibilityLabel={t('workout.routine.moveUp')}
-                  onPress={() => move(index, -1)}
-                  hitSlop={8}
-                  className="px-2"
-                >
-                  <SymbolView
-                    name="chevron.up"
-                    size={14}
-                    tintColor="secondaryLabel"
-                  />
-                </Pressable>
-                <Pressable
-                  accessibilityLabel={t('workout.routine.moveDown')}
-                  onPress={() => move(index, 1)}
-                  hitSlop={8}
-                  className="px-2"
-                >
-                  <SymbolView
-                    name="chevron.down"
-                    size={14}
-                    tintColor="secondaryLabel"
-                  />
-                </Pressable>
-                <Pressable
-                  accessibilityLabel={t('workout.routine.remove')}
-                  onPress={() => removeExercise(index)}
-                  hitSlop={8}
-                  className="pl-2"
-                >
-                  <SymbolView
-                    name="trash"
-                    size={15}
-                    tintColor={themeColor('danger')}
-                  />
-                </Pressable>
-              </View>
-              <View className="flex-row gap-3">
-                <NumberField
-                  label={t('workout.routine.targetSets')}
-                  value={ex.targetSets}
-                  onChange={(v) => updateExercise(index, { targetSets: v })}
-                />
-                <NumberField
-                  label={t('workout.routine.targetReps')}
-                  value={ex.targetReps}
-                  onChange={(v) => updateExercise(index, { targetReps: v })}
-                />
-              </View>
-            </Card>
-          );
-        })}
-
-        <Pressable
-          onPress={() => {
-            openExercisePicker(
-              'multi',
-              exercises.map((e) => e.exerciseId),
+        <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+          {exercises.map((ex, index) => {
+            const exercise = catalogById.get(ex.exerciseId);
+            return (
+              <Fragment key={ex.exerciseId}>
+                <View className="gap-3 p-4">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-label flex-1 text-base font-semibold">
+                      {exercise ? exerciseDisplayName(exercise, t) : '…'}
+                    </Text>
+                    <Pressable
+                      accessibilityLabel={t('workout.routine.moveUp')}
+                      onPress={() => move(index, -1)}
+                      hitSlop={8}
+                      className="px-2"
+                    >
+                      <SymbolView
+                        name="chevron.up"
+                        size={14}
+                        tintColor="secondaryLabel"
+                      />
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel={t('workout.routine.moveDown')}
+                      onPress={() => move(index, 1)}
+                      hitSlop={8}
+                      className="px-2"
+                    >
+                      <SymbolView
+                        name="chevron.down"
+                        size={14}
+                        tintColor="secondaryLabel"
+                      />
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel={t('workout.routine.remove')}
+                      onPress={() => removeExercise(index)}
+                      hitSlop={8}
+                      className="pl-2"
+                    >
+                      <SymbolView
+                        name="trash"
+                        size={15}
+                        tintColor={themeColor('danger')}
+                      />
+                    </Pressable>
+                  </View>
+                  <View className="flex-row gap-3">
+                    <NumberField
+                      label={t('workout.routine.targetSets')}
+                      value={ex.targetSets}
+                      onChange={(v) => updateExercise(index, { targetSets: v })}
+                    />
+                    <NumberField
+                      label={t('workout.routine.targetReps')}
+                      value={ex.targetReps}
+                      onChange={(v) => updateExercise(index, { targetReps: v })}
+                    />
+                  </View>
+                </View>
+                <View className="bg-separator mx-4 h-px" />
+              </Fragment>
             );
-            router.push('/exercise-picker');
-          }}
-          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
-        >
-          <SymbolView
-            name="plus.circle.fill"
-            size={20}
-            tintColor={themeColor('accent')}
-          />
-          <Text className="text-tint text-base font-semibold">
-            {t('workout.routine.addExercise')}
-          </Text>
-        </Pressable>
+          })}
+
+          <Pressable
+            onPress={() => {
+              openExercisePicker(
+                'multi',
+                exercises.map((e) => e.exerciseId),
+              );
+              router.push('/exercise-picker');
+            }}
+            className="flex-row items-center gap-2 px-4 py-4"
+          >
+            <SymbolView
+              name="plus.circle.fill"
+              size={20}
+              tintColor={themeColor('accent')}
+            />
+            <Text className="text-tint text-base font-semibold">
+              {t('workout.routine.addExercise')}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={{ opacity: name.trim() ? 1 : 0.4 }}>

@@ -49,7 +49,7 @@
     "title": "Übung wählen",
     "searchPlaceholder": "Übung suchen…",
     "categoryAll": "Alle",
-    "muscleGroupAll": "Alle Muskelgruppen",
+    "muscleGroupAll": "Alle Muskeln",
     "createCustom": "Eigene Übung erstellen",
     "customName": "Name",
     "customCategory": "Kategorie",
@@ -59,7 +59,9 @@
     "trackingDuration": "Dauer",
     "trackingDistanceDuration": "Distanz & Dauer",
     "confirm": "Übernehmen ({{count}})",
-    "noResults": "Keine Übungen gefunden."
+    "noResults": "Keine Übungen gefunden.",
+    "hint": "Suche oder wähle eine Kategorie oder Muskelgruppe.",
+    "recent": "Zuletzt verwendet"
   },
   "active": {
     "finish": "Workout beenden",
@@ -104,5 +106,22 @@
     "oneRepMax": "Geschätztes 1RM",
     "empty": "Noch keine Daten für diese Übung.",
     "week": "KW {{week}}"
+  },
+  "muscle": {
+    "abductors": "Hüftabduktoren",
+    "adductors": "Hüftadduktoren",
+    "back": "Rücken",
+    "biceps": "Bizeps",
+    "calves": "Waden",
+    "cardio": "Cardio",
+    "chest": "Brust",
+    "core": "Rumpf",
+    "forearms": "Unterarme",
+    "full_body": "Ganzkörper",
+    "glutes": "Gesäß",
+    "hamstrings": "Beinbeuger",
+    "quadriceps": "Quadrizeps",
+    "shoulders": "Schultern",
+    "triceps": "Trizeps"
   }
 }
