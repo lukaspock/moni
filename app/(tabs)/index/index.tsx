@@ -136,7 +136,9 @@ export default function TodayScreen() {
                 <SymbolView name="chevron.right" size={20} />
               </Pressable>
               <Pressable
-                onPress={() => router.push({ pathname: '/log-food', params: { date } })}
+                onPress={() =>
+                  router.push({ pathname: '/log-food', params: { date } })
+                }
                 hitSlop={12}
                 accessibilityRole="button"
                 accessibilityLabel={t('food.dashboard.logFood')}
