@@ -61,7 +61,7 @@ export * from './pickerStore';
 export * from './routines';
 export * from './plan';
 export * from './session';
+export * from './start';
 export * from './history';
 export * from './progress';
-export * from './cardio';
 export * from './weight';

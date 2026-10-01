@@ -132,10 +132,8 @@ export function computeOnboardingPreview(
     : 0;
   const bonus = calculateWorkoutBonus({
     baseKcal: base.baseKcal,
-    isTrainingDay: input.hasTrainingDays,
-    plannedExpectedKcal: expectedKcal,
-    workoutCompleted: false,
-    isDayOver: false,
+    // Onboarding preview only: what a typical training day would add (illustrative, not a plan bonus).
+    actualKcalBurned: expectedKcal,
     eatBackFactor: input.eatBackFactor,
   });
   const trainingMacros: MacroResult = calculateMacros({

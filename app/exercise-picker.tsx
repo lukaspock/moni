@@ -16,6 +16,7 @@ import {
   type ExerciseCategory,
   type TrackingType,
 } from '@/features/workout';
+import { GlassActionButton } from '@/components/ui';
 import { useSession } from '@/features/auth';
 
 const CATEGORIES: (ExerciseCategory | 'all')[] = [
@@ -79,8 +80,8 @@ export default function ExercisePickerScreen() {
   }
 
   return (
-    <View className="bg-system-background flex-1 pt-4">
-      <View className="px-4">
+    <View className="bg-system-background flex-1 pt-6">
+      <View className="px-5">
         <Text className="text-label mb-3 text-center text-lg font-semibold">
           {t('workout.exercisePicker.title')}
         </Text>
@@ -143,7 +144,7 @@ export default function ExercisePickerScreen() {
       <FlatList
         data={filtered}
         keyExtractor={(e) => e.id}
-        contentContainerClassName="px-4 pb-4"
+        contentContainerClassName="px-5 pb-4"
         ListEmptyComponent={
           !isLoading ? (
             <Text className="text-secondary-label mt-8 text-center">
@@ -203,17 +204,14 @@ export default function ExercisePickerScreen() {
       )}
 
       {mode === 'multi' && (
-        <View className="border-separator bg-system-background border-t px-4 py-3">
-          <Pressable
+        <View className="bg-system-background px-5 pb-6 pt-2">
+          <GlassActionButton
+            label={t('workout.exercisePicker.confirm', {
+              count: selectedIds.length,
+            })}
+            symbol="checkmark"
             onPress={handleConfirm}
-            className="bg-tint items-center rounded-xl py-3"
-          >
-            <Text className="text-base font-semibold text-white">
-              {t('workout.exercisePicker.confirm', {
-                count: selectedIds.length,
-              })}
-            </Text>
-          </Pressable>
+          />
         </View>
       )}
     </View>

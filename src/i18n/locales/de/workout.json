@@ -4,39 +4,20 @@
     "empty": "Noch keine Workouts.",
     "duration": "{{minutes}} Min",
     "volume": "{{volume}} kg Volumen",
-    "kcal": "{{kcal}} kcal"
+    "kcal": "{{kcal}} kcal",
+    "showAll": "Alle anzeigen",
+    "exercises": "{{count}} Übungen"
   },
   "training": {
-    "startWorkout": "Workout starten",
+    "startWorkout": "Training starten",
     "startEmpty": "Leeres Workout",
-    "startFromRoutine": "Aus Routine starten",
+    "startFromRoutine": "Starten",
     "routines": "Routinen",
-    "weeklyPlan": "Wochenplan",
     "noRoutines": "Noch keine Routinen angelegt.",
     "newRoutine": "Neue Routine",
-    "restDay": "Ruhetag",
-    "freeTraining": "Freies Training",
-    "expectedKcal": "~{{kcal}} kcal",
-    "logCardio": "Cardio/Sport erfassen",
-    "history": "Verlauf"
-  },
-  "weekday": {
-    "0": "Sonntag",
-    "1": "Montag",
-    "2": "Dienstag",
-    "3": "Mittwoch",
-    "4": "Donnerstag",
-    "5": "Freitag",
-    "6": "Samstag"
-  },
-  "weekdayShort": {
-    "0": "So",
-    "1": "Mo",
-    "2": "Di",
-    "3": "Mi",
-    "4": "Do",
-    "5": "Fr",
-    "6": "Sa"
+    "history": "Verlauf",
+    "startHint": "Leeres Workout oder wähle unten eine Routine.",
+    "doneToday": "Heute schon trainiert"
   },
   "routine": {
     "title": "Routine",
@@ -53,32 +34,16 @@
     "moveUp": "Nach oben",
     "moveDown": "Nach unten",
     "remove": "Entfernen",
-    "empty": "Noch keine Übungen in dieser Routine."
-  },
-  "plan": {
-    "title": "Wochenplan",
-    "day": "Tag {{weekday}}",
-    "assignRoutine": "Routine wählen",
-    "rest": "Ruhetag",
-    "estimatedKcal": "geschätzt ~{{kcal}} kcal"
+    "empty": "Noch keine Übungen in dieser Routine.",
+    "options": "Routine-Optionen",
+    "edit": "Bearbeiten",
+    "sets": "{{count}} Sätze"
   },
   "category": {
     "strength": "Kraft",
     "cardio": "Cardio",
     "sport": "Sport",
     "other": "Sonstiges"
-  },
-  "cardio": {
-    "title": "Cardio/Sport erfassen",
-    "exercise": "Übung (optional)",
-    "duration": "Dauer (Min)",
-    "distance": "Distanz (km, optional)",
-    "intensity": "Intensität",
-    "intensityLight": "Locker",
-    "intensityModerate": "Moderat",
-    "intensityVigorous": "Intensiv",
-    "save": "Speichern",
-    "saved": "Gespeichert · ~{{kcal}} kcal verbrannt"
   },
   "exercisePicker": {
     "title": "Übung wählen",
@@ -97,7 +62,7 @@
     "noResults": "Keine Übungen gefunden."
   },
   "active": {
-    "finish": "Fertig",
+    "finish": "Workout beenden",
     "cancel": "Abbrechen",
     "cancelConfirmTitle": "Workout abbrechen?",
     "cancelConfirmMessage": "Der Fortschritt geht verloren.",
@@ -112,7 +77,16 @@
     "restRemaining": "Pause: {{seconds}}s",
     "skipRest": "Pause überspringen",
     "elapsed": "{{time}}",
-    "emptyExercises": "Noch keine Übungen. Tippe auf „Übung hinzufügen“."
+    "emptyExercises": "Noch keine Übungen. Tippe auf „Übung hinzufügen“.",
+    "title": "Workout",
+    "cancelWorkout": "Workout abbrechen",
+    "setColumn": "Satz",
+    "weightColumn": "kg",
+    "doneColumn": "Fertig",
+    "elapsedLabel": "Dauer",
+    "removeExercise": "Übung entfernen",
+    "confirmFinishTitle": "Workout beenden?",
+    "noSetsDone": "Noch kein Satz abgehakt."
   },
   "summary": {
     "title": "Workout beendet",
