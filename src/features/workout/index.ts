@@ -65,3 +65,4 @@ export * from './start';
 export * from './history';
 export * from './progress';
 export * from './weight';
+export * from './recentExercises';

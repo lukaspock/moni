@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -10,13 +10,15 @@ import {
   createCustomExercise,
   exerciseDisplayName,
   filterExercises,
+  getRecentExerciseIds,
+  rememberExercises,
   useExerciseCatalog,
   useExercisePickerStore,
   type Exercise,
   type ExerciseCategory,
   type TrackingType,
 } from '@/features/workout';
-import { GlassActionButton } from '@/components/ui';
+import { GlassActionButton, SectionHeader } from '@/components/ui';
 import { useSession } from '@/features/auth';
 
 const CATEGORIES: (ExerciseCategory | 'all')[] = [
@@ -63,6 +65,7 @@ export default function ExercisePickerScreen() {
 
   function toggle(exercise: Exercise) {
     if (mode === 'single') {
+      rememberExercises([exercise.id]);
       confirm([exercise.id]);
       router.back();
       return;
@@ -75,17 +78,70 @@ export default function ExercisePickerScreen() {
   }
 
   function handleConfirm() {
+    rememberExercises(selectedIds);
     confirm(selectedIds);
     router.back();
   }
 
+  const hasFilter =
+    query.trim().length > 0 || category !== 'all' || muscleGroup !== null;
+  const recents = useMemo(() => {
+    const byId = new Map(exercises.map((e) => [e.id, e]));
+    return getRecentExerciseIds()
+      .map((id) => byId.get(id))
+      .filter((e): e is Exercise => !!e);
+  }, [exercises]);
+  const list = hasFilter ? filtered : recents;
+  const canConfirm = selectedIds.length > 0;
+
+  function muscleLabel(mg: string): string {
+    const known = muscleLabels(t)[mg];
+    return known ?? mg.replace(/_/g, ' ');
+  }
+
+  function renderRow(item: Exercise, last: boolean) {
+    const selected = selectedIds.includes(item.id);
+    return (
+      <View key={item.id}>
+        <Pressable
+          onPress={() => toggle(item)}
+          className="flex-row items-center justify-between px-4 py-3"
+        >
+          <View className="flex-1 pr-2">
+            <Text className="text-label text-base">
+              {exerciseDisplayName(item, t)}
+            </Text>
+            {item.muscleGroups.length > 0 && (
+              <Text className="text-secondary-label text-xs">
+                {item.muscleGroups.map(muscleLabel).join(', ')}
+              </Text>
+            )}
+          </View>
+          {mode === 'multi' && (
+            <SymbolView
+              name={selected ? 'checkmark.circle.fill' : 'circle'}
+              size={22}
+              tintColor={selected ? themeColor('accent') : 'secondaryLabel'}
+            />
+          )}
+        </Pressable>
+        {!last && <View className="bg-separator mx-4 h-px" />}
+      </View>
+    );
+  }
+
   return (
-    <View className="bg-system-background flex-1 pt-6">
-      <View className="px-5">
-        <Text className="text-label mb-3 text-center text-lg font-semibold">
+    <View className="bg-system-background flex-1">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-4 p-5 pt-6"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        <Text className="text-label text-center text-lg font-semibold">
           {t('workout.exercisePicker.title')}
         </Text>
-        <View className="bg-secondary-system-background mb-3 flex-row items-center gap-2 rounded-xl px-3 py-2">
+        <View className="bg-secondary-system-background flex-row items-center gap-2 rounded-xl px-3 py-2.5">
           <SymbolView
             name="magnifyingglass"
             size={16}
@@ -96,114 +152,92 @@ export default function ExercisePickerScreen() {
             onChangeText={setQuery}
             placeholder={t('workout.exercisePicker.searchPlaceholder')}
             placeholderTextColor="gray"
+            autoCorrect={false}
             className="text-label flex-1 text-base"
           />
         </View>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={CATEGORIES}
-          keyExtractor={(c) => c}
-          contentContainerClassName="gap-2 pb-2"
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => setCategory(item)}
-              className={`rounded-full px-3 py-1.5 ${category === item ? 'bg-tint' : 'bg-secondary-system-background'}`}
-            >
-              <Text className={category === item ? 'text-white' : 'text-label'}>
-                {item === 'all'
-                  ? t('workout.exercisePicker.categoryAll')
-                  : t(`workout.category.${item}`)}
-              </Text>
-            </Pressable>
+
+        <View className="gap-2">
+          <ChipRow>
+            {CATEGORIES.map((c) => (
+              <Chip
+                key={c}
+                selected={category === c}
+                onPress={() => setCategory(c)}
+                label={
+                  c === 'all'
+                    ? t('workout.exercisePicker.categoryAll')
+                    : t(`workout.category.${c}`)
+                }
+              />
+            ))}
+          </ChipRow>
+          {muscleGroups.length > 0 && (
+            <ChipRow>
+              <Chip
+                small
+                selected={muscleGroup === null}
+                onPress={() => setMuscleGroup(null)}
+                label={t('workout.exercisePicker.muscleGroupAll')}
+              />
+              {muscleGroups.map((mg) => (
+                <Chip
+                  key={mg}
+                  small
+                  selected={muscleGroup === mg}
+                  onPress={() => setMuscleGroup(mg)}
+                  label={muscleLabel(mg)}
+                />
+              ))}
+            </ChipRow>
           )}
-        />
-        {muscleGroups.length > 0 && (
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={[null, ...muscleGroups]}
-            keyExtractor={(m) => m ?? 'all'}
-            contentContainerClassName="gap-2 pb-2"
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => setMuscleGroup(item)}
-                className={`rounded-full px-3 py-1 ${muscleGroup === item ? 'bg-tint' : 'bg-secondary-system-background'}`}
-              >
-                <Text
-                  className={`text-xs ${muscleGroup === item ? 'text-white' : 'text-secondary-label'}`}
-                >
-                  {item ?? t('workout.exercisePicker.muscleGroupAll')}
-                </Text>
-              </Pressable>
-            )}
+        </View>
+
+        {!hasFilter && recents.length > 0 && (
+          <SectionHeader title={t('workout.exercisePicker.recent')} />
+        )}
+        {list.length > 0 ? (
+          <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+            {list.map((e, i) => renderRow(e, i === list.length - 1))}
+          </View>
+        ) : (
+          !isLoading && (
+            <Text className="text-secondary-label mt-6 text-center text-sm">
+              {t(
+                hasFilter
+                  ? 'workout.exercisePicker.noResults'
+                  : 'workout.exercisePicker.hint',
+              )}
+            </Text>
+          )
+        )}
+
+        <Pressable
+          onPress={() => setShowCreate((v) => !v)}
+          className="flex-row items-center justify-center gap-2 py-2"
+        >
+          <SymbolView
+            name="plus.circle"
+            size={20}
+            tintColor={themeColor('accent')}
+          />
+          <Text className="text-tint text-base">
+            {t('workout.exercisePicker.createCustom')}
+          </Text>
+        </Pressable>
+        {showCreate && userId && (
+          <CreateCustomExerciseForm
+            userId={userId}
+            onCreated={(exercise) => {
+              setShowCreate(false);
+              void refresh();
+              toggle(exercise);
+            }}
           />
         )}
-      </View>
+      </ScrollView>
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(e) => e.id}
-        contentContainerClassName="px-5 pb-4"
-        ListEmptyComponent={
-          !isLoading ? (
-            <Text className="text-secondary-label mt-8 text-center">
-              {t('workout.exercisePicker.noResults')}
-            </Text>
-          ) : null
-        }
-        renderItem={({ item }) => {
-          const selected = selectedIds.includes(item.id);
-          return (
-            <Pressable
-              onPress={() => toggle(item)}
-              className="border-separator flex-row items-center justify-between border-b py-3"
-            >
-              <View className="flex-1 pr-2">
-                <Text className="text-label text-base">
-                  {exerciseDisplayName(item, t)}
-                </Text>
-                {item.muscleGroups.length > 0 && (
-                  <Text className="text-secondary-label text-xs">
-                    {item.muscleGroups.join(', ')}
-                  </Text>
-                )}
-              </View>
-              {mode === 'multi' && (
-                <SymbolView
-                  name={selected ? 'checkmark.circle.fill' : 'circle'}
-                  size={22}
-                  tintColor={selected ? themeColor('accent') : 'secondaryLabel'}
-                />
-              )}
-            </Pressable>
-          );
-        }}
-        ListFooterComponent={
-          <Pressable
-            onPress={() => setShowCreate((v) => !v)}
-            className="mt-2 flex-row items-center gap-2 py-3"
-          >
-            <SymbolView name="plus.circle" size={20} />
-            <Text className="text-tint text-base">
-              {t('workout.exercisePicker.createCustom')}
-            </Text>
-          </Pressable>
-        }
-      />
-
-      {showCreate && userId && (
-        <CreateCustomExerciseForm
-          userId={userId}
-          onCreated={(exercise) => {
-            setShowCreate(false);
-            void refresh();
-            toggle(exercise);
-          }}
-        />
-      )}
-
-      {mode === 'multi' && (
+      {mode === 'multi' && canConfirm && (
         <View className="bg-system-background px-5 pb-6 pt-2">
           <GlassActionButton
             label={t('workout.exercisePicker.confirm', {
@@ -216,6 +250,66 @@ export default function ExercisePickerScreen() {
       )}
     </View>
   );
+}
+
+function ChipRow({ children }: { children: ReactNode }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      className="-mx-5 grow-0"
+      contentContainerClassName="gap-2 px-5"
+    >
+      {children}
+    </ScrollView>
+  );
+}
+
+function Chip({
+  label,
+  selected,
+  onPress,
+  small,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  small?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`rounded-full px-3 ${small ? 'py-1' : 'py-1.5'} ${selected ? 'bg-tint' : 'bg-secondary-system-background'}`}
+    >
+      <Text
+        className={`${small ? 'text-xs' : 'text-sm'} ${selected ? 'font-semibold text-white' : small ? 'text-secondary-label' : 'text-label'}`}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function muscleLabels(t: (key: never) => string): Record<string, string> {
+  const tt = t as unknown as (key: string) => string;
+  return {
+    abductors: tt('workout.muscle.abductors'),
+    adductors: tt('workout.muscle.adductors'),
+    back: tt('workout.muscle.back'),
+    biceps: tt('workout.muscle.biceps'),
+    calves: tt('workout.muscle.calves'),
+    cardio: tt('workout.muscle.cardio'),
+    chest: tt('workout.muscle.chest'),
+    core: tt('workout.muscle.core'),
+    forearms: tt('workout.muscle.forearms'),
+    full_body: tt('workout.muscle.full_body'),
+    glutes: tt('workout.muscle.glutes'),
+    hamstrings: tt('workout.muscle.hamstrings'),
+    quadriceps: tt('workout.muscle.quadriceps'),
+    shoulders: tt('workout.muscle.shoulders'),
+    triceps: tt('workout.muscle.triceps'),
+  };
 }
 
 function CreateCustomExerciseForm({
