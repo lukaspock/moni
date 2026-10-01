@@ -670,6 +670,15 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      refund_ai_usage: {
+        Args: { p_date: string; p_user_id: string };
+        Returns: undefined;
+      };
+      reserve_ai_usage: {
+        Args: { p_date: string; p_limit: number; p_user_id: string };
+        Returns: number;
+      };
+      trigger_cleanup_label_photos: { Args: never; Returns: undefined };
       trigger_recompute_targets: { Args: never; Returns: undefined };
     };
     Enums: {

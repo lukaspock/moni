@@ -17,7 +17,7 @@ export type WorkoutCategory = 'strength' | 'cardio' | 'sport' | 'other';
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export type FoodSource =
-  'photo' | 'text' | 'voice' | 'barcode' | 'favorite' | 'manual';
+  'photo' | 'text' | 'voice' | 'barcode' | 'label' | 'favorite' | 'manual';
 
 export type WorkoutKcalSource = 'met' | 'healthkit' | 'manual';
 

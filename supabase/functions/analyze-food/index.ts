@@ -1,8 +1,9 @@
 // møni · analyze-food Edge Function
 //
-// PLAN.md §7.3. Verifies the caller's JWT, enforces the free-tier daily AI limit, calls
+// PLAN.md §7.3. Verifies the caller's JWT, atomically reserves one unit of the free-tier daily AI quota (reserve_ai_usage, all modes,
+// refunded if Gemini fails), calls
 // Gemini with structured output for either a food photo or free text, plausibility-checks
-// the macros, increments ai_usage, and returns the result. Does NOT write a food_log row —
+// the macros, and returns the result. Does NOT write a food_log row —
 // the client saves the food log only after the user confirms/edits the result on the Review
 // screen.
 //
@@ -160,11 +161,18 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'invalid_json_body' }, { status: 400 });
   }
 
-  const { image_path, text, locale = 'en' } = body;
+  const image_path =
+    typeof body.image_path === 'string' ? body.image_path : undefined;
+  const text = typeof body.text === 'string' ? body.text : undefined;
+  const locale = typeof body.locale === 'string' ? body.locale : 'en';
   const mode = body.mode === 'label' ? 'label' : 'meal';
 
   if (mode === 'label' && !image_path) {
     return jsonResponse({ error: 'label_requires_image' }, { status: 400 });
+  }
+
+  if (text && text.length > 2000) {
+    return jsonResponse({ error: 'text_too_long' }, { status: 400 });
   }
 
   if (!image_path && !text?.trim()) {
@@ -188,36 +196,52 @@ Deno.serve(async (req: Request) => {
   const serviceClient = createServiceClient();
   const today = new Date().toISOString().slice(0, 10); // UTC date; acceptable for a daily quota
 
-  // 2. Entitlements + ai_usage check.
-  const [{ data: entitlement }, { data: usageRow }] = await Promise.all([
-    serviceClient
-      .from('entitlements')
-      .select('is_premium, expires_at')
-      .eq('user_id', user.id)
-      .maybeSingle(),
-    serviceClient
-      .from('ai_usage')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('date', today)
-      .maybeSingle(),
-  ]);
+  // 2. Entitlement + atomic quota reservation (all modes: meal text/photo and label).
+  // The unit is reserved BEFORE any download/Gemini call by a single conditional upsert
+  // (reserve_ai_usage), so parallel requests cannot all slip under the limit. It is refunded
+  // below only if the request fails before Gemini produced a billable answer.
+  const { data: entitlement } = await serviceClient
+    .from('entitlements')
+    .select('is_premium, expires_at')
+    .eq('user_id', user.id)
+    .maybeSingle();
 
   const isPremium =
     !!entitlement?.is_premium &&
     (!entitlement.expires_at || new Date(entitlement.expires_at) > new Date());
-  const usedToday = usageRow?.count ?? 0;
 
-  if (!isPremium && usedToday >= FREE_AI_LIMIT_PER_DAY) {
+  const { data: reservedCount, error: reserveError } = await serviceClient.rpc(
+    'reserve_ai_usage',
+    {
+      p_user_id: user.id,
+      p_date: today,
+      p_limit: isPremium ? null : FREE_AI_LIMIT_PER_DAY,
+    },
+  );
+  if (reserveError) {
+    // Fail closed: never call Gemini without a successfully reserved unit.
+    console.error('analyze-food: reserve_ai_usage failed', reserveError);
+    return jsonResponse({ error: 'server_error' }, { status: 500 });
+  }
+  if (reservedCount === null || reservedCount === undefined) {
     return jsonResponse(
       {
         error: 'ai_limit_reached',
         limit: FREE_AI_LIMIT_PER_DAY,
-        used: usedToday,
+        used: FREE_AI_LIMIT_PER_DAY,
       },
       { status: 402 },
     );
   }
+  const usedToday = reservedCount as number;
+
+  const refund = async () => {
+    const { error } = await serviceClient.rpc('refund_ai_usage', {
+      p_user_id: user.id,
+      p_date: today,
+    });
+    if (error) console.error('analyze-food: refund_ai_usage failed', error);
+  };
 
   // 3. Build the Gemini request: image (downloaded from storage, signed/inline) or text.
   let imagePart: { inline_data: { mime_type: string; data: string } } | null =
@@ -229,6 +253,7 @@ Deno.serve(async (req: Request) => {
       .download(image_path);
 
     if (downloadError || !fileBlob) {
+      await refund();
       return jsonResponse({ error: 'image_not_found' }, { status: 404 });
     }
 
@@ -240,6 +265,21 @@ Deno.serve(async (req: Request) => {
         data: base64,
       },
     };
+  }
+
+  // Label photos are single-use: the bytes are in memory now, so remove the stored file right
+  // away (whatever Gemini returns). Only `label-*` files, never meal photos (those hang on the
+  // food_log). The daily cleanup-label-photos job is the safety net.
+  if (mode === 'label' && image_path) {
+    const fileName = image_path.split('/').pop() ?? '';
+    if (fileName.startsWith('label-')) {
+      const { error: removeError } = await serviceClient.storage
+        .from(FOOD_IMAGES_BUCKET)
+        .remove([image_path]);
+      if (removeError) {
+        console.error('analyze-food: label photo cleanup failed', removeError);
+      }
+    }
   }
 
   const prompt =
@@ -273,12 +313,14 @@ Deno.serve(async (req: Request) => {
     if (!geminiResp.ok) {
       const errText = await geminiResp.text();
       console.error('analyze-food: Gemini error', geminiResp.status, errText);
+      await refund();
       return jsonResponse({ error: 'ai_provider_error' }, { status: 502 });
     }
 
     geminiJson = await geminiResp.json();
   } catch (err) {
     console.error('analyze-food: Gemini fetch failed', err);
+    await refund();
     return jsonResponse({ error: 'ai_provider_unreachable' }, { status: 502 });
   }
 
@@ -290,6 +332,7 @@ Deno.serve(async (req: Request) => {
       'analyze-food: no text in Gemini response',
       JSON.stringify(geminiJson),
     );
+    await refund();
     return jsonResponse({ error: 'ai_empty_response' }, { status: 502 });
   }
 
@@ -298,10 +341,12 @@ Deno.serve(async (req: Request) => {
     parsed = JSON.parse(rawText);
   } catch {
     console.error('analyze-food: could not parse Gemini JSON', rawText);
+    await refund();
     return jsonResponse({ error: 'ai_invalid_response' }, { status: 502 });
   }
 
-  // Label mode: a table that could not be read is reported as 422 and does NOT consume quota.
+  // Label mode: an unreadable table is reported as 422. It still counts (the Gemini call was
+  // made); refunding it would let a client burn unlimited Gemini calls with non-label images.
   let result: PlausibilizedResult | { mode: 'label'; label: LabelResult };
   if (mode === 'label') {
     const label = normalizeLabel(parsed as LabelResult);
@@ -313,24 +358,10 @@ Deno.serve(async (req: Request) => {
     result = plausibilizeAndRound(parsed as AnalyzeFoodResult);
   }
 
-  // 4. Increment ai_usage (service role RPC, security definer — see migration 007).
-  const { error: incrementError } = await serviceClient.rpc(
-    'increment_ai_usage',
-    {
-      p_user_id: user.id,
-      p_date: today,
-    },
-  );
-  if (incrementError) {
-    // Do not fail the whole request just because the counter write failed — log and continue,
-    // but this should be rare and is worth alerting on.
-    console.error('analyze-food: increment_ai_usage failed', incrementError);
-  }
-
   return jsonResponse({
     ...result,
     usage: {
-      used: usedToday + 1,
+      used: usedToday,
       limit: isPremium ? null : FREE_AI_LIMIT_PER_DAY,
     },
   });

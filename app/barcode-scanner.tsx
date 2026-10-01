@@ -21,6 +21,7 @@ import { SymbolView } from 'expo-symbols';
 import {
   macrosForGrams,
   quantityPresets,
+  resolveLogDate,
   sumFoodItems,
   type MacrosPer100g,
 } from '@/domain';
@@ -52,7 +53,7 @@ const RESCAN_COOLDOWN_MS = 2500;
 
 export default function BarcodeScannerScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ mode?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; date?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
 
   const [mode, setMode] = useState<ScanMode>(
@@ -238,7 +239,10 @@ export default function BarcodeScannerScreen() {
   };
 
   const openReview = (items: DraftFoodItem[]) => {
-    start({ date: toISODate(), source: 'barcode' });
+    start({
+      date: resolveLogDate(params.date, toISODate()),
+      source: mode === 'label' ? 'label' : 'barcode',
+    });
     setTitle(
       items.length === 1
         ? items[0].name
