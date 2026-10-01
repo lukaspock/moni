@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import {
@@ -13,7 +13,6 @@ import { SymbolView } from 'expo-symbols';
 
 import { KcalRing } from '@/components/charts/KcalRing';
 import { MacroBar } from '@/components/charts/MacroBar';
-import { FloatingActionButton } from '@/components/glass/FloatingActionButton';
 import type { FoodLogWithItems } from '@/features/food';
 import {
   useDeleteFoodLog,
@@ -29,7 +28,7 @@ import type { MealType } from '@/domain';
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function TodayScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [date, setDate] = useState(() => toISODate());
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
@@ -40,20 +39,32 @@ export default function TodayScreen() {
   const { workouts } = useWorkoutsForDate(date);
   const deleteFoodLog = useDeleteFoodLog();
 
-  const goPrevDay = () => setDate((d) => addDays(d, -1));
-  const goNextDay = () => setDate((d) => addDays(d, 1));
+  // Future navigation is capped at tomorrow (planning ahead by one day).
+  const goPrevDay = useCallback(() => setDate((d) => addDays(d, -1)), []);
+  const goNextDay = useCallback(
+    () =>
+      setDate((d) => {
+        const next = addDays(d, 1);
+        return next > addDays(toISODate(), 1) ? d : next;
+      }),
+    [],
+  );
 
+  // Gesture callbacks must run on the JS thread (.runOnJS(true)): they call
+  // React setState, which is not allowed from the UI-thread worklet runtime.
   const swipeGesture = useMemo(
     () =>
       Gesture.Race(
         Gesture.Fling()
           .direction(Directions.LEFT)
-          .onEnd(() => goNextDay()),
+          .runOnJS(true)
+          .onEnd(goNextDay),
         Gesture.Fling()
           .direction(Directions.RIGHT)
-          .onEnd(() => goPrevDay()),
+          .runOnJS(true)
+          .onEnd(goPrevDay),
       ),
-    [],
+    [goNextDay, goPrevDay],
   );
 
   const mealsByType = useMemo(() => {
@@ -67,15 +78,19 @@ export default function TodayScreen() {
     return map;
   }, [logs]);
 
-  const isToday = date === toISODate();
-  const dateLabel = useMemo(() => {
+  const today = toISODate();
+  const isToday = date === today;
+  const headerTitle = useMemo(() => {
+    if (date === today) return t('food.dashboard.today');
+    if (date === addDays(today, -1)) return t('food.dashboard.yesterday');
+    if (date === addDays(today, 1)) return t('food.dashboard.tomorrow');
     const [y, m, d] = date.split('-').map(Number);
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: 'long',
+    return new Intl.DateTimeFormat(i18n.language, {
+      weekday: 'short',
       day: 'numeric',
-      month: 'long',
+      month: 'short',
     }).format(new Date(y, m - 1, d));
-  }, [date]);
+  }, [date, today, t, i18n.language]);
 
   const handleDelete = (id: string) => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -101,6 +116,7 @@ export default function TodayScreen() {
     <>
       <Stack.Screen
         options={{
+          title: headerTitle,
           headerLeft: () => (
             <Pressable
               onPress={goPrevDay}
@@ -111,13 +127,23 @@ export default function TodayScreen() {
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable
-              onPress={goNextDay}
-              hitSlop={12}
-              accessibilityLabel={t('food.dashboard.nextDay')}
-            >
-              <SymbolView name="chevron.right" size={20} />
-            </Pressable>
+            <View className="flex-row items-center gap-4">
+              <Pressable
+                onPress={goNextDay}
+                hitSlop={12}
+                accessibilityLabel={t('food.dashboard.nextDay')}
+              >
+                <SymbolView name="chevron.right" size={20} />
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/log-food')}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={t('food.dashboard.logFood')}
+              >
+                <SymbolView name="plus.circle.fill" size={26} />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -133,10 +159,6 @@ export default function TodayScreen() {
                 {greetings[greetingPeriod()]}
               </Text>
             ) : null}
-            <Text className="text-secondary-label text-center text-sm font-medium">
-              {isToday ? t('food.dashboard.today') : dateLabel}
-            </Text>
-
             {!targets && !targetsLoading ? (
               <View className="bg-secondary-system-background items-center gap-3 rounded-2xl p-6">
                 <SymbolView
@@ -312,12 +334,6 @@ export default function TodayScreen() {
               )}
             </View>
           </ScrollView>
-
-          <FloatingActionButton
-            onPress={() => router.push('/log-food')}
-            accessibilityLabel={t('food.dashboard.logFood')}
-            style={{ position: 'absolute', right: 20, bottom: 24 }}
-          />
         </View>
       </GestureDetector>
     </>

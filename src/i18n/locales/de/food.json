@@ -3,6 +3,8 @@
     "previousDay": "Vorheriger Tag",
     "nextDay": "Nächster Tag",
     "today": "Heute",
+    "yesterday": "Gestern",
+    "tomorrow": "Morgen",
     "completeProfileTitle": "Profil vervollständigen",
     "completeProfileBody": "Schließe das Onboarding ab, damit møni dein Kalorien- und Makroziel berechnen kann.",
     "ofLimit": "von {{limit}} kcal",
