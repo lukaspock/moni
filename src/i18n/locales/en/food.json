@@ -8,6 +8,7 @@
     "kcalLeft": "kcal left",
     "kcalOver": "kcal over",
     "eatenOfLimit": "{{eaten}} / {{limit}} kcal",
+    "includesBonus": "incl. {{kcal}} kcal workout bonus",
     "addMeal": "Add meal",
     "protein": "Protein",
     "carbs": "Carbs",

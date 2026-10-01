@@ -124,6 +124,7 @@ export default function TodayScreen() {
       <View className="bg-system-background flex-1">
         <ScrollView
           className="flex-1"
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="gap-6 px-4 pb-32 pt-4"
           showsVerticalScrollIndicator={false}
         >
@@ -152,10 +153,17 @@ export default function TodayScreen() {
                   <View className="items-center gap-4 py-2">
                     <KcalRing
                       eatenKcal={totals.kcal}
-                      baseKcal={targets?.baseKcal ?? 0}
-                      bonusKcal={targets?.workoutBonusKcal ?? 0}
-                      bonusIsProvisional={targets?.bonusIsProvisional ?? false}
+                      baseKcal={targets?.totalKcal ?? 0}
+                      bonusKcal={0}
+                      bonusIsProvisional={false}
                     />
+                    {(targets?.workoutBonusKcal ?? 0) > 0 && (
+                      <Text className="text-secondary-label text-sm">
+                        {t('food.dashboard.includesBonus', {
+                          kcal: Math.round(targets?.workoutBonusKcal ?? 0),
+                        })}
+                      </Text>
+                    )}
                   </View>
 
                   <GlassActionButton

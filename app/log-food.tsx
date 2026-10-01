@@ -151,7 +151,13 @@ export default function LogFoodScreen() {
     goToReview();
   };
 
-  const hasQuickEntries = favorites.length > 0 || recents.length > 0;
+  // Max. 3 quick-log rows: favorites first, recents fill the rest.
+  const quickFavorites = favorites.slice(0, 3);
+  const favoriteKeys = new Set(quickFavorites.map((e) => e.key));
+  const quickRecents = recents
+    .filter((e) => !favoriteKeys.has(e.key))
+    .slice(0, 3 - quickFavorites.length);
+  const hasQuickEntries = quickFavorites.length > 0 || quickRecents.length > 0;
 
   return (
     <>
@@ -239,22 +245,22 @@ export default function LogFoodScreen() {
           <ActivityIndicator />
         ) : hasQuickEntries ? (
           <View className="gap-5">
-            {favorites.length > 0 && (
+            {quickFavorites.length > 0 && (
               <QuickSection
                 title={t('food.logFood.favorites')}
-                entries={favorites.slice(0, 6)}
+                entries={quickFavorites}
                 loggedKey={loggedKey}
                 onLog={logInstantly}
                 onOpen={openReviewWith}
                 subtitle={(e) => `${Math.round(e.kcal)} kcal`}
               />
             )}
-            {recents.length > 0 && (
+            {quickRecents.length > 0 && (
               <QuickSection
                 title={t('food.logFood.quickLogAs', {
                   meal: t(`food.mealType.${suggestedMealType}`),
                 })}
-                entries={recents}
+                entries={quickRecents}
                 loggedKey={loggedKey}
                 onLog={logInstantly}
                 onOpen={openReviewWith}
@@ -275,14 +281,18 @@ export default function LogFoodScreen() {
           </Text>
         )}
 
-        <Pressable onPress={manualEntry} className="items-center py-2">
-          <Text className="text-tint text-base font-medium">
+        <Pressable
+          onPress={manualEntry}
+          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-5"
+          accessibilityRole="button"
+        >
+          <SymbolView
+            name="square.and.pencil"
+            size={22}
+            tintColor={themeColor('accent')}
+          />
+          <Text className="text-tint text-lg font-semibold">
             {t('food.logFood.manual')}
-          </Text>
-        </Pressable>
-        <Pressable onPress={() => router.back()} className="items-center py-1">
-          <Text className="text-secondary-label text-base">
-            {t('food.logFood.cancel')}
           </Text>
         </Pressable>
       </ScrollView>
