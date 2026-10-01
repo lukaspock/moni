@@ -23,12 +23,12 @@ import {
 } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 
 import { KcalRing } from '@/components/charts/KcalRing';
 import { MacroBar } from '@/components/charts/MacroBar';
 import { GlassActionButton } from '@/components/glass/GlassActionButton';
+import { ScreenTitle } from '@/components/ui';
 import type { FoodLogWithItems } from '@/features/food';
 import {
   useDeleteFoodLog,
@@ -36,7 +36,6 @@ import {
   useFoodTotals,
 } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
-import { useStartWorkout } from '@/features/workout';
 import { addDays, toISODate } from '@/lib/date';
 import type { MealType } from '@/domain';
 
@@ -44,14 +43,12 @@ const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
-  const insets = useSafeAreaInsets();
   const [date, setDate] = useState(() => toISODate());
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
   const { totals } = useFoodTotals(date);
   const { logs } = useFoodLogsForDate(date);
   const deleteFoodLog = useDeleteFoodLog();
-  const { startEmpty: startEmptyWorkout } = useStartWorkout();
 
   // Future navigation is capped at tomorrow (planning ahead by one day).
   const goPrevDay = useCallback(() => setDate((d) => addDays(d, -1)), []);
@@ -120,17 +117,10 @@ export default function TodayScreen() {
   return (
     <>
       <View className="bg-system-background flex-1">
-        <View
-          className="bg-system-background px-5 pb-2"
-          style={{ paddingTop: insets.top + 8 }}
-        >
-          <Text className="text-label text-[28px] font-bold">
-            {headerTitle}
-          </Text>
-        </View>
+        <ScreenTitle title={headerTitle} />
         <ScrollView
           className="flex-1"
-          contentContainerClassName="gap-6 px-4 pb-32 pt-6"
+          contentContainerClassName="gap-6 px-4 pb-32 pt-12"
           showsVerticalScrollIndicator={false}
         >
           <GestureDetector gesture={swipeGesture}>
@@ -151,7 +141,7 @@ export default function TodayScreen() {
               ) : (
                 <>
                   <View className="items-center gap-4 py-2">
-                    <Text className="text-secondary-label self-start px-1 text-xs font-semibold uppercase">
+                    <Text className="text-label self-start px-1 text-2xl font-bold">
                       {t('food.dashboard.overview')}
                     </Text>
                     <KcalRing
@@ -169,7 +159,7 @@ export default function TodayScreen() {
                   </View>
 
                   <View className="gap-2">
-                    <Text className="text-secondary-label px-1 text-xs font-semibold uppercase">
+                    <Text className="text-label px-1 text-2xl font-bold">
                       {t('food.dashboard.nutrition')}
                     </Text>
                     <View className="bg-secondary-system-background gap-3 rounded-2xl p-4">
@@ -203,11 +193,6 @@ export default function TodayScreen() {
                   onPress={() =>
                     router.push({ pathname: '/log-food', params: { date } })
                   }
-                />
-                <GlassActionButton
-                  label={t('workout.training.startWorkout')}
-                  symbol="figure.strengthtraining.traditional"
-                  onPress={startEmptyWorkout}
                 />
               </View>
             </View>
