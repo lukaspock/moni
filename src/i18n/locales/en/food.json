@@ -1,13 +1,14 @@
 {
   "dashboard": {
-    "previousDay": "Previous day",
-    "nextDay": "Next day",
     "today": "Today",
     "yesterday": "Yesterday",
     "tomorrow": "Tomorrow",
     "completeProfileTitle": "Complete your profile",
     "completeProfileBody": "Finish onboarding so møni can calculate your daily calorie and macro targets.",
-    "ofLimit": "of {{limit}} kcal",
+    "kcalLeft": "kcal left",
+    "kcalOver": "kcal over",
+    "eatenOfLimit": "{{eaten}} / {{limit}} kcal",
+    "addMeal": "Add meal",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",

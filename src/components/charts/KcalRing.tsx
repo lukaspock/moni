@@ -1,187 +1,160 @@
-import { useMemo } from 'react';
-import { View } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Text, View } from 'react-native';
+import { Canvas, Group, Path, Skia } from '@shopify/react-native-skia';
 import {
-  Canvas,
-  DashPathEffect,
-  Path,
-  Skia,
-  type SkPath,
-} from '@shopify/react-native-skia';
+  Easing,
+  useReducedMotion,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
+import { computeKcalRingModel } from '@/domain';
 import { useThemeHex } from '@/theme/colors';
 
-const START_ANGLE = -90;
-const STROKE_WIDTH = 16;
-const OVERFLOW_STROKE_WIDTH = 6;
+const STROKE_WIDTH = 20;
 
 export interface KcalRingProps {
-  /** kcal actually logged today. */
+  /** kcal actually logged. */
   eatenKcal: number;
   /** base daily target, before any workout bonus. */
   baseKcal: number;
   /** additional allowance from a workout (PLAN §6.4), 0 if none. */
   bonusKcal: number;
-  /** true = bonus is a provisional estimate (not yet earned) -> drawn dashed. */
+  /** true = bonus is a provisional estimate (not yet earned) -> drawn fainter. */
   bonusIsProvisional: boolean;
   size?: number;
 }
 
-function arcPath(
-  size: number,
-  strokeWidth: number,
-  startAngle: number,
-  sweepAngle: number,
-): SkPath {
-  const path = Skia.Path.Make();
-  const inset = strokeWidth / 2;
-  const rect = {
-    x: inset,
-    y: inset,
-    width: size - strokeWidth,
-    height: size - strokeWidth,
-  };
-  path.addArc(rect, startAngle, sweepAngle);
-  return path;
-}
-
 /**
- * §7.6 kcal ring: eaten vs. total limit (base + workout bonus). The bonus renders as its
- * own segment (dashed while provisional). Going over the limit switches the filled arc to
- * the destructive color and adds a small red overflow ring outside the main track.
+ * Today kcal ring: one thick progress ring (eaten / total limit) with round caps and an
+ * animated fill. The workout bonus is the last segment of the limit (bonus color). Center:
+ * remaining kcal big, "eaten / limit" small; over the limit the ring and number turn red.
+ * All numbers come from `computeKcalRingModel` (src/domain).
  */
 export function KcalRing({
   eatenKcal,
   baseKcal,
   bonusKcal,
   bonusIsProvisional,
-  size = 220,
+  size = 240,
 }: KcalRingProps) {
-  const totalKcal = Math.max(baseKcal + bonusKcal, 1);
-  const isOver = eatenKcal > totalKcal;
+  const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
+  const model = computeKcalRingModel({ eatenKcal, baseKcal, bonusKcal });
+  const hasBonus = model.bonusShare > 0;
 
-  // Skia's Canvas paints need concrete color values, not RN's `PlatformColor`
-  // opaque handles — `useThemeHex` resolves the brand hex (theme.config.js)
-  // for the current color scheme.
-  const trackColor = 'rgba(120,120,128,0.3)';
-  const baseFillColor = useThemeHex('accent');
-  const bonusFillColor = useThemeHex('bonus');
-  const overColor = useThemeHex('danger');
+  // Skia paints need concrete hex values (no PlatformColor).
+  const accent = useThemeHex('accent');
+  const bonusColor = useThemeHex('bonus');
+  const danger = useThemeHex('danger');
+  const trackColor = 'rgba(120,120,128,0.2)';
 
-  const baseFraction = Math.min(baseKcal / totalKcal, 1);
-  const bonusFraction = Math.max(1 - baseFraction, 0);
+  const fill = useSharedValue(0);
+  useEffect(() => {
+    fill.value = reduceMotion
+      ? model.fillShare
+      : withTiming(model.fillShare, {
+          duration: 700,
+          easing: Easing.out(Easing.cubic),
+        });
+  }, [fill, model.fillShare, reduceMotion]);
 
-  const eatenIntoBaseFraction = Math.min(eatenKcal, baseKcal) / totalKcal;
-  const eatenIntoBonusFraction =
-    bonusKcal > 0
-      ? Math.min(Math.max(eatenKcal - baseKcal, 0), bonusKcal) / totalKcal
-      : 0;
+  const circle = useMemo(() => {
+    const path = Skia.Path.Make();
+    const r = (size - STROKE_WIDTH) / 2;
+    path.addCircle(size / 2, size / 2, r);
+    return path;
+  }, [size]);
 
-  const overflowFraction = isOver
-    ? Math.min((eatenKcal - totalKcal) / totalKcal, 1)
-    : 0;
+  // The bonus fill runs 0..fill (tail color); the accent fill is drawn over it and capped
+  // at the base share, so the bonus color only shows past the base allowance.
+  const baseEnd = useDerivedValue(() => Math.min(fill.value, model.baseShare));
 
-  const paths = useMemo(() => {
-    const trackPath = arcPath(size, STROKE_WIDTH, START_ANGLE, 360);
-    const baseTrackPath = arcPath(
-      size,
-      STROKE_WIDTH,
-      START_ANGLE,
-      baseFraction * 360,
-    );
-    const bonusTrackPath = arcPath(
-      size,
-      STROKE_WIDTH,
-      START_ANGLE + baseFraction * 360,
-      bonusFraction * 360,
-    );
-    const eatenBasePath = arcPath(
-      size,
-      STROKE_WIDTH,
-      START_ANGLE,
-      eatenIntoBaseFraction * 360,
-    );
-    const eatenBonusPath = arcPath(
-      size,
-      STROKE_WIDTH,
-      START_ANGLE + baseFraction * 360,
-      eatenIntoBonusFraction * 360,
-    );
-    const overflowPath = arcPath(
-      size,
-      OVERFLOW_STROKE_WIDTH,
-      START_ANGLE,
-      overflowFraction * 360,
-    );
-    return {
-      trackPath,
-      baseTrackPath,
-      bonusTrackPath,
-      eatenBasePath,
-      eatenBonusPath,
-      overflowPath,
-    };
-  }, [
-    size,
-    baseFraction,
-    bonusFraction,
-    eatenIntoBaseFraction,
-    eatenIntoBonusFraction,
-    overflowFraction,
-  ]);
+  const overridden = model.isOver;
+  const mainColor = overridden ? danger : accent;
+  const tailColor = overridden ? danger : bonusColor;
+
+  const remainingAbs = Math.abs(model.remainingKcal);
+  const centerLabel = model.isOver
+    ? t('food.dashboard.kcalOver')
+    : t('food.dashboard.kcalLeft');
 
   return (
-    <View style={{ width: size, height: size }}>
+    <View
+      style={{ width: size, height: size }}
+      accessible
+      accessibilityLabel={`${remainingAbs} ${centerLabel}. ${t('food.dashboard.eatenOfLimit', { eaten: Math.round(eatenKcal), limit: Math.round(model.limitKcal) })}`}
+    >
       <Canvas style={{ width: size, height: size }}>
-        {/* full background track */}
-        <Path
-          path={paths.trackPath}
-          style="stroke"
-          strokeWidth={STROKE_WIDTH}
-          strokeCap="round"
-          color={trackColor}
-        />
-        {/* bonus allowance track (outline only), dashed while provisional */}
-        {bonusKcal > 0 && (
+        <Group
+          origin={{ x: size / 2, y: size / 2 }}
+          transform={[{ rotate: -Math.PI / 2 }]}
+        >
           <Path
-            path={paths.bonusTrackPath}
+            path={circle}
+            style="stroke"
+            strokeWidth={STROKE_WIDTH}
+            color={trackColor}
+          />
+          {hasBonus && (
+            <Path
+              path={circle}
+              style="stroke"
+              strokeWidth={STROKE_WIDTH}
+              strokeCap="butt"
+              color={bonusColor}
+              opacity={bonusIsProvisional ? 0.25 : 0.4}
+              start={model.baseShare}
+              end={1}
+            />
+          )}
+          {hasBonus && (
+            <Path
+              path={circle}
+              style="stroke"
+              strokeWidth={STROKE_WIDTH}
+              strokeCap="round"
+              color={tailColor}
+              start={0}
+              end={fill}
+            />
+          )}
+          <Path
+            path={circle}
             style="stroke"
             strokeWidth={STROKE_WIDTH}
             strokeCap="round"
-            color={bonusFillColor}
-            opacity={bonusIsProvisional ? 0.35 : 0.25}
-          >
-            {bonusIsProvisional && <DashPathEffect intervals={[6, 5]} />}
-          </Path>
-        )}
-        {/* eaten within base */}
-        <Path
-          path={paths.eatenBasePath}
-          style="stroke"
-          strokeWidth={STROKE_WIDTH}
-          strokeCap="round"
-          color={isOver ? overColor : baseFillColor}
-        />
-        {/* eaten within bonus */}
-        {eatenIntoBonusFraction > 0 && (
-          <Path
-            path={paths.eatenBonusPath}
-            style="stroke"
-            strokeWidth={STROKE_WIDTH}
-            strokeCap="round"
-            color={isOver ? overColor : bonusFillColor}
+            color={mainColor}
+            start={0}
+            end={hasBonus ? baseEnd : fill}
           />
-        )}
-        {/* over-limit overflow indicator, drawn just outside the main ring */}
-        {isOver && (
-          <Path
-            path={paths.overflowPath}
-            style="stroke"
-            strokeWidth={OVERFLOW_STROKE_WIDTH}
-            strokeCap="round"
-            color={overColor}
-          />
-        )}
+        </Group>
       </Canvas>
+      <View
+        pointerEvents="none"
+        className="absolute inset-0 items-center justify-center px-10"
+      >
+        <Text
+          className={`text-5xl font-bold ${overridden ? 'text-destructive' : 'text-label'}`}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {remainingAbs}
+        </Text>
+        <Text
+          className={`text-base font-medium ${overridden ? 'text-destructive' : 'text-secondary-label'}`}
+        >
+          {centerLabel}
+        </Text>
+        <Text className="text-secondary-label mt-1 text-sm">
+          {t('food.dashboard.eatenOfLimit', {
+            eaten: Math.round(eatenKcal),
+            limit: Math.round(model.limitKcal),
+          })}
+        </Text>
+      </View>
     </View>
   );
 }

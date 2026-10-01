@@ -14,3 +14,4 @@ export * from './logDate';
 export * from './onboarding';
 export * from './projection';
 export * from './weightTrend';
+export * from './kcalRing';
