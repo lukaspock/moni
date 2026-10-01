@@ -249,7 +249,7 @@ export default function InsightsScreen() {
 
   return (
     <ScrollView
-      className="bg-system-grouped-background flex-1"
+      className="bg-system-background flex-1"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-4 p-4 pb-10"
     >

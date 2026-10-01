@@ -8,7 +8,7 @@ export default function ProfileStackLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: t('profile.title'), headerLargeTitle: true }}
+        options={{ title: t('profile.title'), headerLargeTitle: false }}
       />
       <Stack.Screen
         name="health"

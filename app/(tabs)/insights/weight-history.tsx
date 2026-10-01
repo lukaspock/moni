@@ -42,7 +42,7 @@ export default function WeightHistoryScreen() {
 
   return (
     <FlatList
-      className="bg-system-grouped-background flex-1"
+      className="bg-system-background flex-1"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-2 p-4"
       data={data}
@@ -55,7 +55,7 @@ export default function WeightHistoryScreen() {
         )
       }
       renderItem={({ item }) => (
-        <View className="bg-secondary-system-grouped-background flex-row items-center rounded-xl px-4 py-3">
+        <View className="bg-secondary-system-background flex-row items-center rounded-2xl p-4">
           <Pressable
             className="flex-1 gap-0.5"
             accessibilityRole="button"

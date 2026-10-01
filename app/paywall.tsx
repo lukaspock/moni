@@ -1,34 +1,38 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+
+import { Card, GlassActionButton, SheetScreen } from '@/components/ui';
+import { themeColor } from '@/theme/colors';
 
 /**
  * Phase 7 will replace this with a real RevenueCat paywall
  * (`react-native-purchases-ui`, PLAN §7.10). For now this is only the
  * "daily AI limit reached" placeholder the `food` flow navigates to on a
- * 402 from `analyze-food` (PLAN §7.3).
+ * 402 from `analyze-food` (PLAN §7.3). Presented as a sheet (registered in
+ * `app/_layout.tsx`).
  */
 export default function PaywallScreen() {
   const { t } = useTranslation();
 
   return (
-    <View className="bg-system-background flex-1 items-center justify-center gap-4 px-8">
-      <SymbolView name="sparkles" size={40} />
-      <Text className="text-label text-center text-xl font-semibold">
-        {t('food.paywall.title')}
-      </Text>
-      <Text className="text-secondary-label text-center text-base">
-        {t('food.paywall.body')}
-      </Text>
-      <Pressable
-        onPress={() => router.back()}
-        className="bg-tint mt-4 items-center rounded-xl px-6 py-3"
-      >
-        <Text className="text-base font-semibold text-white">
-          {t('food.paywall.close')}
+    <SheetScreen title={t('food.paywall.title')}>
+      <Card className="items-center gap-3 p-6">
+        <SymbolView
+          name="sparkles"
+          size={40}
+          tintColor={themeColor('accent')}
+        />
+        <Text className="text-secondary-label text-center text-base">
+          {t('food.paywall.body')}
         </Text>
-      </Pressable>
-    </View>
+      </Card>
+      <GlassActionButton
+        label={t('food.paywall.close')}
+        symbol="checkmark"
+        onPress={() => router.back()}
+      />
+    </SheetScreen>
   );
 }

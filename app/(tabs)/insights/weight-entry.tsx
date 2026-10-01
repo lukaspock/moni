@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { DatePicker, Host } from '@expo/ui/swift-ui';
 
+import {
+  Card,
+  GlassActionButton,
+  SectionHeader,
+  SheetScreen,
+} from '@/components/ui';
 import {
   useAddWeight,
   useDeleteWeight,
@@ -86,19 +85,15 @@ export default function WeightEntrySheet() {
   }
 
   return (
-    <ScrollView
-      className="bg-system-grouped-background flex-1"
-      contentContainerClassName="gap-5 p-5"
-      keyboardShouldPersistTaps="handled"
+    <SheetScreen
+      title={
+        isEdit ? t('insights.entry.titleEdit') : t('insights.entry.titleNew')
+      }
     >
-      <Text className="text-label text-xl font-bold">
-        {isEdit ? t('insights.entry.titleEdit') : t('insights.entry.titleNew')}
-      </Text>
-
-      <View className="gap-2">
-        <Text className="text-secondary-label text-sm">
-          {t('insights.entry.weightLabel', { unit: t(unitLabelKey) })}
-        </Text>
+      <Card>
+        <SectionHeader
+          title={t('insights.entry.weightLabel', { unit: t(unitLabelKey) })}
+        />
         <TextInput
           value={text}
           onChangeText={setText}
@@ -109,34 +104,32 @@ export default function WeightEntrySheet() {
           accessibilityLabel={t('insights.entry.weightLabel', {
             unit: t(unitLabelKey),
           })}
-          className="bg-secondary-system-grouped-background text-label rounded-xl px-4 py-3 text-2xl font-semibold"
+          className="text-label text-3xl font-semibold"
         />
         {error && <Text className="text-destructive text-sm">{error}</Text>}
-      </View>
+        <View className="bg-separator h-px" />
+        <View className="flex-row items-center justify-between">
+          <Text className="text-label text-base">
+            {t('insights.entry.date')}
+          </Text>
+          <Host matchContents>
+            <DatePicker
+              selection={new Date(`${date}T12:00:00`)}
+              displayedComponents={['date']}
+              range={{ end: new Date() }}
+              onDateChange={(d) => setDate(toISODate(d))}
+            />
+          </Host>
+        </View>
+      </Card>
 
-      <View className="flex-row items-center justify-between">
-        <Text className="text-label text-base">{t('insights.entry.date')}</Text>
-        <Host matchContents>
-          <DatePicker
-            selection={new Date(`${date}T12:00:00`)}
-            displayedComponents={['date']}
-            range={{ end: new Date() }}
-            onDateChange={(d) => setDate(toISODate(d))}
-          />
-        </Host>
-      </View>
-
-      <Pressable
-        onPress={() => void save()}
-        disabled={busy}
-        accessibilityRole="button"
-        className="bg-tint items-center rounded-2xl py-3.5 active:opacity-80"
-        style={{ opacity: busy ? 0.6 : 1 }}
-      >
-        <Text className="text-base font-semibold text-white">
-          {t('insights.entry.save')}
-        </Text>
-      </Pressable>
+      <GlassActionButton
+        label={t('insights.entry.save')}
+        symbol="checkmark"
+        onPress={() => {
+          if (!busy) void save();
+        }}
+      />
 
       {isEdit && (
         <Pressable
@@ -150,6 +143,6 @@ export default function WeightEntrySheet() {
           </Text>
         </Pressable>
       )}
-    </ScrollView>
+    </SheetScreen>
   );
 }

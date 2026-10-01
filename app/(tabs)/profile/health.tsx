@@ -17,23 +17,9 @@ import {
   useHealthSync,
   type HealthAuthorizationResult,
 } from '@/features/health';
+import { GlassActionButton } from '@/components/ui';
+import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
 import { themeColor } from '@/theme/colors';
-
-function SectionHeader({ label }: { label: string }) {
-  return (
-    <Text className="text-secondary-label px-1 pb-1 pt-5 text-sm font-semibold uppercase">
-      {label}
-    </Text>
-  );
-}
-
-function SectionBody({ children }: { children: React.ReactNode }) {
-  return (
-    <View className="bg-secondary-system-background gap-px overflow-hidden rounded-xl">
-      {children}
-    </View>
-  );
-}
 
 function Footnote({ children }: { children: React.ReactNode }) {
   return (
@@ -106,20 +92,15 @@ export default function HealthSettingsScreen() {
       <Text className="text-label text-base">{t('health.settings.intro')}</Text>
 
       {!enabled ? (
-        <Pressable
-          accessibilityRole="button"
-          disabled={requesting}
-          onPress={handleConnect}
-          className={`bg-tint mt-5 h-14 flex-row items-center justify-center rounded-full ${requesting ? 'opacity-40' : ''}`}
-        >
-          {requesting ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-lg font-semibold text-white">
-              {t('health.settings.connect')}
-            </Text>
-          )}
-        </Pressable>
+        <View className="pt-5">
+          <GlassActionButton
+            label={t('health.settings.connect')}
+            symbol="heart.fill"
+            onPress={() => {
+              if (!requesting) void handleConnect();
+            }}
+          />
+        </View>
       ) : null}
       {authResult === 'denied' || authResult === 'unavailable' ? (
         <Text className="text-destructive pt-3 text-sm">
@@ -129,9 +110,8 @@ export default function HealthSettingsScreen() {
         </Text>
       ) : null}
 
-      <SectionHeader label={t('health.settings.sections.sync')} />
-      <SectionBody>
-        <View className="bg-secondary-system-background px-4 py-2">
+      <SettingsGroup title={t('health.settings.sections.sync')}>
+        <View className="px-4 py-2">
           <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
             <Toggle
               isOn={enabled}
@@ -140,7 +120,7 @@ export default function HealthSettingsScreen() {
             />
           </Host>
         </View>
-        <View className="bg-secondary-system-background px-4 py-2">
+        <View className="px-4 py-2">
           <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
             <Toggle
               isOn={writeNutrition}
@@ -153,7 +133,7 @@ export default function HealthSettingsScreen() {
           accessibilityRole="button"
           disabled={!enabled || isSyncing}
           onPress={() => void syncNow()}
-          className="bg-secondary-system-background min-h-12 flex-row items-center justify-between px-4 py-3"
+          className="min-h-12 flex-row items-center justify-between px-4 py-3"
         >
           <Text
             className={enabled ? 'text-base' : 'text-secondary-label text-base'}
@@ -165,13 +145,12 @@ export default function HealthSettingsScreen() {
           </Text>
           {isSyncing ? <ActivityIndicator /> : null}
         </Pressable>
-      </SectionBody>
+      </SettingsGroup>
       <Footnote>{lastSyncedLabel}</Footnote>
       <Footnote>{t('health.settings.writeNutritionHint')}</Footnote>
 
-      <SectionHeader label={t('health.settings.sections.data')} />
-      <SectionBody>
-        <View className="bg-secondary-system-background gap-2 px-4 py-3">
+      <SettingsGroup title={t('health.settings.sections.data')}>
+        <View className="gap-2 px-4 py-3">
           <Text className="text-label text-sm">
             {t('health.settings.reads')}
           </Text>
@@ -187,14 +166,14 @@ export default function HealthSettingsScreen() {
             accessibilityRole="button"
             disabled={requesting}
             onPress={handleConnect}
-            className="bg-secondary-system-background min-h-12 justify-center px-4 py-3"
+            className="min-h-12 justify-center px-4 py-3"
           >
             <Text className="text-base" style={{ color: themeColor('accent') }}>
               {t('health.settings.reconnect')}
             </Text>
           </Pressable>
         ) : null}
-      </SectionBody>
+      </SettingsGroup>
       <Footnote>{t('health.settings.permissionsHint')}</Footnote>
     </ScrollView>
   );

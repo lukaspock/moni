@@ -1,5 +1,8 @@
 import * as Haptics from 'expo-haptics';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { GlassView } from 'expo-glass-effect';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+
+import { useThemeHex } from '@/theme/colors';
 
 /**
  * Primary CTA button for onboarding/sign-in.
@@ -16,7 +19,9 @@ import { ActivityIndicator, Pressable, Text } from 'react-native';
  * consecutive taps. Per PLAN §2's own fallback rule ("if a component is
  * missing or doesn't work, use plain RN Pressable/Text with NativeWind"),
  * this is a plain Pressable styled to read as a filled/prominent button
- * instead — reliability over pixel-perfect glass on this one control.
+ * instead. The primary variant now renders the same tinted `GlassView`
+ * inside a plain `Pressable` as `GlassActionButton` (taps stay on the RN
+ * Pressable, which is what made that approach reliable).
  */
 export function GlassButton({
   label,
@@ -34,6 +39,7 @@ export function GlassButton({
 }) {
   const isDisabled = !!disabled || !!loading;
   const isPrimary = variant === 'primary';
+  const tint = useThemeHex('accent');
 
   return (
     <Pressable
@@ -48,20 +54,34 @@ export function GlassButton({
         );
         onPress();
       }}
-      className={`h-14 w-full flex-row items-center justify-center rounded-full ${
-        isPrimary
-          ? 'bg-tint'
-          : 'border-separator bg-secondary-system-background border'
-      } ${isDisabled ? 'opacity-40' : ''}`}
+      style={{ opacity: isDisabled ? 0.4 : 1 }}
     >
-      {loading ? (
-        <ActivityIndicator color={isPrimary ? 'white' : undefined} />
-      ) : (
-        <Text
-          className={`text-lg font-semibold ${isPrimary ? 'text-white' : 'text-label'}`}
+      {isPrimary ? (
+        <GlassView
+          glassEffectStyle="regular"
+          tintColor={tint}
+          isInteractive
+          style={{
+            height: 56,
+            borderRadius: 28,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          {label}
-        </Text>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-lg font-semibold text-white">{label}</Text>
+          )}
+        </GlassView>
+      ) : (
+        <View className="border-separator bg-secondary-system-background h-14 w-full items-center justify-center rounded-full border">
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            <Text className="text-label text-lg font-semibold">{label}</Text>
+          )}
+        </View>
       )}
     </Pressable>
   );

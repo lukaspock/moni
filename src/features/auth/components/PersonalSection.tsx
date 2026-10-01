@@ -17,6 +17,7 @@ import {
 } from '../../../domain';
 import { supabase } from '../../../lib/supabase';
 import { useMealReminders } from '../../notifications';
+import { SettingsGroup } from './SettingsGroup';
 import type { Database } from '../../../types/database';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
@@ -44,7 +45,7 @@ const EXPERIENCES: TrainingExperience[] = [
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <View className="bg-secondary-system-background min-h-12 flex-row items-center justify-between gap-3 px-4 py-2">
+    <View className="min-h-12 flex-row items-center justify-between gap-3 px-4 py-2">
       <Text className="text-label text-base">{label}</Text>
       <View className="flex-shrink items-end">{children}</View>
     </View>
@@ -197,77 +198,72 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
   };
 
   return (
-    <View>
-      <Text className="text-secondary-label px-1 pb-1 pt-5 text-sm font-semibold uppercase">
-        {t('account.profile.sections.personal')}
-      </Text>
-      <View className="bg-secondary-system-background gap-px overflow-hidden rounded-xl">
-        <Row label={t('account.profile.personal.name')}>
+    <SettingsGroup title={t('account.profile.sections.personal')}>
+      <Row label={t('account.profile.personal.name')}>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          onEndEditing={saveName}
+          placeholder={t('account.profile.personal.namePlaceholder')}
+          autoCapitalize="words"
+          autoCorrect={false}
+          maxLength={40}
+          returnKeyType="done"
+          className="text-secondary-label min-w-32 text-right text-base"
+        />
+      </Row>
+      <Row label={t('account.profile.personal.motivation')}>
+        <MenuPicker
+          value={(profile.motivation as Motivation | null) ?? null}
+          options={MOTIVATIONS}
+          labelFor={(v) => motivationLabels[v]}
+          onChange={(v) => void save({ motivation: v })}
+        />
+      </Row>
+      <Row label={t('account.profile.personal.diet')}>
+        <MenuPicker
+          value={(profile.diet as Diet | null) ?? null}
+          options={DIETS}
+          labelFor={(v) => dietLabels[v]}
+          onChange={(v) => void save({ diet: v })}
+        />
+      </Row>
+      <Row label={t('account.profile.personal.experience')}>
+        <MenuPicker
+          value={
+            (profile.training_experience as TrainingExperience | null) ?? null
+          }
+          options={EXPERIENCES}
+          labelFor={(v) => experienceLabels[v]}
+          onChange={(v) => void save({ training_experience: v })}
+        />
+      </Row>
+      <Row label={t('account.profile.personal.targetWeight')}>
+        <View className="flex-row items-center gap-1">
           <TextInput
-            value={name}
-            onChangeText={setName}
-            onEndEditing={saveName}
-            placeholder={t('account.profile.personal.namePlaceholder')}
-            autoCapitalize="words"
-            autoCorrect={false}
-            maxLength={40}
-            returnKeyType="done"
-            className="text-secondary-label min-w-32 text-right text-base"
+            value={targetText}
+            onChangeText={setTargetText}
+            onEndEditing={saveTarget}
+            placeholder={t('account.profile.personal.notSet')}
+            keyboardType="decimal-pad"
+            className="text-secondary-label min-w-20 text-right text-base"
           />
-        </Row>
-        <Row label={t('account.profile.personal.motivation')}>
-          <MenuPicker
-            value={(profile.motivation as Motivation | null) ?? null}
-            options={MOTIVATIONS}
-            labelFor={(v) => motivationLabels[v]}
-            onChange={(v) => void save({ motivation: v })}
+          {targetText ? (
+            <Text className="text-secondary-label text-base">
+              {isImperial ? 'lb' : 'kg'}
+            </Text>
+          ) : null}
+        </View>
+      </Row>
+      <Row label={t('account.profile.personal.reminders')}>
+        <Host matchContents>
+          <Toggle
+            key={reminderToggleKey}
+            isOn={pendingReminders ?? reminders.enabled}
+            onIsOnChange={(v) => void toggleReminders(v)}
           />
-        </Row>
-        <Row label={t('account.profile.personal.diet')}>
-          <MenuPicker
-            value={(profile.diet as Diet | null) ?? null}
-            options={DIETS}
-            labelFor={(v) => dietLabels[v]}
-            onChange={(v) => void save({ diet: v })}
-          />
-        </Row>
-        <Row label={t('account.profile.personal.experience')}>
-          <MenuPicker
-            value={
-              (profile.training_experience as TrainingExperience | null) ?? null
-            }
-            options={EXPERIENCES}
-            labelFor={(v) => experienceLabels[v]}
-            onChange={(v) => void save({ training_experience: v })}
-          />
-        </Row>
-        <Row label={t('account.profile.personal.targetWeight')}>
-          <View className="flex-row items-center gap-1">
-            <TextInput
-              value={targetText}
-              onChangeText={setTargetText}
-              onEndEditing={saveTarget}
-              placeholder={t('account.profile.personal.notSet')}
-              keyboardType="decimal-pad"
-              className="text-secondary-label min-w-20 text-right text-base"
-            />
-            {targetText ? (
-              <Text className="text-secondary-label text-base">
-                {isImperial ? 'lb' : 'kg'}
-              </Text>
-            ) : null}
-          </View>
-        </Row>
-        <Row label={t('account.profile.personal.reminders')}>
-          <Host matchContents>
-            <Toggle
-              key={reminderToggleKey}
-              isOn={pendingReminders ?? reminders.enabled}
-              onIsOnChange={(v) => void toggleReminders(v)}
-            />
-          </Host>
-        </Row>
-      </View>
-    </View>
+        </Host>
+      </Row>
+    </SettingsGroup>
   );
 }

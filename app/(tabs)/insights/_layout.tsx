@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { SHEET_OPTIONS } from '@/components/ui';
+
 export default function InsightsStackLayout() {
   const { t } = useTranslation();
 
@@ -8,21 +10,13 @@ export default function InsightsStackLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: t('insights.title'), headerLargeTitle: true }}
+        options={{ title: t('insights.title'), headerLargeTitle: false }}
       />
       <Stack.Screen
         name="weight-history"
         options={{ title: t('insights.history.title') }}
       />
-      <Stack.Screen
-        name="weight-entry"
-        options={{
-          presentation: 'formSheet',
-          sheetAllowedDetents: [0.55, 1],
-          sheetGrabberVisible: true,
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen name="weight-entry" options={SHEET_OPTIONS} />
     </Stack>
   );
 }

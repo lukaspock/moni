@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 
+import { Card } from '@/components/ui';
 import { themeColor } from '@/theme/colors';
 
 export function InsightCard({
@@ -14,13 +15,13 @@ export function InsightCard({
   children: ReactNode;
 }) {
   return (
-    <View className="bg-secondary-system-grouped-background gap-3 rounded-2xl p-4">
+    <Card>
       <View className="flex-row items-center justify-between">
         <Text className="text-label text-base font-semibold">{title}</Text>
         {accessory}
       </View>
       {children}
-    </View>
+    </Card>
   );
 }
 
