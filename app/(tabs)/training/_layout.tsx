@@ -8,10 +8,7 @@ export default function TrainingStackLayout() {
 
   return (
     <Stack>
-      <Stack.Screen
-        name="index"
-        options={{ title: t('training.title'), headerLargeTitle: false }}
-      />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="routine-editor" options={FULL_SHEET_OPTIONS} />
       <Stack.Screen
         name="history"

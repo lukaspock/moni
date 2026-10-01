@@ -7,6 +7,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Host, Picker, Text as SwiftUIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 
+import { ScreenTitle } from '@/components/ui';
+
 import {
   compareTrainingDays,
   currentStreak,
@@ -248,282 +250,287 @@ export default function InsightsScreen() {
   );
 
   return (
-    <ScrollView
-      className="bg-system-background flex-1"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerClassName="gap-4 p-4 pb-10"
-    >
-      {/* Weight trend */}
-      {card(
-        0,
-        <InsightCard
-          title={t('insights.weight.title')}
-          accessory={
-            <Pressable
-              onPress={() => router.push('/insights/weight-entry')}
-              accessibilityRole="button"
-              accessibilityLabel={t('insights.weight.logCta')}
-              hitSlop={8}
-              className="flex-row items-center gap-1"
-            >
-              <SymbolView
-                name="plus.circle.fill"
-                size={20}
-                tintColor={themeColor('accent')}
-              />
-              <Text className="text-tint text-sm font-medium">
-                {t('insights.weight.logCta')}
-              </Text>
-            </Pressable>
-          }
-        >
-          {weightLoading || entries.length === 0 ? (
-            weightLoading ? null : (
-              <EmptyState
-                icon="scalemass"
-                title={t('insights.weight.emptyTitle')}
-                body={t('insights.weight.emptyBody')}
-              />
-            )
-          ) : (
-            <>
-              <View className="flex-row items-end justify-between">
-                <View>
-                  <Text className="text-secondary-label text-xs uppercase">
-                    {t('insights.weight.trendLabel')}
-                  </Text>
-                  <Text className="text-label text-3xl font-bold">
-                    {fmt(trendNow ?? latestEntry!.weightKg)}{' '}
-                    <Text className="text-lg font-medium">{unit}</Text>
-                  </Text>
-                </View>
-                <View className="items-end">
-                  <Text className="text-secondary-label text-xs uppercase">
-                    {t('insights.weight.weeklyRateLabel')}
-                  </Text>
-                  <Text className="text-label text-base font-semibold">
-                    {rateDisplay === null
-                      ? '–'
-                      : t('insights.weight.weeklyRate', {
-                          value: formatSigned(rateDisplay, 2),
-                          unit,
-                        })}
-                  </Text>
-                </View>
-              </View>
-              <Segmented
-                value={range}
-                onChange={(v) => setRange(v as WeightRange)}
-                options={RANGES.map((r) => ({
-                  value: r,
-                  label: t(`insights.weight.range.${r}`),
-                }))}
-              />
-              <WeightTrendChart
-                raw={rangeRaw}
-                trend={rangeTrend}
-                targetKg={targetKg}
-                formatWeight={fmt}
-              />
-              <View className="flex-row flex-wrap items-center gap-x-4 gap-y-1">
-                <Legend
-                  color={accentHex}
-                  label={t('insights.weight.legendTrend')}
-                />
-                {targetKg != null && (
-                  <Legend
-                    color={dangerHex}
-                    dashed
-                    label={t('insights.weight.goalLabel', {
-                      value: fmt(targetKg),
-                      unit,
-                    })}
-                  />
-                )}
-              </View>
-              {rateKg === null && (
-                <Text className="text-secondary-label text-xs">
-                  {t('insights.weight.noRate')}
-                </Text>
-              )}
+    <View className="bg-system-background flex-1">
+      <ScreenTitle title={t('insights.title')} />
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-4 px-4 pb-10 pt-6"
+      >
+        {/* Weight trend */}
+        {card(
+          0,
+          <InsightCard
+            title={t('insights.weight.title')}
+            accessory={
               <Pressable
-                onPress={() => router.push('/insights/weight-history')}
+                onPress={() => router.push('/insights/weight-entry')}
                 accessibilityRole="button"
-                className="flex-row items-center justify-between pt-1"
+                accessibilityLabel={t('insights.weight.logCta')}
+                hitSlop={8}
+                className="flex-row items-center gap-1"
               >
-                <Text className="text-tint text-sm">
-                  {t('insights.weight.allEntries')}
-                </Text>
                 <SymbolView
-                  name="chevron.right"
-                  size={12}
-                  tintColor="secondaryLabel"
+                  name="plus.circle.fill"
+                  size={20}
+                  tintColor={themeColor('accent')}
                 />
-              </Pressable>
-            </>
-          )}
-        </InsightCard>,
-      )}
-
-      {/* Calories vs target */}
-      {card(
-        1,
-        <InsightCard title={t('insights.kcal.title')}>
-          <Segmented
-            value={kcalRange}
-            onChange={(v) => setKcalRange(v as '7' | '30')}
-            options={[
-              { value: '7', label: t('insights.kcal.range.7') },
-              { value: '30', label: t('insights.kcal.range.30') },
-            ]}
-          />
-          {adherence ? (
-            <>
-              <View
-                accessible
-                accessibilityLabel={t('insights.kcal.barsLabel')}
-              >
-                <DailyKcalBars bars={bars} />
-              </View>
-              <Text className="text-label text-base font-semibold">
-                {t('insights.kcal.average', {
-                  eaten: Math.round(adherence.avgEatenKcal),
-                  target: Math.round(adherence.avgTargetKcal),
-                })}
-              </Text>
-              <Text className="text-secondary-label text-sm">
-                {t('insights.kcal.daysOnTarget', {
-                  count: adherence.daysOnTarget,
-                  total: adherence.loggedDays,
-                })}
-              </Text>
-              {Math.abs(adherence.avgDeltaKcal) >= 25 && (
-                <Text className="text-secondary-label text-sm">
-                  {adherence.avgDeltaKcal < 0
-                    ? t('insights.kcal.under', {
-                        value: Math.round(-adherence.avgDeltaKcal),
-                      })
-                    : t('insights.kcal.over', {
-                        value: Math.round(adherence.avgDeltaKcal),
-                      })}
+                <Text className="text-tint text-sm font-medium">
+                  {t('insights.weight.logCta')}
                 </Text>
-              )}
-            </>
-          ) : (
-            <EmptyState
-              icon="fork.knife"
-              title={t('insights.kcal.emptyTitle')}
-              body={t('insights.kcal.emptyBody')}
-            />
-          )}
-        </InsightCard>,
-      )}
-
-      {/* Training frequency + logging streak */}
-      {card(
-        2,
-        <InsightCard title={t('insights.training.title')}>
-          {totalWorkoutDays === 0 && loggedStreak === 0 ? (
-            <EmptyState
-              icon="figure.strengthtraining.traditional"
-              title={t('insights.training.emptyTitle')}
-              body={t('insights.training.emptyBody')}
-            />
-          ) : (
-            <>
-              <Text className="text-secondary-label text-xs uppercase">
-                {t('insights.training.weeksLabel')}
-              </Text>
-              <WeeklyBars values={weeklyWorkouts} labels={weekBarLabels} />
-              <Text className="text-secondary-label text-sm">
-                {t('insights.training.total', { count: totalWorkoutDays })}
-              </Text>
-              <InsightRow
-                icon="flame"
-                text={
-                  loggedStreak > 0
-                    ? t('insights.training.loggingStreak', {
-                        count: loggedStreak,
-                      })
-                    : t('insights.training.noStreak')
-                }
-              />
-            </>
-          )}
-        </InsightCard>,
-      )}
-
-      {/* Strength progress */}
-      {card(
-        3,
-        <InsightCard title={t('insights.strength.title')}>
-          {trends.length === 0 ? (
-            <EmptyState
-              icon="dumbbell"
-              title={t('insights.strength.emptyTitle')}
-              body={t('insights.strength.emptyBody')}
-            />
-          ) : (
-            <>
-              <Text className="text-secondary-label text-xs">
-                {t('insights.strength.caption')}
-              </Text>
-              {trends.map((tr) => {
-                const up = tr.latestOneRmKg >= tr.firstOneRmKg;
-                return (
-                  <Pressable
-                    key={tr.exerciseId}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/training/exercise/[id]',
-                        params: { id: tr.exerciseId },
-                      })
-                    }
-                    accessibilityRole="button"
-                    className="flex-row items-center justify-between"
-                  >
-                    <View className="flex-1 pr-3">
-                      <Text className="text-label text-base" numberOfLines={1}>
-                        {exerciseName(tr.exerciseId)}
-                      </Text>
-                      <Text className="text-secondary-label text-xs">
-                        {t('insights.strength.change', {
-                          from: fmt(tr.firstOneRmKg),
-                          to: fmt(tr.latestOneRmKg),
-                          unit,
-                        })}
-                      </Text>
-                    </View>
-                    <SymbolView
-                      name={up ? 'arrow.up.right' : 'arrow.down.right'}
-                      size={18}
-                      tintColor={
-                        up ? themeColor('accent') : themeColor('danger')
-                      }
+              </Pressable>
+            }
+          >
+            {weightLoading || entries.length === 0 ? (
+              weightLoading ? null : (
+                <EmptyState
+                  icon="scalemass"
+                  title={t('insights.weight.emptyTitle')}
+                  body={t('insights.weight.emptyBody')}
+                />
+              )
+            ) : (
+              <>
+                <View className="flex-row items-end justify-between">
+                  <View>
+                    <Text className="text-secondary-label text-xs uppercase">
+                      {t('insights.weight.trendLabel')}
+                    </Text>
+                    <Text className="text-label text-3xl font-bold">
+                      {fmt(trendNow ?? latestEntry!.weightKg)}{' '}
+                      <Text className="text-lg font-medium">{unit}</Text>
+                    </Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className="text-secondary-label text-xs uppercase">
+                      {t('insights.weight.weeklyRateLabel')}
+                    </Text>
+                    <Text className="text-label text-base font-semibold">
+                      {rateDisplay === null
+                        ? '–'
+                        : t('insights.weight.weeklyRate', {
+                            value: formatSigned(rateDisplay, 2),
+                            unit,
+                          })}
+                    </Text>
+                  </View>
+                </View>
+                <Segmented
+                  value={range}
+                  onChange={(v) => setRange(v as WeightRange)}
+                  options={RANGES.map((r) => ({
+                    value: r,
+                    label: t(`insights.weight.range.${r}`),
+                  }))}
+                />
+                <WeightTrendChart
+                  raw={rangeRaw}
+                  trend={rangeTrend}
+                  targetKg={targetKg}
+                  formatWeight={fmt}
+                />
+                <View className="flex-row flex-wrap items-center gap-x-4 gap-y-1">
+                  <Legend
+                    color={accentHex}
+                    label={t('insights.weight.legendTrend')}
+                  />
+                  {targetKg != null && (
+                    <Legend
+                      color={dangerHex}
+                      dashed
+                      label={t('insights.weight.goalLabel', {
+                        value: fmt(targetKg),
+                        unit,
+                      })}
                     />
-                  </Pressable>
-                );
-              })}
-            </>
-          )}
-        </InsightCard>,
-      )}
+                  )}
+                </View>
+                {rateKg === null && (
+                  <Text className="text-secondary-label text-xs">
+                    {t('insights.weight.noRate')}
+                  </Text>
+                )}
+                <Pressable
+                  onPress={() => router.push('/insights/weight-history')}
+                  accessibilityRole="button"
+                  className="flex-row items-center justify-between pt-1"
+                >
+                  <Text className="text-tint text-sm">
+                    {t('insights.weight.allEntries')}
+                  </Text>
+                  <SymbolView
+                    name="chevron.right"
+                    size={12}
+                    tintColor="secondaryLabel"
+                  />
+                </Pressable>
+              </>
+            )}
+          </InsightCard>,
+        )}
 
-      {/* Correlation insights */}
-      {card(
-        4,
-        <InsightCard title={t('insights.correlations.title')}>
-          {insightRows.length === 0 ? (
-            <Text className="text-secondary-label text-sm">
-              {t('insights.correlations.notEnough')}
-            </Text>
-          ) : (
-            insightRows.map((row) => (
-              <InsightRow key={row.text} icon={row.icon} text={row.text} />
-            ))
-          )}
-        </InsightCard>,
-      )}
-    </ScrollView>
+        {/* Calories vs target */}
+        {card(
+          1,
+          <InsightCard title={t('insights.kcal.title')}>
+            <Segmented
+              value={kcalRange}
+              onChange={(v) => setKcalRange(v as '7' | '30')}
+              options={[
+                { value: '7', label: t('insights.kcal.range.7') },
+                { value: '30', label: t('insights.kcal.range.30') },
+              ]}
+            />
+            {adherence ? (
+              <>
+                <View
+                  accessible
+                  accessibilityLabel={t('insights.kcal.barsLabel')}
+                >
+                  <DailyKcalBars bars={bars} />
+                </View>
+                <Text className="text-label text-base font-semibold">
+                  {t('insights.kcal.average', {
+                    eaten: Math.round(adherence.avgEatenKcal),
+                    target: Math.round(adherence.avgTargetKcal),
+                  })}
+                </Text>
+                <Text className="text-secondary-label text-sm">
+                  {t('insights.kcal.daysOnTarget', {
+                    count: adherence.daysOnTarget,
+                    total: adherence.loggedDays,
+                  })}
+                </Text>
+                {Math.abs(adherence.avgDeltaKcal) >= 25 && (
+                  <Text className="text-secondary-label text-sm">
+                    {adherence.avgDeltaKcal < 0
+                      ? t('insights.kcal.under', {
+                          value: Math.round(-adherence.avgDeltaKcal),
+                        })
+                      : t('insights.kcal.over', {
+                          value: Math.round(adherence.avgDeltaKcal),
+                        })}
+                  </Text>
+                )}
+              </>
+            ) : (
+              <EmptyState
+                icon="fork.knife"
+                title={t('insights.kcal.emptyTitle')}
+                body={t('insights.kcal.emptyBody')}
+              />
+            )}
+          </InsightCard>,
+        )}
+
+        {/* Training frequency + logging streak */}
+        {card(
+          2,
+          <InsightCard title={t('insights.training.title')}>
+            {totalWorkoutDays === 0 && loggedStreak === 0 ? (
+              <EmptyState
+                icon="figure.strengthtraining.traditional"
+                title={t('insights.training.emptyTitle')}
+                body={t('insights.training.emptyBody')}
+              />
+            ) : (
+              <>
+                <Text className="text-secondary-label text-xs uppercase">
+                  {t('insights.training.weeksLabel')}
+                </Text>
+                <WeeklyBars values={weeklyWorkouts} labels={weekBarLabels} />
+                <Text className="text-secondary-label text-sm">
+                  {t('insights.training.total', { count: totalWorkoutDays })}
+                </Text>
+                <InsightRow
+                  icon="flame"
+                  text={
+                    loggedStreak > 0
+                      ? t('insights.training.loggingStreak', {
+                          count: loggedStreak,
+                        })
+                      : t('insights.training.noStreak')
+                  }
+                />
+              </>
+            )}
+          </InsightCard>,
+        )}
+
+        {/* Strength progress */}
+        {card(
+          3,
+          <InsightCard title={t('insights.strength.title')}>
+            {trends.length === 0 ? (
+              <EmptyState
+                icon="dumbbell"
+                title={t('insights.strength.emptyTitle')}
+                body={t('insights.strength.emptyBody')}
+              />
+            ) : (
+              <>
+                <Text className="text-secondary-label text-xs">
+                  {t('insights.strength.caption')}
+                </Text>
+                {trends.map((tr) => {
+                  const up = tr.latestOneRmKg >= tr.firstOneRmKg;
+                  return (
+                    <Pressable
+                      key={tr.exerciseId}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/training/exercise/[id]',
+                          params: { id: tr.exerciseId },
+                        })
+                      }
+                      accessibilityRole="button"
+                      className="flex-row items-center justify-between"
+                    >
+                      <View className="flex-1 pr-3">
+                        <Text
+                          className="text-label text-base"
+                          numberOfLines={1}
+                        >
+                          {exerciseName(tr.exerciseId)}
+                        </Text>
+                        <Text className="text-secondary-label text-xs">
+                          {t('insights.strength.change', {
+                            from: fmt(tr.firstOneRmKg),
+                            to: fmt(tr.latestOneRmKg),
+                            unit,
+                          })}
+                        </Text>
+                      </View>
+                      <SymbolView
+                        name={up ? 'arrow.up.right' : 'arrow.down.right'}
+                        size={18}
+                        tintColor={
+                          up ? themeColor('accent') : themeColor('danger')
+                        }
+                      />
+                    </Pressable>
+                  );
+                })}
+              </>
+            )}
+          </InsightCard>,
+        )}
+
+        {/* Correlation insights */}
+        {card(
+          4,
+          <InsightCard title={t('insights.correlations.title')}>
+            {insightRows.length === 0 ? (
+              <Text className="text-secondary-label text-sm">
+                {t('insights.correlations.notEnough')}
+              </Text>
+            ) : (
+              insightRows.map((row) => (
+                <InsightRow key={row.text} icon={row.icon} text={row.text} />
+              ))
+            )}
+          </InsightCard>,
+        )}
+      </ScrollView>
+    </View>
   );
 }
