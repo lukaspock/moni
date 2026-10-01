@@ -2,6 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
 
 import {
+  loggedAtForDate,
   suggestMealType,
   type FoodItemMacros,
   type FoodSource,
@@ -113,6 +114,8 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
     set({
       ...emptyState(),
       date,
+      // Same time of day, but on the day being logged (may be a past/other day).
+      loggedAt: loggedAtForDate(date, now),
       source,
       mealType: suggestMealType(now),
     });

@@ -3,7 +3,9 @@ import { useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import {
+  loggedAtForDate,
   rankQuickLogCandidates,
+  resolveLogDate,
   suggestMealType,
   type MealType,
 } from '@/domain';
@@ -140,14 +142,21 @@ export function useQuickLogEntries(): {
 
 /**
  * One-tap re-log: saves a copy of a favorite / recent meal for *now* with the meal type
- * picked by `suggestMealType`, without going through the review screen.
+ * picked by `suggestMealType`, on `date` (default today), without going through the review screen.
  */
 export function useQuickLogMeal() {
   const save = useSaveFoodDraft();
   const bump = useBumpFavoriteUseCount();
 
   return useMutation({
-    mutationFn: async (entry: QuickLogEntry) => {
+    mutationFn: async ({
+      entry,
+      date,
+    }: {
+      entry: QuickLogEntry;
+      /** Local YYYY-MM-DD to log on (the viewed day); default today. */
+      date?: string;
+    }) => {
       const now = new Date();
       const items: ItemTemplate[] = entry.favorite
         ? favoriteToItems(entry.favorite)
@@ -156,11 +165,12 @@ export function useQuickLogMeal() {
           : [];
       if (items.length === 0) throw new Error('nothing_to_log');
 
+      const logDate = resolveLogDate(date, toISODate(now));
       const id = Crypto.randomUUID();
       await save.mutateAsync({
         id,
-        date: toISODate(now),
-        loggedAt: now.toISOString(),
+        date: logDate,
+        loggedAt: loggedAtForDate(logDate, now),
         mealType: suggestMealType(now),
         title: entry.title,
         source: 'favorite',

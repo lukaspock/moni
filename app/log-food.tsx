@@ -12,10 +12,10 @@ import {
 import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
-import type { FoodSource } from '@/domain';
+import { resolveLogDate, type FoodSource } from '@/domain';
 import {
   favoriteToItems,
   logToItems,
@@ -33,6 +33,9 @@ type SymbolName = Parameters<typeof SymbolView>[0]['name'];
 
 export default function LogFoodScreen() {
   const { t } = useTranslation();
+  const params = useLocalSearchParams<{ date?: string }>();
+  // Day being viewed on the Today tab (route param `date`, YYYY-MM-DD); default/invalid = today.
+  const logDate = resolveLogDate(params.date, toISODate());
   const start = useFoodDraftStore((s) => s.start);
   const setStatus = useFoodDraftStore((s) => s.setStatus);
   const setItems = useFoodDraftStore((s) => s.setItems);
@@ -47,8 +50,7 @@ export default function LogFoodScreen() {
   const [isBusy, setIsBusy] = useState(false);
   const [loggedKey, setLoggedKey] = useState<string | null>(null);
 
-  const openDraft = (source: FoodSource) =>
-    start({ date: toISODate(), source });
+  const openDraft = (source: FoodSource) => start({ date: logDate, source });
   const goToReview = () => router.push('/food-review');
 
   const finishAnalysis = (failure: AnalysisFailure | null) => {
@@ -113,20 +115,23 @@ export default function LogFoodScreen() {
 
   const logInstantly = (entry: QuickLogEntry) => {
     if (quickLog.isPending) return;
-    quickLog.mutate(entry, {
-      onSuccess: () => {
-        setLoggedKey(entry.key);
-        void Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        );
-        setTimeout(() => router.back(), 450);
+    quickLog.mutate(
+      { entry, date: logDate },
+      {
+        onSuccess: () => {
+          setLoggedKey(entry.key);
+          void Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
+          setTimeout(() => router.back(), 450);
+        },
+        onError: () =>
+          Alert.alert(
+            t('food.review.saveErrorTitle'),
+            t('food.logFood.quickLogError'),
+          ),
       },
-      onError: () =>
-        Alert.alert(
-          t('food.review.saveErrorTitle'),
-          t('food.logFood.quickLogError'),
-        ),
-    });
+    );
   };
 
   const manualEntry = () => {
@@ -188,7 +193,7 @@ export default function LogFoodScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/barcode-scanner',
-                  params: { mode: 'label' },
+                  params: { mode: 'label', date: logDate },
                 })
               }
             />

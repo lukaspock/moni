@@ -10,6 +10,7 @@ export * from './mealType';
 export * from './food';
 export * from './nutrition';
 export * from './quickLog';
+export * from './logDate';
 export * from './onboarding';
 export * from './projection';
 export * from './weightTrend';
