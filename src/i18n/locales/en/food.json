@@ -98,6 +98,7 @@
     "ingredientNamePlaceholder": "Ingredient",
     "grams": "g",
     "limitReachedBody": "You have used all free AI analyses for today. Log your food manually, by barcode or from your favorites, or get Premium.",
+    "errorCode": "Error code: {{code}}",
     "getPremium": "Get Premium",
     "saveWithKcal": "Save · {{kcal}} kcal"
   },

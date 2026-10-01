@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   Switch,
   Text,
   TextInput,
@@ -16,8 +15,14 @@ import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { Host, Picker, Slider, Text as SwiftUIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import {
+  Card,
+  GlassActionButton,
+  SectionHeader,
+  SheetScreen,
+} from '@/components/ui';
 import { themeColor } from '@/theme/colors';
 
 import type { MealType } from '@/domain';
@@ -100,8 +105,6 @@ export default function FoodReviewScreen() {
     draft.aiConfidence < 0.6 &&
     draft.status === 'ready';
 
-  const handleClose = () => router.back();
-
   const enterManually = () => {
     setItems([
       {
@@ -165,260 +168,237 @@ export default function FoodReviewScreen() {
     );
   }
 
+  const title = t('food.review.title');
+
+  if (isAnalyzing) {
+    return (
+      <SheetScreen title={title}>
+        <View className="items-center gap-4 py-16">
+          <ActivityIndicator size="large" />
+          <Text className="text-secondary-label text-base">
+            {t('food.review.analyzing')}
+          </Text>
+        </View>
+      </SheetScreen>
+    );
+  }
+
+  if (draft.status === 'error') {
+    return (
+      <SheetScreen title={title}>
+        <Card className="items-center gap-4 py-6">
+          <SymbolView name="exclamationmark.triangle" size={32} />
+          <Text className="text-label text-center text-base">
+            {draft.errorKind === 'ai_limit_reached'
+              ? t('food.review.limitReachedBody')
+              : t('food.logFood.analyzeErrorBody')}
+          </Text>
+          {draft.errorCode && draft.errorKind !== 'ai_limit_reached' && (
+            <Text
+              selectable
+              className="text-secondary-label text-center text-xs"
+            >
+              {t('food.review.errorCode', { code: draft.errorCode })}
+            </Text>
+          )}
+        </Card>
+        {draft.errorKind === 'ai_limit_reached' && (
+          <GlassActionButton
+            label={t('food.review.getPremium')}
+            symbol="sparkles"
+            onPress={() => router.push('/paywall')}
+          />
+        )}
+        <Pressable
+          onPress={enterManually}
+          className="bg-secondary-system-background items-center rounded-2xl py-4"
+          accessibilityRole="button"
+        >
+          <Text className="text-tint text-base font-semibold">
+            {t('food.logFood.enterManually')}
+          </Text>
+        </Pressable>
+      </SheetScreen>
+    );
+  }
+
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: t('food.review.title'),
-          headerShown: true,
-          headerLeft: () => (
-            <Pressable onPress={handleClose}>
-              <Text className="text-tint text-base">
-                {t('food.logFood.cancel')}
-              </Text>
-            </Pressable>
-          ),
-          headerRight: () =>
-            isSaving ? (
-              <ActivityIndicator />
-            ) : (
-              <Pressable onPress={handleSave} disabled={isAnalyzing}>
-                <Text
-                  className="text-tint text-base font-semibold"
-                  style={{ opacity: isAnalyzing ? 0.4 : 1 }}
-                >
-                  {t('food.review.save')}
-                </Text>
-              </Pressable>
-            ),
-        }}
-      />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="bg-system-background flex-1"
-      >
-        {isAnalyzing ? (
-          <View className="flex-1 items-center justify-center gap-4">
-            <ActivityIndicator size="large" />
-            <Text className="text-secondary-label text-base">
-              {t('food.review.analyzing')}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      className="bg-system-background flex-1"
+    >
+      <SheetScreen title={title}>
+        <Card>
+          <TextInput
+            value={draft.title}
+            onChangeText={setTitle}
+            placeholder={t('food.review.titlePlaceholder')}
+            placeholderTextColor="rgba(120,120,128,0.6)"
+            className="text-label text-xl font-bold"
+          />
+        </Card>
+
+        {showConfidenceNote && (
+          <Card className="flex-row items-start gap-2">
+            <SymbolView name="exclamationmark.circle" size={16} />
+            <Text className="text-secondary-label flex-1 text-sm">
+              {t('food.review.lowConfidenceNote')}
             </Text>
-          </View>
-        ) : draft.status === 'error' ? (
-          <View className="flex-1 items-center justify-center gap-4 px-8">
-            <SymbolView name="exclamationmark.triangle" size={32} />
-            <Text className="text-label text-center text-base">
-              {draft.errorKind === 'ai_limit_reached'
-                ? t('food.review.limitReachedBody')
-                : t('food.logFood.analyzeErrorBody')}
+          </Card>
+        )}
+
+        {draft.clarification && (
+          <Card className="flex-row items-start gap-2">
+            <SymbolView name="questionmark.circle" size={16} />
+            <Text className="text-secondary-label flex-1 text-sm">
+              {draft.clarification}
             </Text>
-            {draft.errorKind === 'ai_limit_reached' && (
-              <Pressable
-                onPress={() => router.push('/paywall')}
-                className="bg-tint w-full items-center rounded-xl py-3.5"
+          </Card>
+        )}
+
+        <View className="gap-2">
+          <SectionHeader title={t('food.review.mealCategory')} />
+          <Card>
+            <Host matchContents style={{ width: '100%' }}>
+              <Picker
+                selection={draft.mealType}
+                onSelectionChange={(value) => setMealType(value as MealType)}
+                modifiers={[pickerStyle('segmented')]}
               >
-                <Text className="text-base font-semibold text-white">
-                  {t('food.review.getPremium')}
-                </Text>
-              </Pressable>
-            )}
-            <Pressable
-              onPress={enterManually}
-              className="bg-secondary-system-background w-full items-center rounded-xl py-3.5"
-            >
-              <Text className="text-label text-base font-medium">
-                {t('food.logFood.enterManually')}
-              </Text>
-            </Pressable>
-            <Pressable onPress={handleClose}>
-              <Text className="text-tint text-base">
-                {t('food.logFood.cancel')}
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
-          <ScrollView
-            contentContainerClassName="gap-6 p-4 pb-16"
-            keyboardShouldPersistTaps="handled"
-          >
-            <TextInput
-              value={draft.title}
-              onChangeText={setTitle}
-              placeholder={t('food.review.titlePlaceholder')}
-              placeholderTextColor="rgba(120,120,128,0.6)"
-              className="text-label text-2xl font-bold"
-            />
+                {MEAL_TYPES.map((mt) => (
+                  <SwiftUIText key={mt} modifiers={[tag(mt)]}>
+                    {t(`food.mealType.${mt}`)}
+                  </SwiftUIText>
+                ))}
+              </Picker>
+            </Host>
+          </Card>
+        </View>
 
-            {showConfidenceNote && (
-              <View className="bg-secondary-system-background flex-row items-start gap-2 rounded-xl p-3">
-                <SymbolView name="exclamationmark.circle" size={16} />
-                <Text className="text-secondary-label flex-1 text-sm">
-                  {t('food.review.lowConfidenceNote')}
-                </Text>
-              </View>
-            )}
-
-            {draft.clarification && (
-              <View className="bg-secondary-system-background flex-row items-start gap-2 rounded-xl p-3">
-                <SymbolView name="questionmark.circle" size={16} />
-                <Text className="text-secondary-label flex-1 text-sm">
-                  {draft.clarification}
-                </Text>
-              </View>
-            )}
-
-            <View className="gap-2">
-              <Text className="text-secondary-label text-sm font-semibold">
-                {t('food.review.mealCategory')}
-              </Text>
-              <Host matchContents style={{ width: '100%' }}>
-                <Picker
-                  selection={draft.mealType}
-                  onSelectionChange={(value) => setMealType(value as MealType)}
-                  modifiers={[pickerStyle('segmented')]}
-                >
-                  {MEAL_TYPES.map((mt) => (
-                    <SwiftUIText key={mt} modifiers={[tag(mt)]}>
-                      {t(`food.mealType.${mt}`)}
-                    </SwiftUIText>
-                  ))}
-                </Picker>
-              </Host>
-            </View>
-
-            <View className="gap-2">
-              <View className="flex-row items-baseline justify-between">
-                <Text className="text-secondary-label text-sm font-semibold">
-                  {t('food.review.portion')}
-                </Text>
-                <Text className="text-secondary-label text-sm">
-                  {multiplier.toFixed(2)}×
-                </Text>
-              </View>
-              <View className="flex-row gap-2">
-                {PORTION_PRESETS.map((preset) => {
-                  const selected = Math.abs(multiplier - preset) < 0.001;
-                  return (
-                    <Pressable
-                      key={preset}
-                      onPress={() => {
-                        void Haptics.selectionAsync();
-                        setPortionMultiplier(preset);
-                      }}
-                      className={`flex-1 items-center rounded-xl py-2.5 ${selected ? 'bg-tint' : 'bg-secondary-system-background'}`}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
+        <View className="gap-2">
+          <SectionHeader
+            title={`${t('food.review.portion')} · ${multiplier.toFixed(2)}×`}
+          />
+          <Card>
+            <View className="flex-row gap-2">
+              {PORTION_PRESETS.map((preset) => {
+                const selected = Math.abs(multiplier - preset) < 0.001;
+                return (
+                  <Pressable
+                    key={preset}
+                    onPress={() => {
+                      void Haptics.selectionAsync();
+                      setPortionMultiplier(preset);
+                    }}
+                    className={`flex-1 items-center rounded-xl py-2.5 ${selected ? 'bg-tint' : 'bg-system-background'}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                  >
+                    <Text
+                      className={`text-base font-semibold ${selected ? 'text-white' : 'text-label'}`}
                     >
-                      <Text
-                        className={`text-base font-semibold ${selected ? 'text-white' : 'text-label'}`}
-                      >
-                        {preset === 0.5 ? '½' : `${preset}×`}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <Host matchContents style={{ width: '100%' }}>
-                <Slider
-                  value={multiplier}
-                  min={0.25}
-                  max={3}
-                  step={0.05}
-                  onValueChange={(v) =>
-                    setPortionMultiplier(clampPortionMultiplier(v))
-                  }
-                />
-              </Host>
+                      {preset === 0.5 ? '½' : `${preset}×`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
-
-            <View className="gap-3">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-secondary-label text-sm font-semibold">
-                  {t('food.review.ingredients')}
-                </Text>
-                <Pressable
-                  onPress={() =>
-                    addItem({
-                      name: '',
-                      grams: 100,
-                      kcal: 0,
-                      proteinG: 0,
-                      carbsG: 0,
-                      fatG: 0,
-                    })
-                  }
-                  className="flex-row items-center gap-1"
-                >
-                  <SymbolView name="plus.circle.fill" size={18} />
-                  <Text className="text-tint text-sm font-medium">
-                    {t('food.review.addItem')}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {scaledItems.map((item) => (
-                <IngredientRow
-                  key={item.id}
-                  item={item}
-                  onChangeName={(name) => updateItem(item.id, { name })}
-                  onChangeGrams={(grams) =>
-                    scaleItemGrams(item.id, grams / multiplier)
-                  }
-                  onChangeField={(field, value) =>
-                    updateItem(item.id, { [field]: value / multiplier })
-                  }
-                  onDelete={() => removeItem(item.id)}
-                />
-              ))}
-              {draft.items.length === 0 && (
-                <Text className="text-secondary-label py-4 text-center text-sm">
-                  {t('food.review.noItems')}
-                </Text>
-              )}
-            </View>
-
-            <View className="bg-secondary-system-background gap-2 rounded-2xl p-4">
-              <Text className="text-secondary-label text-sm font-semibold">
-                {t('food.review.totals')}
-              </Text>
-              <Text className="text-label text-base">
-                {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)}
-                g · C {Math.round(totals.carbsG)}g · F {Math.round(totals.fatG)}
-                g
-              </Text>
-            </View>
-
-            <View className="bg-secondary-system-background flex-row items-center justify-between rounded-2xl p-4">
-              <Text className="text-label text-base">
-                {t('food.review.saveAsFavorite')}
-              </Text>
-              <Switch
-                value={draft.saveAsFavorite}
-                onValueChange={setSaveAsFavorite}
-                trackColor={{ true: themeColor('accent') }}
+            <Host matchContents style={{ width: '100%' }}>
+              <Slider
+                value={multiplier}
+                min={0.25}
+                max={3}
+                step={0.05}
+                onValueChange={(v) =>
+                  setPortionMultiplier(clampPortionMultiplier(v))
+                }
               />
-            </View>
-          </ScrollView>
-        )}
-        {!isAnalyzing && draft.status === 'ready' && (
-          <View className="border-separator bg-system-background border-t px-4 pb-8 pt-3">
+            </Host>
+          </Card>
+        </View>
+
+        <View className="gap-2">
+          <View className="flex-row items-center justify-between">
+            <SectionHeader title={t('food.review.ingredients')} />
             <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="bg-tint flex-row items-center justify-center gap-2 rounded-2xl py-4"
-              style={{ opacity: isSaving ? 0.6 : 1 }}
-              accessibilityRole="button"
+              onPress={() =>
+                addItem({
+                  name: '',
+                  grams: 100,
+                  kcal: 0,
+                  proteinG: 0,
+                  carbsG: 0,
+                  fatG: 0,
+                })
+              }
+              className="flex-row items-center gap-1 px-1"
             >
-              <Text className="text-base font-semibold text-white">
-                {t('food.review.saveWithKcal', {
-                  kcal: Math.round(totals.kcal),
-                })}
+              <SymbolView
+                name="plus.circle.fill"
+                size={18}
+                tintColor={themeColor('accent')}
+              />
+              <Text className="text-tint text-sm font-medium">
+                {t('food.review.addItem')}
               </Text>
             </Pressable>
           </View>
+
+          {scaledItems.map((item) => (
+            <IngredientRow
+              key={item.id}
+              item={item}
+              onChangeName={(name) => updateItem(item.id, { name })}
+              onChangeGrams={(grams) =>
+                scaleItemGrams(item.id, grams / multiplier)
+              }
+              onChangeField={(field, value) =>
+                updateItem(item.id, { [field]: value / multiplier })
+              }
+              onDelete={() => removeItem(item.id)}
+            />
+          ))}
+          {draft.items.length === 0 && (
+            <Text className="text-secondary-label py-4 text-center text-sm">
+              {t('food.review.noItems')}
+            </Text>
+          )}
+        </View>
+
+        <View className="gap-2">
+          <SectionHeader title={t('food.review.totals')} />
+          <Card>
+            <Text className="text-label text-base font-semibold">
+              {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)}g
+              · C {Math.round(totals.carbsG)}g · F {Math.round(totals.fatG)}g
+            </Text>
+          </Card>
+        </View>
+
+        <Card className="flex-row items-center justify-between">
+          <Text className="text-label text-base">
+            {t('food.review.saveAsFavorite')}
+          </Text>
+          <Switch
+            value={draft.saveAsFavorite}
+            onValueChange={setSaveAsFavorite}
+            trackColor={{ true: themeColor('accent') }}
+          />
+        </Card>
+
+        {isSaving ? (
+          <ActivityIndicator />
+        ) : (
+          <GlassActionButton
+            label={t('food.review.saveWithKcal', {
+              kcal: Math.round(totals.kcal),
+            })}
+            symbol="checkmark"
+            onPress={handleSave}
+          />
         )}
-      </KeyboardAvoidingView>
-    </>
+      </SheetScreen>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -440,7 +420,7 @@ function IngredientRow({
 }) {
   const { t } = useTranslation();
   return (
-    <View className="bg-secondary-system-background gap-2 rounded-2xl p-3">
+    <Card className="gap-2 p-3">
       <View className="flex-row items-center gap-2">
         <TextInput
           value={item.name}
@@ -484,7 +464,7 @@ function IngredientRow({
           onChange={(v) => onChangeField('fatG', v)}
         />
       </View>
-    </View>
+    </Card>
   );
 }
 

@@ -334,6 +334,7 @@ async function invokeAnalyze<T>(body: Record<string, unknown>): Promise<T> {
     try {
       const errBody = context ? await context.clone().json() : null;
       code = errBody?.error ?? null;
+      if (code && errBody?.detail) code = `${code} (${errBody.detail})`;
     } catch {
       // ignore parse failures, fall back to generic error
     }

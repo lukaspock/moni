@@ -98,6 +98,7 @@
     "ingredientNamePlaceholder": "Zutat",
     "grams": "g",
     "limitReachedBody": "Du hast alle kostenlosen KI-Analysen für heute aufgebraucht. Erfasse dein Essen manuell, per Barcode oder aus deinen Favoriten, oder hole dir Premium.",
+    "errorCode": "Fehlercode: {{code}}",
     "getPremium": "Premium holen",
     "saveWithKcal": "Speichern · {{kcal}} kcal"
   },

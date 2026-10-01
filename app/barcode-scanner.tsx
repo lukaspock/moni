@@ -32,6 +32,7 @@ import {
   type AnalysisFailure,
   type DraftFoodItem,
 } from '@/features/food';
+import { Card, GlassActionButton, SectionHeader } from '@/components/ui';
 import { toISODate } from '@/lib/date';
 import { themeColor } from '@/theme/colors';
 
@@ -64,6 +65,7 @@ export default function BarcodeScannerScreen() {
   const [gramsText, setGramsText] = useState('100');
   const [added, setAdded] = useState<DraftFoodItem[]>([]);
   const [isWorking, setIsWorking] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const cameraRef = useRef<CameraView>(null);
   const busyRef = useRef(false);
@@ -84,19 +86,13 @@ export default function BarcodeScannerScreen() {
         <Text className="text-label text-center text-base">
           {t('food.barcode.permissionBody')}
         </Text>
-        <Pressable
-          onPress={() => void requestPermission()}
-          className="bg-tint rounded-xl px-5 py-3"
-        >
-          <Text className="text-base font-semibold text-white">
-            {t('food.barcode.grantAccess')}
-          </Text>
-        </Pressable>
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-tint text-base">
-            {t('food.logFood.cancel')}
-          </Text>
-        </Pressable>
+        <View className="w-full">
+          <GlassActionButton
+            label={t('food.barcode.grantAccess')}
+            symbol="camera.fill"
+            onPress={() => void requestPermission()}
+          />
+        </View>
       </View>
     );
   }
@@ -199,6 +195,7 @@ export default function BarcodeScannerScreen() {
           servingGrams: label.serving_size_g,
         });
       } else {
+        setErrorCode(outcome.code);
         handleLabelFailure(outcome.failure);
       }
     } catch {
@@ -235,6 +232,7 @@ export default function BarcodeScannerScreen() {
   const resetScan = () => {
     setProduct(null);
     setProblem(null);
+    setErrorCode(null);
     lastScan.current = null;
   };
 
@@ -391,12 +389,19 @@ export default function BarcodeScannerScreen() {
 
       {problem && (
         <View className="bg-system-background absolute inset-x-0 bottom-0 gap-3 rounded-t-3xl p-5 pb-10">
-          <Text className="text-label text-lg font-semibold">
-            {problemTexts(problem).title}
-          </Text>
-          <Text className="text-secondary-label text-sm">
-            {problemTexts(problem).body}
-          </Text>
+          <Card>
+            <Text className="text-label text-lg font-semibold">
+              {problemTexts(problem).title}
+            </Text>
+            <Text className="text-secondary-label text-sm">
+              {problemTexts(problem).body}
+            </Text>
+            {errorCode && problem === 'labelError' && (
+              <Text selectable className="text-secondary-label text-xs">
+                {t('food.review.errorCode', { code: errorCode })}
+              </Text>
+            )}
+          </Card>
           <View className="gap-2 pt-1">
             {(problem === 'notFound' || problem === 'incomplete') && (
               <PanelButton
@@ -443,7 +448,7 @@ export default function BarcodeScannerScreen() {
             contentContainerClassName="gap-4 p-5 pb-10"
             bounces={false}
           >
-            <View className="gap-1">
+            <Card className="gap-1">
               <Text
                 className="text-label text-lg font-semibold"
                 numberOfLines={2}
@@ -458,71 +463,75 @@ export default function BarcodeScannerScreen() {
                   fat: Math.round(product.per100g.fatG),
                 })}
               </Text>
-            </View>
+            </Card>
 
-            <View className="flex-row flex-wrap items-center gap-2">
-              {quantityPresets(product.servingGrams).map((preset, index) => {
-                const selected = grams === preset;
-                return (
-                  <Pressable
-                    key={preset}
-                    onPress={() => setGramsText(String(preset))}
-                    className={`rounded-full px-3.5 py-2 ${selected ? 'bg-tint' : 'bg-secondary-system-background'}`}
-                  >
-                    <Text
-                      className={`text-sm font-medium ${selected ? 'text-white' : 'text-label'}`}
+            <View className="gap-2">
+              <SectionHeader title={t('food.barcode.quantity')} />
+              <Card className="flex-row flex-wrap items-center gap-2">
+                {quantityPresets(product.servingGrams).map((preset, index) => {
+                  const selected = grams === preset;
+                  return (
+                    <Pressable
+                      key={preset}
+                      onPress={() => setGramsText(String(preset))}
+                      className={`rounded-full px-3.5 py-2 ${selected ? 'bg-tint' : 'bg-system-background'}`}
                     >
-                      {index === 0 && product.servingGrams
-                        ? t('food.barcode.serving', { grams: preset })
-                        : `${preset} g`}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-              <View className="bg-secondary-system-background flex-row items-center gap-1 rounded-full px-3">
-                <TextInput
-                  value={gramsText}
-                  onChangeText={setGramsText}
-                  keyboardType="decimal-pad"
-                  selectTextOnFocus
-                  className="text-label min-w-[44px] py-2 text-center text-sm font-medium"
-                  accessibilityLabel={t('food.barcode.quantity')}
-                />
-                <Text className="text-secondary-label text-sm">g</Text>
-              </View>
+                      <Text
+                        className={`text-sm font-medium ${selected ? 'text-white' : 'text-label'}`}
+                      >
+                        {index === 0 && product.servingGrams
+                          ? t('food.barcode.serving', { grams: preset })
+                          : `${preset} g`}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                <View className="bg-system-background flex-row items-center gap-1 rounded-full px-3">
+                  <TextInput
+                    value={gramsText}
+                    onChangeText={setGramsText}
+                    keyboardType="decimal-pad"
+                    selectTextOnFocus
+                    className="text-label min-w-[44px] py-2 text-center text-sm font-medium"
+                    accessibilityLabel={t('food.barcode.quantity')}
+                  />
+                  <Text className="text-secondary-label text-sm">g</Text>
+                </View>
+              </Card>
             </View>
 
-            <Text className="text-label text-base font-semibold">
-              {Math.round(preview.kcal)} kcal · P {Math.round(preview.proteinG)}
-              g · C {Math.round(preview.carbsG)}g · F {Math.round(preview.fatG)}
-              g
-            </Text>
+            <Card>
+              <Text className="text-label text-base font-semibold">
+                {Math.round(preview.kcal)} kcal · P{' '}
+                {Math.round(preview.proteinG)}g · C {Math.round(preview.carbsG)}
+                g · F {Math.round(preview.fatG)}g
+              </Text>
+            </Card>
 
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={addAndContinue}
-                disabled={grams <= 0}
-                className="bg-secondary-system-background flex-1 items-center rounded-xl py-3.5"
-                style={{ opacity: grams > 0 ? 1 : 0.4 }}
-              >
-                <Text className="text-label text-base font-medium">
-                  {t('food.barcode.addAndScan')}
-                </Text>
-              </Pressable>
-              <Pressable
+            <View
+              style={{ opacity: grams > 0 ? 1 : 0.4 }}
+              pointerEvents={grams > 0 ? 'auto' : 'none'}
+            >
+              <GlassActionButton
+                label={t('food.barcode.addAndReview')}
+                symbol="checkmark"
                 onPress={addAndReview}
-                disabled={grams <= 0}
-                className="bg-tint flex-1 items-center rounded-xl py-3.5"
-                style={{ opacity: grams > 0 ? 1 : 0.4 }}
-              >
-                <Text className="text-base font-semibold text-white">
-                  {t('food.barcode.addAndReview')}
-                </Text>
-              </Pressable>
+              />
             </View>
+            <Pressable
+              onPress={addAndContinue}
+              disabled={grams <= 0}
+              className="bg-secondary-system-background items-center rounded-2xl py-4"
+              style={{ opacity: grams > 0 ? 1 : 0.4 }}
+              accessibilityRole="button"
+            >
+              <Text className="text-label text-base font-medium">
+                {t('food.barcode.addAndScan')}
+              </Text>
+            </Pressable>
             <Pressable onPress={resetScan} className="items-center">
               <Text className="text-secondary-label text-sm">
-                {t('food.logFood.cancel')}
+                {t('food.barcode.scanAgain')}
               </Text>
             </Pressable>
           </ScrollView>
@@ -543,22 +552,17 @@ function PanelButton({
   onPress: () => void;
   primary?: boolean;
 }) {
+  if (primary) {
+    return <GlassActionButton label={label} symbol={icon} onPress={onPress} />;
+  }
   return (
     <Pressable
       onPress={onPress}
-      className={`flex-row items-center justify-center gap-2 rounded-xl py-3.5 ${primary ? 'bg-tint' : 'bg-secondary-system-background'}`}
+      className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
       accessibilityRole="button"
     >
-      <SymbolView
-        name={icon}
-        size={18}
-        tintColor={primary ? 'white' : themeColor('accent')}
-      />
-      <Text
-        className={`text-base font-medium ${primary ? 'text-white' : 'text-label'}`}
-      >
-        {label}
-      </Text>
+      <SymbolView name={icon} size={18} tintColor={themeColor('accent')} />
+      <Text className="text-label text-base font-medium">{label}</Text>
     </Pressable>
   );
 }

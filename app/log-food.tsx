@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
@@ -12,7 +11,7 @@ import {
 import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
 import { resolveLogDate, type FoodSource } from '@/domain';
@@ -26,6 +25,7 @@ import {
   type AnalysisFailure,
   type QuickLogEntry,
 } from '@/features/food';
+import { Card, SectionHeader, SheetScreen } from '@/components/ui';
 import { toISODate } from '@/lib/date';
 import { themeColor } from '@/theme/colors';
 
@@ -161,18 +161,7 @@ export default function LogFoodScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{ title: t('food.logFood.title'), headerShown: false }}
-      />
-      <ScrollView
-        className="bg-system-background flex-1"
-        contentContainerClassName="gap-5 p-5 pt-6"
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text className="text-label text-center text-lg font-semibold">
-          {t('food.logFood.title')}
-        </Text>
-
+      <SheetScreen title={t('food.logFood.title')}>
         <View className="flex-row gap-3">
           <Pressable
             onPress={() => void runPhoto(true)}
@@ -206,7 +195,7 @@ export default function LogFoodScreen() {
           </View>
         </View>
 
-        <View className="bg-secondary-system-background flex-row items-center gap-2 rounded-2xl pl-4 pr-2">
+        <Card className="flex-row items-center gap-2 py-0 pl-4 pr-2">
           <TextInput
             value={description}
             onChangeText={setDescription}
@@ -239,7 +228,7 @@ export default function LogFoodScreen() {
               <SymbolView name="photo.on.rectangle" size={22} />
             </Pressable>
           )}
-        </View>
+        </Card>
 
         {isLoading && !hasQuickEntries ? (
           <ActivityIndicator />
@@ -295,7 +284,7 @@ export default function LogFoodScreen() {
             {t('food.logFood.manual')}
           </Text>
         </Pressable>
-      </ScrollView>
+      </SheetScreen>
     </>
   );
 }
@@ -341,14 +330,9 @@ function QuickSection({
   const { t } = useTranslation();
   return (
     <View className="gap-2">
-      <Text className="text-secondary-label px-1 text-xs font-semibold uppercase">
-        {title}
-      </Text>
+      <SectionHeader title={title} />
       {entries.map((entry) => (
-        <View
-          key={entry.key}
-          className="bg-secondary-system-background flex-row items-center rounded-2xl"
-        >
+        <Card key={entry.key} className="flex-row items-center gap-0 p-0">
           <Pressable
             onPress={() => onOpen(entry)}
             className="flex-1 gap-0.5 py-3 pl-4"
@@ -380,7 +364,7 @@ function QuickSection({
               tintColor={themeColor('accent')}
             />
           </Pressable>
-        </View>
+        </Card>
       ))}
     </View>
   );
