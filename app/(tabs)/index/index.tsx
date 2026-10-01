@@ -22,7 +22,8 @@ import {
   Swipeable,
 } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 
 import { KcalRing } from '@/components/charts/KcalRing';
@@ -35,11 +36,7 @@ import {
   useFoodTotals,
 } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
-import {
-  usePlannedDay,
-  useStartWorkout,
-  useWorkoutsForDate,
-} from '@/features/workout';
+import { useStartWorkout } from '@/features/workout';
 import { addDays, toISODate } from '@/lib/date';
 import type { MealType } from '@/domain';
 
@@ -47,13 +44,12 @@ const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [date, setDate] = useState(() => toISODate());
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
   const { totals } = useFoodTotals(date);
   const { logs } = useFoodLogsForDate(date);
-  const { plannedDay } = usePlannedDay(date);
-  const { workouts } = useWorkoutsForDate(date);
   const deleteFoodLog = useDeleteFoodLog();
   const { startEmpty: startEmptyWorkout } = useStartWorkout();
 
@@ -121,26 +117,20 @@ export default function TodayScreen() {
     });
   };
 
-  const hasTrainingToday = !!plannedDay || workouts.length > 0;
-
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: headerTitle,
-          headerTitle: '',
-          headerLeft: () => (
-            <Text className="text-label text-[28px] font-bold">
-              {headerTitle}
-            </Text>
-          ),
-        }}
-      />
       <View className="bg-system-background flex-1">
+        <View
+          className="bg-system-background px-5 pb-2"
+          style={{ paddingTop: insets.top + 8 }}
+        >
+          <Text className="text-label text-[28px] font-bold">
+            {headerTitle}
+          </Text>
+        </View>
         <ScrollView
           className="flex-1"
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerClassName="gap-6 px-4 pb-32 pt-2"
+          contentContainerClassName="gap-6 px-4 pb-32 pt-6"
           showsVerticalScrollIndicator={false}
         >
           <GestureDetector gesture={swipeGesture}>
@@ -161,6 +151,9 @@ export default function TodayScreen() {
               ) : (
                 <>
                   <View className="items-center gap-4 py-2">
+                    <Text className="text-secondary-label self-start px-1 text-xs font-semibold uppercase">
+                      {t('food.dashboard.overview')}
+                    </Text>
                     <KcalRing
                       eatenKcal={totals.kcal}
                       baseKcal={targets?.totalKcal ?? 0}
@@ -175,62 +168,47 @@ export default function TodayScreen() {
                     )}
                   </View>
 
-                  <GlassActionButton
-                    label={t('food.dashboard.addMeal')}
-                    onPress={() =>
-                      router.push({ pathname: '/log-food', params: { date } })
-                    }
-                  />
-
-                  <View className="bg-secondary-system-background gap-3 rounded-2xl p-4">
-                    <MacroBar
-                      label={t('food.dashboard.protein')}
-                      gramsEaten={totals.proteinG}
-                      gramsTarget={targets?.proteinG ?? 0}
-                      highlighted
-                      color="purple"
-                    />
-                    <MacroBar
-                      label={t('food.dashboard.carbs')}
-                      gramsEaten={totals.carbsG}
-                      gramsTarget={targets?.carbsG ?? 0}
-                      color="orange"
-                    />
-                    <MacroBar
-                      label={t('food.dashboard.fat')}
-                      gramsEaten={totals.fatG}
-                      gramsTarget={targets?.fatG ?? 0}
-                      color="accent"
-                    />
+                  <View className="gap-2">
+                    <Text className="text-secondary-label px-1 text-xs font-semibold uppercase">
+                      {t('food.dashboard.nutrition')}
+                    </Text>
+                    <View className="bg-secondary-system-background gap-3 rounded-2xl p-4">
+                      <MacroBar
+                        label={t('food.dashboard.protein')}
+                        gramsEaten={totals.proteinG}
+                        gramsTarget={targets?.proteinG ?? 0}
+                        highlighted
+                        color="purple"
+                      />
+                      <MacroBar
+                        label={t('food.dashboard.carbs')}
+                        gramsEaten={totals.carbsG}
+                        gramsTarget={targets?.carbsG ?? 0}
+                        color="orange"
+                      />
+                      <MacroBar
+                        label={t('food.dashboard.fat')}
+                        gramsEaten={totals.fatG}
+                        gramsTarget={targets?.fatG ?? 0}
+                        color="accent"
+                      />
+                    </View>
                   </View>
                 </>
               )}
 
-              <View className="bg-secondary-system-background gap-2 rounded-2xl p-4">
-                <Text className="text-label text-base font-semibold">
-                  {t('food.dashboard.trainingCardTitle')}
-                </Text>
-                {hasTrainingToday ? (
-                  <View className="gap-3">
-                    <Text className="text-secondary-label text-sm">
-                      {workouts.length > 0
-                        ? t('food.dashboard.trainingDone')
-                        : (plannedDay?.routineName ??
-                          t('food.dashboard.trainingPlannedFreeform'))}
-                    </Text>
-                    {workouts.length === 0 && (
-                      <GlassActionButton
-                        label={t('workout.training.startWorkout')}
-                        symbol="figure.strengthtraining.traditional"
-                        onPress={startEmptyWorkout}
-                      />
-                    )}
-                  </View>
-                ) : (
-                  <Text className="text-secondary-label text-sm">
-                    {t('food.dashboard.restDay')}
-                  </Text>
-                )}
+              <View className="gap-3">
+                <GlassActionButton
+                  label={t('food.dashboard.addMeal')}
+                  onPress={() =>
+                    router.push({ pathname: '/log-food', params: { date } })
+                  }
+                />
+                <GlassActionButton
+                  label={t('workout.training.startWorkout')}
+                  symbol="figure.strengthtraining.traditional"
+                  onPress={startEmptyWorkout}
+                />
               </View>
             </View>
           </GestureDetector>

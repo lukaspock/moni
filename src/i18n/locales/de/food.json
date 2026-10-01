@@ -9,6 +9,8 @@
     "kcalOver": "kcal drüber",
     "eatenOfLimit": "{{eaten}} / {{limit}} kcal",
     "includesBonus": "inkl. {{kcal}} kcal Trainingsbonus",
+    "overview": "Übersicht",
+    "nutrition": "Ernährung",
     "addMeal": "Mahlzeit hinzufügen",
     "protein": "Protein",
     "carbs": "Kohlenhydrate",

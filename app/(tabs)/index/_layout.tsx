@@ -1,23 +1,10 @@
 import { Stack } from 'expo-router';
 
-// Day title is rendered left-aligned by the screen (headerLeft) on a transparent header;
-// the iOS 26 soft scroll edge effect fades content under it instead of drawing a bar.
+// No native header on Today: the day title is a fixed row rendered by the screen itself
+// (solid page background, no glass capsule), so nothing scrolls under it.
 export default function TodayStackLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerTransparent: true,
-        headerShadowVisible: false,
-        headerLargeTitle: false,
-        headerBackground: () => null,
-        scrollEdgeEffects: {
-          top: 'soft',
-          bottom: 'automatic',
-          left: 'automatic',
-          right: 'automatic',
-        },
-      }}
-    >
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
     </Stack>
   );
