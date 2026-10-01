@@ -1,6 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Alert,
+  PlatformColor,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import {
   Gesture,
   GestureDetector,
@@ -19,8 +34,7 @@ import {
   useFoodLogsForDate,
   useFoodTotals,
 } from '@/features/food';
-import { useDailyTargets, useProfile } from '@/features/targets';
-import { greetingPeriod, type GreetingPeriod } from '@/features/auth';
+import { useDailyTargets } from '@/features/targets';
 import {
   usePlannedDay,
   useStartWorkout,
@@ -36,7 +50,6 @@ export default function TodayScreen() {
   const [date, setDate] = useState(() => toISODate());
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
-  const { profile } = useProfile();
   const { totals } = useFoodTotals(date);
   const { logs } = useFoodLogsForDate(date);
   const { plannedDay } = usePlannedDay(date);
@@ -86,7 +99,6 @@ export default function TodayScreen() {
   }, [logs]);
 
   const today = toISODate();
-  const isToday = date === today;
   const headerTitle = useMemo(() => {
     if (date === today) return t('food.dashboard.today');
     if (date === addDays(today, -1)) return t('food.dashboard.yesterday');
@@ -111,35 +123,28 @@ export default function TodayScreen() {
 
   const hasTrainingToday = !!plannedDay || workouts.length > 0;
 
-  // Personal greeting (onboarding v2 display_name).
-  const displayName = profile?.display_name?.trim() ?? '';
-  const greetings: Record<GreetingPeriod, string> = {
-    morning: t('account.greeting.morning', { name: displayName }),
-    afternoon: t('account.greeting.afternoon', { name: displayName }),
-    evening: t('account.greeting.evening', { name: displayName }),
-  };
-
   return (
     <>
       <Stack.Screen
         options={{
           title: headerTitle,
+          headerTitle: '',
+          headerLeft: () => (
+            <Text className="text-label text-[28px] font-bold">
+              {headerTitle}
+            </Text>
+          ),
         }}
       />
       <View className="bg-system-background flex-1">
         <ScrollView
           className="flex-1"
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerClassName="gap-6 px-4 pb-32 pt-4"
+          contentContainerClassName="gap-6 px-4 pb-32 pt-2"
           showsVerticalScrollIndicator={false}
         >
           <GestureDetector gesture={swipeGesture}>
             <View className="gap-6">
-              {isToday && displayName ? (
-                <Text className="text-label text-center text-xl font-semibold">
-                  {greetings[greetingPeriod()]}
-                </Text>
-              ) : null}
               {!targets && !targetsLoading ? (
                 <View className="bg-secondary-system-background items-center gap-3 rounded-2xl p-6">
                   <SymbolView
@@ -230,91 +235,130 @@ export default function TodayScreen() {
             </View>
           </GestureDetector>
 
-          <View className="gap-4">
-            {MEAL_ORDER.map((mealType) => {
-              const mealLogs = mealsByType.get(mealType) ?? [];
-              if (mealLogs.length === 0) return null;
-              const mealKcal = mealLogs.reduce((sum, log) => sum + log.kcal, 0);
-              return (
-                <View key={mealType} className="gap-2">
-                  <View className="flex-row items-baseline justify-between px-1">
-                    <Text className="text-label text-base font-semibold">
-                      {t(`food.mealType.${mealType}`)}
-                    </Text>
-                    <Text className="text-secondary-label text-sm">
-                      {Math.round(mealKcal)} {t('food.dashboard.kcalUnit')}
-                    </Text>
-                  </View>
-                  <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
-                    {mealLogs.map((log, index) => (
-                      <View key={log.id}>
-                        {index > 0 && <View className="bg-separator h-px" />}
-                        <Swipeable
-                          renderRightActions={() => (
-                            <Pressable
-                              onPress={() => handleDelete(log.id)}
-                              className="bg-destructive w-20 items-center justify-center"
-                            >
-                              <SymbolView
-                                name="trash"
-                                size={20}
-                                tintColor="white"
-                              />
-                            </Pressable>
-                          )}
-                        >
-                          <Pressable
-                            onPress={() =>
-                              router.push({
-                                pathname: '/food-review',
-                                params: { editFoodLogId: log.id },
-                              })
-                            }
-                            onLongPress={() =>
-                              Alert.alert(
-                                log.title ?? t('food.dashboard.untitledMeal'),
-                                undefined,
-                                [
-                                  {
-                                    text: t('food.dashboard.cancel'),
-                                    style: 'cancel',
-                                  },
-                                  {
-                                    text: t('food.dashboard.delete'),
-                                    style: 'destructive',
-                                    onPress: () => handleDelete(log.id),
-                                  },
-                                ],
-                              )
-                            }
-                            className="flex-row items-center justify-between px-4 py-3"
-                          >
-                            <Text
-                              className="text-label flex-1 text-base"
-                              numberOfLines={1}
-                            >
-                              {log.title || t('food.dashboard.untitledMeal')}
-                            </Text>
-                            <Text className="text-secondary-label text-base">
-                              {Math.round(log.kcal)}{' '}
-                              {t('food.dashboard.kcalUnit')}
-                            </Text>
-                          </Pressable>
-                        </Swipeable>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              );
-            })}
-            {logs.length === 0 && (
-              <Text className="text-secondary-label px-1 text-center text-sm">
-                {t('food.dashboard.noMeals')}
-              </Text>
-            )}
+          <View className="gap-3">
+            {MEAL_ORDER.map((mealType) => (
+              <MealGroup
+                key={mealType}
+                mealType={mealType}
+                logs={mealsByType.get(mealType) ?? []}
+                onDelete={handleDelete}
+              />
+            ))}
           </View>
         </ScrollView>
       </View>
     </>
+  );
+}
+
+function MealGroup({
+  mealType,
+  logs,
+  onDelete,
+}: {
+  mealType: MealType;
+  logs: FoodLogWithItems[];
+  onDelete: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const rotation = useSharedValue(0);
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+  const kcal = logs.reduce((sum, log) => sum + log.kcal, 0);
+  const hasLogs = logs.length > 0;
+
+  const toggle = () => {
+    if (!hasLogs) return;
+    void Haptics.selectionAsync();
+    rotation.value = withTiming(open ? 0 : 90, { duration: 200 });
+    setOpen((v) => !v);
+  };
+
+  return (
+    <Animated.View
+      layout={LinearTransition.duration(220)}
+      className="bg-secondary-system-background overflow-hidden rounded-2xl"
+    >
+      <Pressable
+        onPress={toggle}
+        disabled={!hasLogs}
+        className="flex-row items-center gap-3 px-4 py-3.5"
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open, disabled: !hasLogs }}
+      >
+        <Text className="text-label flex-1 text-base font-semibold">
+          {t(`food.mealType.${mealType}`)}
+        </Text>
+        <Text className="text-secondary-label text-base">
+          {Math.round(kcal)} {t('food.dashboard.kcalUnit')}
+        </Text>
+        <Animated.View style={[chevronStyle, { opacity: hasLogs ? 1 : 0.3 }]}>
+          <SymbolView
+            name="chevron.right"
+            size={14}
+            weight="semibold"
+            tintColor={PlatformColor('secondaryLabel')}
+          />
+        </Animated.View>
+      </Pressable>
+      {open && (
+        <Animated.View
+          entering={FadeIn.duration(180)}
+          exiting={FadeOut.duration(120)}
+        >
+          {logs.map((log) => (
+            <View key={log.id}>
+              <View className="bg-separator h-px" />
+              <Swipeable
+                renderRightActions={() => (
+                  <Pressable
+                    onPress={() => onDelete(log.id)}
+                    className="bg-destructive w-20 items-center justify-center"
+                  >
+                    <SymbolView name="trash" size={20} tintColor="white" />
+                  </Pressable>
+                )}
+              >
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: '/food-review',
+                      params: { editFoodLogId: log.id },
+                    })
+                  }
+                  onLongPress={() =>
+                    Alert.alert(
+                      log.title ?? t('food.dashboard.untitledMeal'),
+                      undefined,
+                      [
+                        { text: t('food.dashboard.cancel'), style: 'cancel' },
+                        {
+                          text: t('food.dashboard.delete'),
+                          style: 'destructive',
+                          onPress: () => onDelete(log.id),
+                        },
+                      ],
+                    )
+                  }
+                  className="bg-secondary-system-background flex-row items-center justify-between px-4 py-3"
+                >
+                  <Text
+                    className="text-label flex-1 text-base"
+                    numberOfLines={1}
+                  >
+                    {log.title || t('food.dashboard.untitledMeal')}
+                  </Text>
+                  <Text className="text-secondary-label text-base">
+                    {Math.round(log.kcal)} {t('food.dashboard.kcalUnit')}
+                  </Text>
+                </Pressable>
+              </Swipeable>
+            </View>
+          ))}
+        </Animated.View>
+      )}
+    </Animated.View>
   );
 }
