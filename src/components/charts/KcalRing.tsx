@@ -22,8 +22,6 @@ export interface KcalRingProps {
   baseKcal: number;
   /** additional allowance from a workout (PLAN §6.4), 0 if none. */
   bonusKcal: number;
-  /** true = bonus is a provisional estimate (not yet earned) -> drawn fainter. */
-  bonusIsProvisional: boolean;
   size?: number;
 }
 
@@ -37,7 +35,6 @@ export function KcalRing({
   eatenKcal,
   baseKcal,
   bonusKcal,
-  bonusIsProvisional,
   size = 240,
 }: KcalRingProps) {
   const { t } = useTranslation();
@@ -105,7 +102,7 @@ export function KcalRing({
               strokeWidth={STROKE_WIDTH}
               strokeCap="butt"
               color={bonusColor}
-              opacity={bonusIsProvisional ? 0.25 : 0.4}
+              opacity={0.4}
               start={model.baseShare}
               end={1}
             />

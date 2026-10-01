@@ -4,39 +4,20 @@
     "empty": "No workouts yet.",
     "duration": "{{minutes}} min",
     "volume": "{{volume}} kg volume",
-    "kcal": "{{kcal}} kcal"
+    "kcal": "{{kcal}} kcal",
+    "showAll": "Show all",
+    "exercises": "{{count}} exercises"
   },
   "training": {
     "startWorkout": "Start workout",
     "startEmpty": "Empty workout",
-    "startFromRoutine": "Start from routine",
+    "startFromRoutine": "Start",
     "routines": "Routines",
-    "weeklyPlan": "Weekly plan",
     "noRoutines": "No routines yet.",
     "newRoutine": "New routine",
-    "restDay": "Rest day",
-    "freeTraining": "Free training",
-    "expectedKcal": "~{{kcal}} kcal",
-    "logCardio": "Log cardio/sport",
-    "history": "History"
-  },
-  "weekday": {
-    "0": "Sunday",
-    "1": "Monday",
-    "2": "Tuesday",
-    "3": "Wednesday",
-    "4": "Thursday",
-    "5": "Friday",
-    "6": "Saturday"
-  },
-  "weekdayShort": {
-    "0": "Sun",
-    "1": "Mon",
-    "2": "Tue",
-    "3": "Wed",
-    "4": "Thu",
-    "5": "Fri",
-    "6": "Sat"
+    "history": "History",
+    "startHint": "Empty workout, or pick a routine below.",
+    "doneToday": "Already trained today"
   },
   "routine": {
     "title": "Routine",
@@ -53,32 +34,16 @@
     "moveUp": "Move up",
     "moveDown": "Move down",
     "remove": "Remove",
-    "empty": "No exercises in this routine yet."
-  },
-  "plan": {
-    "title": "Weekly plan",
-    "day": "Day {{weekday}}",
-    "assignRoutine": "Choose routine",
-    "rest": "Rest day",
-    "estimatedKcal": "estimated ~{{kcal}} kcal"
+    "empty": "No exercises in this routine yet.",
+    "options": "Routine options",
+    "edit": "Edit",
+    "sets": "{{count}} sets"
   },
   "category": {
     "strength": "Strength",
     "cardio": "Cardio",
     "sport": "Sport",
     "other": "Other"
-  },
-  "cardio": {
-    "title": "Log cardio/sport",
-    "exercise": "Exercise (optional)",
-    "duration": "Duration (min)",
-    "distance": "Distance (km, optional)",
-    "intensity": "Intensity",
-    "intensityLight": "Light",
-    "intensityModerate": "Moderate",
-    "intensityVigorous": "Vigorous",
-    "save": "Save",
-    "saved": "Saved · ~{{kcal}} kcal burned"
   },
   "exercisePicker": {
     "title": "Choose exercise",
@@ -97,7 +62,7 @@
     "noResults": "No exercises found."
   },
   "active": {
-    "finish": "Finish",
+    "finish": "Finish workout",
     "cancel": "Cancel",
     "cancelConfirmTitle": "Cancel workout?",
     "cancelConfirmMessage": "Your progress will be lost.",
@@ -112,7 +77,16 @@
     "restRemaining": "Rest: {{seconds}}s",
     "skipRest": "Skip rest",
     "elapsed": "{{time}}",
-    "emptyExercises": "No exercises yet. Tap \"Add exercise\"."
+    "emptyExercises": "No exercises yet. Tap \"Add exercise\".",
+    "title": "Workout",
+    "cancelWorkout": "Cancel workout",
+    "setColumn": "Set",
+    "weightColumn": "kg",
+    "doneColumn": "Done",
+    "elapsedLabel": "Duration",
+    "removeExercise": "Remove exercise",
+    "confirmFinishTitle": "Finish workout?",
+    "noSetsDone": "No sets are checked off yet."
   },
   "summary": {
     "title": "Workout finished",

@@ -1,17 +1,14 @@
 /**
- * Weekly training plan (`training_plan_days`, PLAN §7.4). weekday 0-6 (Sun-Sat,
- * matches `src/lib/date.ts#weekdayOf`) -> a routine or rest.
- *
- * The onboarding flow (`account` agent) may already have written rows with
- * `routine_id = null` for every weekday, so saving a day always UPSERTs on
- * the table's actual primary key `(user_id, weekday)` rather than inserting.
+ * Weekly training plan (`training_plan_days`, PLAN §7.4), read-only. weekday 0-6
+ * (Sun-Sat, matches `src/lib/date.ts#weekdayOf`). Rows are written once by the onboarding
+ * flow (selected training weekdays); there is no plan editor in the UI anymore. The plan
+ * only marks a day as a training day (macros); it never produces a calorie bonus.
  */
 import { useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/features/auth';
-import { estimatePlannedStrengthKcal } from '@/domain/met';
 import { useRoutines } from './routines';
 import type { TrainingPlanDayRow } from './types';
 
@@ -48,40 +45,6 @@ export function useWeeklyPlan(): {
     planByWeekday,
     isLoading: query.isLoading,
     refresh: () => void query.refetch(),
-  };
-}
-
-/** Estimates `expected_kcal` for a routine using a typical-session model (src/domain/met), for display before saving. */
-export function estimateExpectedKcalForRoutine(
-  totalTargetSets: number,
-  latestWeightKg: number | null,
-): number {
-  const weightKg = latestWeightKg ?? 75; // fallback matches active-workout summary (PLAN §7.4)
-  if (totalTargetSets <= 0) return 0;
-  return Math.round(estimatePlannedStrengthKcal(totalTargetSets, weightKg));
-}
-
-export function useSaveWeekdayPlan() {
-  const { userId } = useSession();
-  const queryClient = useQueryClient();
-
-  return async (
-    weekday: number,
-    routineId: string | null,
-    expectedKcal: number | null,
-  ): Promise<void> => {
-    if (!userId) throw new Error('not signed in');
-    const { error } = await supabase.from('training_plan_days').upsert(
-      {
-        user_id: userId,
-        weekday,
-        routine_id: routineId,
-        expected_kcal: expectedKcal,
-      },
-      { onConflict: 'user_id,weekday' },
-    );
-    if (error) throw error;
-    void queryClient.invalidateQueries({ queryKey: planQueryKey(userId) });
   };
 }
 

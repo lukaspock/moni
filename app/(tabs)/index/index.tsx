@@ -21,7 +21,11 @@ import {
 } from '@/features/food';
 import { useDailyTargets, useProfile } from '@/features/targets';
 import { greetingPeriod, type GreetingPeriod } from '@/features/auth';
-import { usePlannedDay, useWorkoutsForDate } from '@/features/workout';
+import {
+  usePlannedDay,
+  useStartWorkout,
+  useWorkoutsForDate,
+} from '@/features/workout';
 import { addDays, toISODate } from '@/lib/date';
 import type { MealType } from '@/domain';
 
@@ -38,6 +42,7 @@ export default function TodayScreen() {
   const { plannedDay } = usePlannedDay(date);
   const { workouts } = useWorkoutsForDate(date);
   const deleteFoodLog = useDeleteFoodLog();
+  const { startEmpty: startEmptyWorkout } = useStartWorkout();
 
   // Future navigation is capped at tomorrow (planning ahead by one day).
   const goPrevDay = useCallback(() => setDate((d) => addDays(d, -1)), []);
@@ -155,7 +160,6 @@ export default function TodayScreen() {
                       eatenKcal={totals.kcal}
                       baseKcal={targets?.totalKcal ?? 0}
                       bonusKcal={0}
-                      bonusIsProvisional={false}
                     />
                     {(targets?.workoutBonusKcal ?? 0) > 0 && (
                       <Text className="text-secondary-label text-sm">
@@ -210,14 +214,11 @@ export default function TodayScreen() {
                           t('food.dashboard.trainingPlannedFreeform'))}
                     </Text>
                     {workouts.length === 0 && (
-                      <Pressable
-                        onPress={() => router.push('/workout/active')}
-                        className="bg-tint items-center rounded-xl py-3"
-                      >
-                        <Text className="text-base font-semibold text-white">
-                          {t('food.dashboard.startWorkout')}
-                        </Text>
-                      </Pressable>
+                      <GlassActionButton
+                        label={t('workout.training.startWorkout')}
+                        symbol="figure.strengthtraining.traditional"
+                        onPress={startEmptyWorkout}
+                      />
                     )}
                   </View>
                 ) : (

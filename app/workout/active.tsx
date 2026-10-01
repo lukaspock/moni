@@ -7,13 +7,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { themeColor } from '@/theme/colors';
-import { GlassView } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 
+import { Card, GlassActionButton } from '@/components/ui';
 import {
   elapsedSeconds,
   exerciseDisplayName,
@@ -30,17 +31,46 @@ import {
 } from '@/features/workout';
 import { useSession } from '@/features/auth';
 import { useProfile } from '@/features/targets';
+import { themeColor } from '@/theme/colors';
 
 const DEFAULT_REST_SECONDS = 90;
 
 function formatClock(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
+  const mm = String(m).padStart(h > 0 ? 2 : 1, '0');
+  const ss = String(s).padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
+
+type SetField = 'weightKg' | 'reps' | 'durationS' | 'distanceM';
+
+/** Which editable columns a tracking type shows, in display order. */
+const FIELDS_BY_TRACKING: Record<
+  TrackingType,
+  { field: SetField; labelKey: LabelKey }[]
+> = {
+  weight_reps: [
+    { field: 'weightKg', labelKey: 'workout.active.weightColumn' },
+    { field: 'reps', labelKey: 'workout.active.reps' },
+  ],
+  reps: [{ field: 'reps', labelKey: 'workout.active.reps' }],
+  duration: [{ field: 'durationS', labelKey: 'workout.active.duration' }],
+  distance_duration: [
+    { field: 'distanceM', labelKey: 'workout.active.distance' },
+    { field: 'durationS', labelKey: 'workout.active.duration' },
+  ],
+};
+type LabelKey =
+  | 'workout.active.weightColumn'
+  | 'workout.active.reps'
+  | 'workout.active.duration'
+  | 'workout.active.distance';
 
 export default function ActiveWorkoutScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { userId } = useSession();
   const { profile } = useProfile();
   const { weightKg } = useLatestWeightKg();
@@ -102,7 +132,7 @@ export default function ActiveWorkoutScreen() {
       [
         { text: t('workout.active.cancel'), style: 'cancel' },
         {
-          text: t('workout.active.cancelConfirmTitle'),
+          text: t('workout.active.cancelWorkout'),
           style: 'destructive',
           onPress: () => {
             useActiveWorkoutStore.getState().reset();
@@ -113,7 +143,7 @@ export default function ActiveWorkoutScreen() {
     );
   }
 
-  async function handleFinish() {
+  async function finish() {
     if (!userId) return;
     const result = finishActiveWorkout({
       userId,
@@ -135,6 +165,24 @@ export default function ActiveWorkoutScreen() {
     });
   }
 
+  function handleFinish() {
+    const anyDone = activeExercises.some((e) =>
+      e.sets.some((s) => s.completedAt !== null),
+    );
+    if (anyDone) {
+      void finish();
+      return;
+    }
+    Alert.alert(
+      t('workout.active.confirmFinishTitle'),
+      t('workout.active.noSetsDone'),
+      [
+        { text: t('workout.active.cancel'), style: 'cancel' },
+        { text: t('workout.active.finish'), onPress: () => void finish() },
+      ],
+    );
+  }
+
   if (!workoutId) {
     // No active session (e.g. deep link / stale state) -> bounce back.
     router.back();
@@ -143,80 +191,101 @@ export default function ActiveWorkoutScreen() {
 
   return (
     <View className="bg-system-background flex-1">
-      <View className="flex-row items-center justify-between px-4 pb-2 pt-14">
-        <Pressable onPress={handleCancel}>
-          <Text className="text-destructive text-base">
-            {t('workout.active.cancel')}
-          </Text>
-        </Pressable>
-        <Text className="text-label text-base font-semibold">
-          {formatClock(elapsed)}
-        </Text>
-        <View style={{ width: 60 }} />
-      </View>
-
-      {restRemaining > 0 && (
-        <View className="bg-secondary-system-background mx-4 mb-2 flex-row items-center justify-between rounded-xl px-4 py-2">
-          <Text className="text-label text-base">
-            {t('workout.active.restRemaining', { seconds: restRemaining })}
-          </Text>
-          <Pressable onPress={clearRestTimer}>
-            <Text className="text-tint text-sm">
-              {t('workout.active.skipRest')}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
       <ScrollView
-        className="flex-1 px-4"
-        contentContainerClassName="gap-4 pb-32"
+        className="flex-1"
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+        contentContainerClassName="gap-5 px-5"
+        contentContainerStyle={{
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 120,
+        }}
+        showsVerticalScrollIndicator={false}
       >
+        <Text className="text-label text-center text-lg font-semibold">
+          {t('workout.active.title')}
+        </Text>
+
+        <Card className="items-center gap-1 py-6">
+          <Text className="text-secondary-label text-xs font-semibold uppercase">
+            {t('workout.active.elapsedLabel')}
+          </Text>
+          <Text
+            className="text-label text-6xl font-bold"
+            style={{ fontVariant: ['tabular-nums'] }}
+          >
+            {formatClock(elapsed)}
+          </Text>
+          {restRemaining > 0 && (
+            <View className="bg-system-background mt-3 flex-row items-center gap-3 rounded-full py-2 pl-4 pr-2">
+              <SymbolView
+                name="timer"
+                size={16}
+                tintColor={themeColor('accent')}
+              />
+              <Text className="text-label text-base font-medium">
+                {t('workout.active.restRemaining', { seconds: restRemaining })}
+              </Text>
+              <Pressable
+                onPress={clearRestTimer}
+                className="bg-secondary-system-background rounded-full px-3 py-1.5"
+              >
+                <Text className="text-tint text-sm font-medium">
+                  {t('workout.active.skipRest')}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </Card>
+
         {activeExercises.length === 0 && (
-          <Text className="text-secondary-label mt-8 text-center">
+          <Text className="text-secondary-label px-4 text-center text-sm">
             {t('workout.active.emptyExercises')}
           </Text>
         )}
-        {activeExercises.map((exercise) => (
-          <ExerciseCard
-            key={exercise.exerciseId}
-            exercise={exercise}
-            name={
-              catalogById.get(exercise.exerciseId)
-                ? exerciseDisplayName(catalogById.get(exercise.exerciseId)!, t)
-                : '…'
-            }
-          />
-        ))}
+        {activeExercises.map((exercise) => {
+          const entry = catalogById.get(exercise.exerciseId);
+          return (
+            <ExerciseCard
+              key={exercise.exerciseId}
+              exercise={exercise}
+              name={entry ? exerciseDisplayName(entry, t) : '…'}
+            />
+          );
+        })}
 
         <Pressable
           onPress={handleAddExercise}
-          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
+          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
         >
-          <SymbolView name="plus" size={18} />
-          <Text className="text-label text-base font-medium">
+          <SymbolView
+            name="plus.circle.fill"
+            size={20}
+            tintColor={themeColor('accent')}
+          />
+          <Text className="text-tint text-base font-semibold">
             {t('workout.active.addExercise')}
+          </Text>
+        </Pressable>
+
+        <Pressable onPress={handleCancel} className="items-center py-3">
+          <Text className="text-destructive text-sm font-medium">
+            {t('workout.active.cancelWorkout')}
           </Text>
         </Pressable>
       </ScrollView>
 
-      <GlassView
-        glassEffectStyle="regular"
-        isInteractive
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between px-6 py-4 pb-8"
+      <View
+        pointerEvents="box-none"
+        className="absolute inset-x-0 bottom-0 px-5"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
-        <Text className="text-secondary-label text-base">
-          {formatClock(elapsed)}
-        </Text>
-        <Pressable
+        <GlassActionButton
+          label={t('workout.active.finish')}
+          symbol="checkmark"
           onPress={handleFinish}
-          className="bg-tint rounded-full px-6 py-2.5"
-        >
-          <Text className="text-base font-semibold text-white">
-            {t('workout.active.finish')}
-          </Text>
-        </Pressable>
-      </GlassView>
+        />
+      </View>
     </View>
   );
 }
@@ -235,25 +304,57 @@ function ExerciseCard({
     () => getPreviousSetValues(exercise.exerciseId),
     [exercise.exerciseId],
   );
+  const columns = FIELDS_BY_TRACKING[exercise.trackingType];
 
   return (
-    <View className="bg-secondary-system-background rounded-2xl p-4">
-      <View className="mb-2 flex-row items-center justify-between">
-        <Text className="text-label text-base font-semibold">{name}</Text>
-        <Pressable onPress={() => removeExercise(exercise.exerciseId)}>
-          <SymbolView
-            name="xmark.circle"
-            size={18}
-            tintColor="secondaryLabel"
-          />
+    <Card className="gap-2">
+      <View className="flex-row items-center justify-between">
+        <Text className="text-label flex-1 text-lg font-semibold">{name}</Text>
+        <Pressable
+          accessibilityLabel={t('workout.active.removeExercise')}
+          hitSlop={10}
+          onPress={() =>
+            Alert.alert(name, undefined, [
+              { text: t('workout.active.cancel'), style: 'cancel' },
+              {
+                text: t('workout.active.removeExercise'),
+                style: 'destructive',
+                onPress: () => removeExercise(exercise.exerciseId),
+              },
+            ])
+          }
+        >
+          <SymbolView name="ellipsis" size={20} tintColor="secondaryLabel" />
         </Pressable>
+      </View>
+
+      <View className="flex-row items-center gap-2 px-1">
+        <Text className="text-secondary-label w-10 text-center text-xs font-semibold uppercase">
+          {t('workout.active.setColumn')}
+        </Text>
+        {columns.map((c) => (
+          <Text
+            key={c.field}
+            className="text-secondary-label flex-1 text-center text-xs font-semibold uppercase"
+          >
+            {t(c.labelKey)}
+          </Text>
+        ))}
+        <View className="w-11">
+          <SymbolView
+            name="checkmark"
+            size={12}
+            tintColor="secondaryLabel"
+            style={{ alignSelf: 'center' }}
+          />
+        </View>
       </View>
 
       {exercise.sets.map((set, index) => (
         <SetRow
           key={set.id}
           exerciseId={exercise.exerciseId}
-          trackingType={exercise.trackingType}
+          columns={columns}
           set={set}
           index={index}
           previous={previousValues[index]}
@@ -262,26 +363,26 @@ function ExerciseCard({
 
       <Pressable
         onPress={() => addSet(exercise.exerciseId)}
-        className="mt-2 flex-row items-center gap-1"
+        className="bg-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
       >
-        <SymbolView name="plus" size={14} tintColor="secondaryLabel" />
-        <Text className="text-secondary-label text-sm">
+        <SymbolView name="plus" size={14} tintColor={themeColor('accent')} />
+        <Text className="text-tint text-sm font-semibold">
           {t('workout.active.addSet')}
         </Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 function SetRow({
   exerciseId,
-  trackingType,
+  columns,
   set,
   index,
   previous,
 }: {
   exerciseId: string;
-  trackingType: TrackingType;
+  columns: { field: SetField; labelKey: LabelKey }[];
   set: ActiveSet;
   index: number;
   previous?: {
@@ -291,96 +392,68 @@ function SetRow({
     distanceM: number | null;
   };
 }) {
-  const { t } = useTranslation();
   const updateSet = useActiveWorkoutStore((s) => s.updateSet);
   const toggleSetCompleted = useActiveWorkoutStore((s) => s.toggleSetCompleted);
   const removeSet = useActiveWorkoutStore((s) => s.removeSet);
   const completed = set.completedAt !== null;
 
-  function numField(
-    label: string,
-    value: number | null,
-    placeholder: number | null | undefined,
-    onChange: (v: number | null) => void,
-  ) {
-    return (
-      <View className="flex-1">
-        <Text className="text-secondary-label mb-0.5 text-[10px]">{label}</Text>
-        <TextInput
-          value={value !== null ? String(value) : ''}
-          onChangeText={(text) =>
-            onChange(text === '' ? null : Number(text.replace(',', '.')))
-          }
-          placeholder={placeholder != null ? String(placeholder) : '-'}
-          placeholderTextColor="gray"
-          keyboardType="decimal-pad"
-          editable={!completed}
-          className="bg-system-background text-label rounded-lg px-2 py-1.5 text-center text-base"
-        />
-      </View>
-    );
-  }
-
   return (
-    <View className="mb-2 flex-row items-center gap-2">
-      <Text className="text-secondary-label w-6 text-xs">{index + 1}</Text>
-
-      {trackingType === 'weight_reps' && (
-        <>
-          {numField(t('workout.active.reps'), set.reps, previous?.reps, (v) =>
-            updateSet(exerciseId, set.id, { reps: v }),
-          )}
-          {numField(
-            t('workout.active.weight'),
-            set.weightKg,
-            previous?.weightKg,
-            (v) => updateSet(exerciseId, set.id, { weightKg: v }),
-          )}
-        </>
+    <Swipeable
+      overshootRight={false}
+      renderRightActions={() => (
+        <Pressable
+          onPress={() => removeSet(exerciseId, set.id)}
+          className="bg-destructive ml-2 w-16 items-center justify-center rounded-xl"
+        >
+          <SymbolView name="trash" size={20} tintColor="white" />
+        </Pressable>
       )}
-      {trackingType === 'reps' &&
-        numField(t('workout.active.reps'), set.reps, previous?.reps, (v) =>
-          updateSet(exerciseId, set.id, { reps: v }),
-        )}
-      {trackingType === 'duration' &&
-        numField(
-          t('workout.active.duration'),
-          set.durationS,
-          previous?.durationS,
-          (v) => updateSet(exerciseId, set.id, { durationS: v }),
-        )}
-      {trackingType === 'distance_duration' && (
-        <>
-          {numField(
-            t('workout.active.distance'),
-            set.distanceM,
-            previous?.distanceM,
-            (v) => updateSet(exerciseId, set.id, { distanceM: v }),
-          )}
-          {numField(
-            t('workout.active.duration'),
-            set.durationS,
-            previous?.durationS,
-            (v) => updateSet(exerciseId, set.id, { durationS: v }),
-          )}
-        </>
-      )}
-
-      <Pressable
-        onPress={async () => {
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          toggleSetCompleted(exerciseId, set.id, DEFAULT_REST_SECONDS);
-        }}
+    >
+      <View
+        className={`flex-row items-center gap-2 rounded-xl px-1 py-1 ${
+          completed ? 'bg-tint/15' : ''
+        }`}
       >
-        <SymbolView
-          name={completed ? 'checkmark.circle.fill' : 'circle'}
-          size={26}
-          tintColor={completed ? themeColor('accent') : 'secondaryLabel'}
-        />
-      </Pressable>
-      <Pressable onPress={() => removeSet(exerciseId, set.id)}>
-        <SymbolView name="minus.circle" size={18} tintColor="secondaryLabel" />
-      </Pressable>
-    </View>
+        <Text className="text-secondary-label w-10 text-center text-base font-semibold">
+          {index + 1}
+        </Text>
+        {columns.map(({ field }) => {
+          const value = set[field];
+          const placeholder = previous?.[field];
+          return (
+            <TextInput
+              key={field}
+              value={value !== null ? String(value) : ''}
+              onChangeText={(text) =>
+                updateSet(exerciseId, set.id, {
+                  [field]: text === '' ? null : Number(text.replace(',', '.')),
+                })
+              }
+              placeholder={placeholder != null ? String(placeholder) : '-'}
+              placeholderTextColor="gray"
+              keyboardType="decimal-pad"
+              selectTextOnFocus
+              editable={!completed}
+              className="bg-system-background text-label h-11 flex-1 rounded-xl text-center text-lg font-medium"
+            />
+          );
+        })}
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: completed }}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            toggleSetCompleted(exerciseId, set.id, DEFAULT_REST_SECONDS);
+          }}
+          className="h-11 w-11 items-center justify-center"
+        >
+          <SymbolView
+            name={completed ? 'checkmark.circle.fill' : 'circle'}
+            size={30}
+            tintColor={completed ? themeColor('accent') : 'secondaryLabel'}
+          />
+        </Pressable>
+      </View>
+    </Swipeable>
   );
 }

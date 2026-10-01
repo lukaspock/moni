@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { FULL_SHEET_OPTIONS } from '@/components/ui';
+
 export default function TrainingStackLayout() {
   const { t } = useTranslation();
 
@@ -8,24 +10,9 @@ export default function TrainingStackLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: t('training.title'), headerLargeTitle: true }}
+        options={{ title: t('training.title'), headerLargeTitle: false }}
       />
-      <Stack.Screen
-        name="routine-editor"
-        options={{
-          presentation: 'modal',
-          headerShown: true,
-          title: t('workout.routine.title'),
-        }}
-      />
-      <Stack.Screen
-        name="cardio-entry"
-        options={{
-          presentation: 'modal',
-          headerShown: true,
-          title: t('workout.cardio.title'),
-        }}
-      />
+      <Stack.Screen name="routine-editor" options={FULL_SHEET_OPTIONS} />
       <Stack.Screen
         name="history"
         options={{ headerShown: true, title: t('workout.history.title') }}

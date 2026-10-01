@@ -93,70 +93,39 @@ describe('calculateBaseTarget', () => {
 describe('calculateWorkoutBonus', () => {
   const base = 2000;
 
-  it('gives no bonus on a rest day', () => {
-    const result = calculateWorkoutBonus({
-      baseKcal: base,
-      isTrainingDay: false,
-      workoutCompleted: false,
-      isDayOver: false,
-    });
-    expect(result).toEqual({
+  it('gives no bonus without a real workout', () => {
+    expect(calculateWorkoutBonus({ baseKcal: base })).toEqual({
       workoutBonusKcal: 0,
-      isProvisional: false,
       dailyLimitKcal: base,
     });
+    expect(
+      calculateWorkoutBonus({ baseKcal: base, actualKcalBurned: 0 }),
+    ).toEqual({ workoutBonusKcal: 0, dailyLimitKcal: base });
   });
 
-  it('gives a provisional bonus from expected_kcal on a pending planned training day', () => {
+  it('uses the actual kcal burned times the default eat-back factor', () => {
     const result = calculateWorkoutBonus({
       baseKcal: base,
-      isTrainingDay: true,
-      plannedExpectedKcal: 400,
-      workoutCompleted: false,
-      isDayOver: false,
+      actualKcalBurned: 300,
     });
-    expect(result.isProvisional).toBe(true);
-    expect(result.workoutBonusKcal).toBe(280); // 400 * 0.7
-    expect(result.dailyLimitKcal).toBe(2280);
+    expect(result.workoutBonusKcal).toBe(210); // 300 * 0.7
+    expect(result.dailyLimitKcal).toBe(2210);
   });
 
-  it('uses the actual kcal burned once the workout is logged, with a custom eat-back factor', () => {
+  it('respects a custom eat-back factor', () => {
     const result = calculateWorkoutBonus({
       baseKcal: base,
-      isTrainingDay: true,
-      plannedExpectedKcal: 400,
-      workoutCompleted: true,
       actualKcalBurned: 500,
-      isDayOver: false,
       eatBackFactor: 0.5,
     });
-    expect(result.isProvisional).toBe(false);
     expect(result.workoutBonusKcal).toBe(250);
     expect(result.dailyLimitKcal).toBe(2250);
   });
 
-  it('drops the provisional bonus in the evening when a planned workout was skipped', () => {
-    const result = calculateWorkoutBonus({
-      baseKcal: base,
-      isTrainingDay: true,
-      plannedExpectedKcal: 400,
-      workoutCompleted: false,
-      isDayOver: true,
-    });
-    expect(result.workoutBonusKcal).toBe(0);
-    expect(result.isProvisional).toBe(false);
-    expect(result.dailyLimitKcal).toBe(base);
-  });
-
-  it('adds a bonus for an unplanned workout on a rest day', () => {
-    const result = calculateWorkoutBonus({
-      baseKcal: base,
-      isTrainingDay: false,
-      workoutCompleted: true,
-      actualKcalBurned: 300,
-      isDayOver: false,
-    });
-    expect(result.workoutBonusKcal).toBe(210); // 300 * 0.7
-    expect(result.isProvisional).toBe(false);
+  it('ignores negative kcal values', () => {
+    expect(
+      calculateWorkoutBonus({ baseKcal: base, actualKcalBurned: -50 })
+        .workoutBonusKcal,
+    ).toBe(0);
   });
 });

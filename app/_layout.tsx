@@ -15,6 +15,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { FULL_SHEET_OPTIONS, SHEET_OPTIONS } from '../src/components/ui';
 import {
   applyOnboardingDraftToProfile,
   isDraftComplete,
@@ -154,7 +155,7 @@ function RootNavigator() {
       >
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
-      <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="paywall" options={SHEET_OPTIONS} />
       <Stack.Screen
         name="log-food"
         options={{
@@ -167,18 +168,9 @@ function RootNavigator() {
         name="barcode-scanner"
         options={{ presentation: 'fullScreenModal' }}
       />
-      <Stack.Screen
-        name="food-review"
-        options={{ presentation: 'modal', headerShown: true }}
-      />
-      <Stack.Screen
-        name="exercise-picker"
-        options={{
-          presentation: 'formSheet',
-          sheetAllowedDetents: [0.75, 1],
-          sheetGrabberVisible: true,
-        }}
-      />
+      <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
+      <Stack.Screen name="exercise-picker" options={SHEET_OPTIONS} />
+      {/* Stays full screen (no drag-to-dismiss) so a running workout can't be swiped away. */}
       <Stack.Screen
         name="workout"
         options={{ presentation: 'fullScreenModal' }}

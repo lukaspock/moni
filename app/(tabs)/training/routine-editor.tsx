@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { themeColor } from '@/theme/colors';
 
+import {
+  Card,
+  GlassActionButton,
+  SectionHeader,
+  SheetScreen,
+} from '@/components/ui';
 import {
   exerciseDisplayName,
   openExercisePicker,
@@ -90,102 +96,115 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   }
 
   return (
-    <ScrollView
-      className="bg-system-background flex-1"
-      contentContainerClassName="gap-4 p-4"
-    >
+    <SheetScreen title={t('workout.routine.title')}>
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder={t('workout.routine.namePlaceholder')}
         placeholderTextColor="gray"
-        className="bg-secondary-system-background text-label rounded-xl px-4 py-3 text-base"
+        className="bg-secondary-system-background text-label rounded-2xl px-4 py-4 text-base"
       />
 
-      <Text className="text-secondary-label text-sm font-semibold uppercase">
-        {t('workout.routine.exercises')}
-      </Text>
-      {exercises.length === 0 && (
-        <Text className="text-secondary-label text-sm">
-          {t('workout.routine.empty')}
-        </Text>
-      )}
+      <View className="gap-2">
+        <SectionHeader title={t('workout.routine.exercises')} />
+        {exercises.length === 0 && (
+          <Text className="text-secondary-label px-1 text-sm">
+            {t('workout.routine.empty')}
+          </Text>
+        )}
 
-      {exercises.map((ex, index) => {
-        const exercise = catalogById.get(ex.exerciseId);
-        return (
-          <View
-            key={ex.exerciseId}
-            className="bg-secondary-system-background rounded-xl p-3"
-          >
-            <View className="mb-2 flex-row items-center justify-between">
-              <Text className="text-label flex-1 text-base">
-                {exercise ? exerciseDisplayName(exercise, t) : '…'}
-              </Text>
-              <Pressable onPress={() => move(index, -1)} className="px-1">
-                <SymbolView
-                  name="chevron.up"
-                  size={14}
-                  tintColor="secondaryLabel"
+        {exercises.map((ex, index) => {
+          const exercise = catalogById.get(ex.exerciseId);
+          return (
+            <Card key={ex.exerciseId}>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-label flex-1 text-base font-semibold">
+                  {exercise ? exerciseDisplayName(exercise, t) : '…'}
+                </Text>
+                <Pressable
+                  accessibilityLabel={t('workout.routine.moveUp')}
+                  onPress={() => move(index, -1)}
+                  hitSlop={8}
+                  className="px-2"
+                >
+                  <SymbolView
+                    name="chevron.up"
+                    size={14}
+                    tintColor="secondaryLabel"
+                  />
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={t('workout.routine.moveDown')}
+                  onPress={() => move(index, 1)}
+                  hitSlop={8}
+                  className="px-2"
+                >
+                  <SymbolView
+                    name="chevron.down"
+                    size={14}
+                    tintColor="secondaryLabel"
+                  />
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={t('workout.routine.remove')}
+                  onPress={() => removeExercise(index)}
+                  hitSlop={8}
+                  className="pl-2"
+                >
+                  <SymbolView
+                    name="trash"
+                    size={15}
+                    tintColor={themeColor('danger')}
+                  />
+                </Pressable>
+              </View>
+              <View className="flex-row gap-3">
+                <NumberField
+                  label={t('workout.routine.targetSets')}
+                  value={ex.targetSets}
+                  onChange={(v) => updateExercise(index, { targetSets: v })}
                 />
-              </Pressable>
-              <Pressable onPress={() => move(index, 1)} className="px-1">
-                <SymbolView
-                  name="chevron.down"
-                  size={14}
-                  tintColor="secondaryLabel"
+                <NumberField
+                  label={t('workout.routine.targetReps')}
+                  value={ex.targetReps}
+                  onChange={(v) => updateExercise(index, { targetReps: v })}
                 />
-              </Pressable>
-              <Pressable onPress={() => removeExercise(index)} className="px-1">
-                <SymbolView
-                  name="trash"
-                  size={14}
-                  tintColor={themeColor('danger')}
-                />
-              </Pressable>
-            </View>
-            <View className="flex-row gap-3">
-              <NumberField
-                label={t('workout.routine.targetSets')}
-                value={ex.targetSets}
-                onChange={(v) => updateExercise(index, { targetSets: v })}
-              />
-              <NumberField
-                label={t('workout.routine.targetReps')}
-                value={ex.targetReps}
-                onChange={(v) => updateExercise(index, { targetReps: v })}
-              />
-            </View>
-          </View>
-        );
-      })}
-
-      <Pressable
-        onPress={() => {
-          openExercisePicker(
-            'multi',
-            exercises.map((e) => e.exerciseId),
+              </View>
+            </Card>
           );
-          router.push('/exercise-picker');
-        }}
-        className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
-      >
-        <SymbolView name="plus" size={16} />
-        <Text className="text-label text-base">
-          {t('workout.routine.addExercise')}
-        </Text>
-      </Pressable>
+        })}
 
-      <Pressable
-        disabled={!name.trim()}
-        onPress={handleSave}
-        className={`mt-2 items-center rounded-xl py-3.5 ${name.trim() ? 'bg-tint' : 'bg-secondary-system-background'}`}
-      >
-        <Text className="text-base font-semibold text-white">
-          {t('workout.routine.save')}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          onPress={() => {
+            openExercisePicker(
+              'multi',
+              exercises.map((e) => e.exerciseId),
+            );
+            router.push('/exercise-picker');
+          }}
+          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
+        >
+          <SymbolView
+            name="plus.circle.fill"
+            size={20}
+            tintColor={themeColor('accent')}
+          />
+          <Text className="text-tint text-base font-semibold">
+            {t('workout.routine.addExercise')}
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={{ opacity: name.trim() ? 1 : 0.4 }}>
+        <GlassActionButton
+          label={t('workout.routine.save')}
+          symbol="checkmark"
+          onPress={() => {
+            if (name.trim()) void handleSave();
+          }}
+        />
+      </View>
+    </SheetScreen>
   );
 }
 
@@ -205,7 +224,7 @@ function NumberField({
         value={value !== null ? String(value) : ''}
         onChangeText={(text) => onChange(text === '' ? null : Number(text))}
         keyboardType="number-pad"
-        className="bg-system-background text-label rounded-lg px-3 py-1.5 text-center text-base"
+        className="bg-system-background text-label rounded-xl px-3 py-2.5 text-center text-base"
       />
     </View>
   );

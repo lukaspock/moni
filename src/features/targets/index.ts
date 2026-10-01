@@ -29,8 +29,6 @@ export type DailyTargets = {
   date: string; // YYYY-MM-DD
   baseKcal: number;
   workoutBonusKcal: number;
-  /** true = bonus comes from the plan (shown dashed), not yet from a real workout */
-  bonusIsProvisional: boolean;
   totalKcal: number; // baseKcal + workoutBonusKcal
   proteinG: number;
   carbsG: number;
@@ -241,22 +239,18 @@ export function useDailyTargets(date: string): {
       goalRateKgPerWeek: profile.goal_rate_kg_per_week,
     });
 
-    const isTrainingDay = !!plannedDay;
     const completedWorkouts = workouts.filter((w) => w.endedAt != null);
     const workoutCompleted = completedWorkouts.length > 0;
     const actualKcalBurned = completedWorkouts.reduce(
       (sum, w) => sum + (w.kcalBurned ?? 0),
       0,
     );
-    const isDayOver = date < toISODate();
+    // The plan only flags a training day (macros); the bonus is real data only.
+    const isTrainingDay = !!plannedDay || workoutCompleted;
 
     const bonus = calculateWorkoutBonus({
       baseKcal: base.baseKcal,
-      isTrainingDay,
-      plannedExpectedKcal: plannedDay?.expectedKcal,
-      workoutCompleted,
-      actualKcalBurned: workoutCompleted ? actualKcalBurned : undefined,
-      isDayOver,
+      actualKcalBurned,
       eatBackFactor: profile.eat_back_factor,
     });
 
@@ -273,7 +267,6 @@ export function useDailyTargets(date: string): {
         date,
         baseKcal: base.baseKcal,
         workoutBonusKcal: bonus.workoutBonusKcal,
-        bonusIsProvisional: bonus.isProvisional,
         totalKcal: bonus.dailyLimitKcal,
         proteinG: macros.proteinG,
         carbsG: macros.carbsG,
