@@ -13,6 +13,8 @@ const config: ExpoConfig = {
   // iOS only (see PLAN.md §1) — no android/web config.
   ios: {
     bundleIdentifier: 'app.moeni',
+    // Icon Composer (Liquid Glass) icon; ./assets/icon.png is the flat fallback.
+    icon: './assets/moni.icon',
     supportsTablet: false,
     // Device builds: set APPLE_TEAM_ID in your shell/.env (never commit a team id).
     ...(process.env.APPLE_TEAM_ID
@@ -70,6 +72,10 @@ const config: ExpoConfig = {
         imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#ffffff',
+        dark: {
+          image: './assets/splash-icon-dark.png',
+          backgroundColor: '#000000',
+        },
       },
     ],
   ],

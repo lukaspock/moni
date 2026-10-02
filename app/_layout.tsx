@@ -11,11 +11,15 @@ import {
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { FULL_SHEET_OPTIONS, SHEET_OPTIONS } from '../src/components/ui';
+import {
+  FULL_SHEET_OPTIONS,
+  LaunchScreen,
+  rememberDisplayName,
+  SHEET_OPTIONS,
+} from '../src/components/ui';
 import {
   applyOnboardingDraftToProfile,
   isDraftComplete,
@@ -69,6 +73,11 @@ function RootNavigator() {
 
   const hasSession = !!session;
 
+  // Cache the name for the personalised launch screen of the next cold start.
+  useEffect(() => {
+    rememberDisplayName(profile?.display_name);
+  }, [profile?.display_name]);
+
   // Offline cold start: a hanging profile fetch must not keep the gate on a
   // spinner — after PROFILE_GATE_TIMEOUT_MS fall back like a failed fetch.
   const [profileTimedOut, setProfileTimedOut] = useState(false);
@@ -111,11 +120,7 @@ function RootNavigator() {
   if (sessionLoading || (waitingOnProfile && !profileGaveUp)) {
     // Avoid flashing (onboarding) or (auth) before we know where the user belongs.
     // `useProfile` retries only once, so an offline start falls through to the tabs quickly.
-    return (
-      <View className="bg-system-background flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LaunchScreen />;
   }
 
   // Profile fetch failed (e.g. offline cold start): don't bounce an existing
