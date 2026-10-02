@@ -15,3 +15,4 @@ export * from './onboarding';
 export * from './projection';
 export * from './weightTrend';
 export * from './kcalRing';
+export * from './workoutSession';

@@ -34,14 +34,17 @@ export interface ActiveWorkoutState {
   /** epoch ms the rest timer ends at, or null when no rest timer is running. */
   restEndsAt: number | null;
 
+  /** Starts a fresh session (replacing any persisted one), optionally pre-filled from a routine in one atomic write. */
   startWorkout: (opts: {
     routineId?: string | null;
     category?: WorkoutCategory;
+    exercises?: NewActiveExercise[];
   }) => void;
   addExercise: (
     exerciseId: string,
     trackingType: TrackingType,
     targetSets?: number,
+    targetReps?: number | null,
   ) => void;
   removeExercise: (exerciseId: string) => void;
   addSet: (exerciseId: string) => void;
@@ -51,14 +54,59 @@ export interface ActiveWorkoutState {
     setId: string,
     patch: Partial<Omit<ActiveSet, 'id' | 'setIndex'>>,
   ) => void;
+  /**
+   * Checks/unchecks a set. When it becomes completed, `prefill` (values taken
+   * from the previous workout for fields the user left empty) is applied in
+   * the same write, and the rest timer starts if `restSeconds` is given.
+   */
   toggleSetCompleted: (
     exerciseId: string,
     setId: string,
-    restSeconds?: number,
+    opts?: {
+      restSeconds?: number;
+      prefill?: Partial<Omit<ActiveSet, 'id' | 'setIndex'>>;
+    },
   ) => void;
   startRestTimer: (seconds: number) => void;
+  /** Shortens/extends the running rest timer (never below 0; no-op without a running timer). */
+  adjustRestTimer: (deltaSeconds: number) => void;
   clearRestTimer: () => void;
   reset: () => void;
+}
+
+export interface NewActiveExercise {
+  exerciseId: string;
+  trackingType: TrackingType;
+  targetSets?: number | null;
+  targetReps?: number | null;
+}
+
+function blankSet(index: number): ActiveSet {
+  return {
+    id: Crypto.randomUUID(),
+    setIndex: index,
+    reps: null,
+    weightKg: null,
+    rpe: null,
+    durationS: null,
+    distanceM: null,
+    completedAt: null,
+  };
+}
+
+/** Sensible number of empty rows for a freshly added exercise. */
+function defaultSetCount(trackingType: TrackingType): number {
+  return trackingType === 'distance_duration' ? 1 : 3;
+}
+
+function buildExercise(e: NewActiveExercise): ActiveExercise {
+  const count = Math.max(1, e.targetSets ?? defaultSetCount(e.trackingType));
+  return {
+    exerciseId: e.exerciseId,
+    trackingType: e.trackingType,
+    targetReps: e.targetReps ?? null,
+    sets: Array.from({ length: count }, (_, i) => blankSet(i)),
+  };
 }
 
 const emptyState = {
@@ -75,36 +123,35 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
     (set, get) => ({
       ...emptyState,
 
-      startWorkout: ({ routineId = null, category = 'strength' }) => {
+      startWorkout: ({
+        routineId = null,
+        category = 'strength',
+        exercises = [],
+      }) => {
+        const seen = new Set<string>();
+        const built = exercises
+          .filter((e) => !seen.has(e.exerciseId) && seen.add(e.exerciseId))
+          .map(buildExercise);
         set({
           workoutId: Crypto.randomUUID(),
           routineId,
           category,
           startedAt: new Date().toISOString(),
-          exercises: [],
+          exercises: built,
           restEndsAt: null,
         });
       },
 
-      addExercise: (exerciseId, trackingType, targetSets = 3) => {
+      addExercise: (exerciseId, trackingType, targetSets, targetReps) => {
         const exists = get().exercises.some((e) => e.exerciseId === exerciseId);
         if (exists) return;
-        const sets: ActiveSet[] = Array.from(
-          { length: Math.max(1, targetSets) },
-          (_, i) => ({
-            id: Crypto.randomUUID(),
-            setIndex: i,
-            reps: null,
-            weightKg: null,
-            rpe: null,
-            durationS: null,
-            distanceM: null,
-            completedAt: null,
-          }),
-        );
-        set((s) => ({
-          exercises: [...s.exercises, { exerciseId, trackingType, sets }],
-        }));
+        const exercise = buildExercise({
+          exerciseId,
+          trackingType,
+          targetSets,
+          targetReps,
+        });
+        set((s) => ({ exercises: [...s.exercises, exercise] }));
       },
 
       removeExercise: (exerciseId) => {
@@ -115,20 +162,11 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       addSet: (exerciseId) => {
         set((s) => ({
-          exercises: s.exercises.map((e) => {
-            if (e.exerciseId !== exerciseId) return e;
-            const newSet: ActiveSet = {
-              id: Crypto.randomUUID(),
-              setIndex: e.sets.length,
-              reps: null,
-              weightKg: null,
-              rpe: null,
-              durationS: null,
-              distanceM: null,
-              completedAt: null,
-            };
-            return { ...e, sets: [...e.sets, newSet] };
-          }),
+          exercises: s.exercises.map((e) =>
+            e.exerciseId !== exerciseId
+              ? e
+              : { ...e, sets: [...e.sets, blankSet(e.sets.length)] },
+          ),
         }));
       },
 
@@ -162,7 +200,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         }));
       },
 
-      toggleSetCompleted: (exerciseId, setId, restSeconds) => {
+      toggleSetCompleted: (exerciseId, setId, opts) => {
         let didComplete = false;
         set((s) => ({
           exercises: s.exercises.map((e) =>
@@ -172,25 +210,31 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
                   ...e,
                   sets: e.sets.map((st) => {
                     if (st.id !== setId) return st;
-                    const nowCompleted = st.completedAt === null;
-                    didComplete = nowCompleted;
-                    return {
-                      ...st,
-                      completedAt: nowCompleted
-                        ? new Date().toISOString()
-                        : null,
-                    };
+                    didComplete = st.completedAt === null;
+                    return didComplete
+                      ? {
+                          ...st,
+                          ...opts?.prefill,
+                          completedAt: new Date().toISOString(),
+                        }
+                      : { ...st, completedAt: null };
                   }),
                 },
           ),
         }));
-        if (didComplete && restSeconds) {
-          get().startRestTimer(restSeconds);
+        if (didComplete && opts?.restSeconds) {
+          get().startRestTimer(opts.restSeconds);
         }
       },
 
       startRestTimer: (seconds) =>
         set({ restEndsAt: Date.now() + seconds * 1000 }),
+      adjustRestTimer: (deltaSeconds) => {
+        const { restEndsAt } = get();
+        if (restEndsAt === null) return;
+        const next = restEndsAt + deltaSeconds * 1000;
+        set({ restEndsAt: next <= Date.now() ? null : next });
+      },
       clearRestTimer: () => set({ restEndsAt: null }),
 
       reset: () => set({ ...emptyState }),

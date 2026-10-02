@@ -72,5 +72,7 @@ export interface ActiveSet {
 export interface ActiveExercise {
   exerciseId: string;
   trackingType: TrackingType;
+  /** Routine's target reps, shown as a placeholder when there is no previous value. */
+  targetReps?: number | null;
   sets: ActiveSet[];
 }

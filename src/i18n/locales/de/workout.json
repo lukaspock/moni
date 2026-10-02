@@ -77,7 +77,7 @@
     "duration": "Sek.",
     "distance": "m",
     "rest": "Pause",
-    "restRemaining": "Pause: {{seconds}}s",
+    "restRemaining": "Pause {{time}}",
     "skipRest": "Pause überspringen",
     "elapsed": "{{time}}",
     "emptyExercises": "Noch keine Übungen. Tippe auf „Übung hinzufügen“.",
@@ -89,7 +89,21 @@
     "elapsedLabel": "Dauer",
     "removeExercise": "Übung entfernen",
     "confirmFinishTitle": "Workout beenden?",
-    "noSetsDone": "Noch kein Satz abgehakt."
+    "noSetsDone": "Noch kein Satz abgehakt.",
+    "restPlus": "15 Sekunden hinzufügen",
+    "restMinus": "15 Sekunden abziehen",
+    "setInputLabel": "{{field}}, Satz {{set}}",
+    "completeSet": "Satz {{set}} als erledigt markieren",
+    "deleteSet": "Satz löschen",
+    "discardTitle": "Workout verwerfen?",
+    "discardMessage": "Es wurde kein Satz abgehakt, daher gibt es nichts zu speichern.",
+    "discard": "Workout verwerfen",
+    "keepTraining": "Weitertrainieren",
+    "uncheckedTitle": "Nicht abgehakte Sätze",
+    "uncheckedMessage": "Einige Sätze haben Werte, sind aber nicht abgehakt. Sie werden nicht gespeichert.",
+    "finishAnyway": "Trotzdem beenden",
+    "finishError": "Das Workout konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "exerciseLoading": "Übung"
   },
   "summary": {
     "title": "Workout beendet",
@@ -98,9 +112,10 @@
     "kcalBurned": "Verbrannt",
     "bonusKcal": "+{{kcal}} kcal zu deinem Tageslimit",
     "prs": "Neue Bestleistungen",
-    "prNew": "{{kg}} kg geschätztes 1RM (vorher {{previous}} kg)",
-    "prFirst": "{{kg}} kg geschätztes 1RM (erste Aufzeichnung)",
-    "done": "Fertig"
+    "prNew": "{{weight}} geschätztes 1RM (vorher {{previous}})",
+    "prFirst": "{{weight}} geschätztes 1RM (erster Rekord)",
+    "done": "Fertig",
+    "minutes": "{{minutes}} Min."
   },
   "progress": {
     "title": "Fortschritt",
@@ -124,5 +139,24 @@
     "quadriceps": "Quadrizeps",
     "shoulders": "Schultern",
     "triceps": "Trizeps"
+  },
+  "start": {
+    "runningTitle": "Workout läuft noch",
+    "runningMessage": "Du hast noch ein nicht beendetes Workout. Fortsetzen oder verwerfen und ein neues starten?",
+    "resume": "Fortsetzen",
+    "discardAndStart": "Verwerfen & neu starten"
+  },
+  "rest": {
+    "notificationTitle": "Pause vorbei",
+    "notificationBody": "Zeit für deinen nächsten Satz."
+  },
+  "unit": {
+    "kg": "kg",
+    "lb": "lb",
+    "reps": "Wdh.",
+    "sec": "Sek.",
+    "min": "Min.",
+    "km": "km",
+    "mi": "mi"
   }
 }
