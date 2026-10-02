@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
+  Keyboard,
+  PlatformColor,
   Pressable,
   ScrollView,
   Text,
@@ -16,7 +19,10 @@ import * as Haptics from 'expo-haptics';
 
 import { Card, GlassActionButton } from '@/components/ui';
 import {
+  countSessionSets,
+  discardActiveWorkout,
   elapsedSeconds,
+  ensureRestNotificationPermission,
   exerciseDisplayName,
   finishActiveWorkout,
   getPreviousSetValues,
@@ -25,48 +31,73 @@ import {
   useExerciseCatalog,
   useExercisePickerStore,
   useLatestWeightKg,
+  useRestTimerNotification,
   type ActiveExercise,
   type ActiveSet,
-  type TrackingType,
+  type LastSetValue,
 } from '@/features/workout';
 import { useSession } from '@/features/auth';
 import { useProfile } from '@/features/targets';
+import {
+  displayToStored,
+  fillFromPrevious,
+  formatClock,
+  isIntegerUnit,
+  parseNumericInput,
+  setInputUnit,
+  storedToDisplay,
+  type SetField,
+  type SetInputUnit,
+  type UnitSystem,
+} from '@/domain';
+import i18n from '@/i18n';
 import { themeColor } from '@/theme/colors';
 
 const DEFAULT_REST_SECONDS = 90;
-
-function formatClock(totalSeconds: number): string {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  const mm = String(m).padStart(h > 0 ? 2 : 1, '0');
-  const ss = String(s).padStart(2, '0');
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
-
-type SetField = 'weightKg' | 'reps' | 'durationS' | 'distanceM';
+const REST_ADJUST_SECONDS = 15;
 
 /** Which editable columns a tracking type shows, in display order. */
-const FIELDS_BY_TRACKING: Record<
-  TrackingType,
-  { field: SetField; labelKey: LabelKey }[]
-> = {
-  weight_reps: [
-    { field: 'weightKg', labelKey: 'workout.active.weightColumn' },
-    { field: 'reps', labelKey: 'workout.active.reps' },
-  ],
-  reps: [{ field: 'reps', labelKey: 'workout.active.reps' }],
-  duration: [{ field: 'durationS', labelKey: 'workout.active.duration' }],
-  distance_duration: [
-    { field: 'distanceM', labelKey: 'workout.active.distance' },
-    { field: 'durationS', labelKey: 'workout.active.duration' },
-  ],
+const FIELDS_BY_TRACKING: Record<ActiveExercise['trackingType'], SetField[]> = {
+  weight_reps: ['weightKg', 'reps'],
+  reps: ['reps'],
+  duration: ['durationS'],
+  distance_duration: ['distanceM', 'durationS'],
 };
-type LabelKey =
-  | 'workout.active.weightColumn'
-  | 'workout.active.reps'
-  | 'workout.active.duration'
-  | 'workout.active.distance';
+
+/** Re-renders its caller every `intervalMs` while `enabled`. */
+function useNow(intervalMs: number, enabled: boolean = true): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!enabled) return;
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    // Catch up immediately when (re-)enabled / after the app was suspended.
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') setNow(Date.now());
+    });
+    return () => {
+      clearInterval(id);
+      sub.remove();
+    };
+  }, [intervalMs, enabled]);
+  return now;
+}
+
+const UNIT_LABEL_KEY = {
+  kg: 'workout.unit.kg',
+  lb: 'workout.unit.lb',
+  reps: 'workout.unit.reps',
+  sec: 'workout.unit.sec',
+  min: 'workout.unit.min',
+  km: 'workout.unit.km',
+  mi: 'workout.unit.mi',
+} as const satisfies Record<SetInputUnit, string>;
+
+function formatInputNumber(value: number): string {
+  return new Intl.NumberFormat(i18n.language, {
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  }).format(value);
+}
 
 export default function ActiveWorkoutScreen() {
   const { t } = useTranslation();
@@ -75,49 +106,57 @@ export default function ActiveWorkoutScreen() {
   const { profile } = useProfile();
   const { weightKg } = useLatestWeightKg();
   const { exercises: catalog } = useExerciseCatalog();
+  const unitSystem: UnitSystem =
+    profile?.unit_system === 'imperial' ? 'imperial' : 'metric';
 
   const workoutId = useActiveWorkoutStore((s) => s.workoutId);
-  const startedAt = useActiveWorkoutStore((s) => s.startedAt);
   const activeExercises = useActiveWorkoutStore((s) => s.exercises);
-  const restEndsAt = useActiveWorkoutStore((s) => s.restEndsAt);
-  const addExercise = useActiveWorkoutStore((s) => s.addExercise);
-  const clearRestTimer = useActiveWorkoutStore((s) => s.clearRestTimer);
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useRestTimerNotification();
 
-  const elapsed = elapsedSeconds(startedAt, now);
-  const restRemaining = restEndsAt
-    ? Math.max(0, Math.ceil((restEndsAt - now) / 1000))
-    : 0;
+  // Set once we deliberately leave (finish / cancel): the store is reset right
+  // before navigating, and the "no session -> bounce back" guard below must
+  // not race with that navigation.
+  const leaving = useRef(false);
   useEffect(() => {
-    if (restEndsAt && now >= restEndsAt) clearRestTimer();
-  }, [restEndsAt, now, clearRestTimer]);
+    if (!workoutId && !leaving.current) router.back();
+  }, [workoutId]);
 
   const catalogById = useMemo(
     () => new Map(catalog.map((e) => [e.id, e])),
     [catalog],
   );
 
+  // ---- exercise picker result (sheet over this modal, result via store) ----
+  const awaitingPicker = useRef(false);
+  const pendingIds = useRef<string[]>([]);
   const resultVersion = useExercisePickerStore((s) => s.resultVersion);
   const lastHandledVersion = useRef(resultVersion);
   useEffect(() => {
-    if (resultVersion === lastHandledVersion.current) return;
-    lastHandledVersion.current = resultVersion;
-    const selectedIds = useExercisePickerStore.getState().selectedIds;
-    for (const id of selectedIds) {
-      const exercise = catalogById.get(id);
-      if (!exercise) continue;
-      if (activeExercises.some((e) => e.exerciseId === id)) continue;
-      addExercise(id, exercise.trackingType, 3);
+    if (resultVersion !== lastHandledVersion.current) {
+      lastHandledVersion.current = resultVersion;
+      // Only take results of a picker that this screen opened.
+      if (awaitingPicker.current) {
+        awaitingPicker.current = false;
+        pendingIds.current = [...useExercisePickerStore.getState().selectedIds];
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resultVersion]);
+    if (pendingIds.current.length === 0) return;
+    // Ids whose catalog entry isn't there yet (fresh custom exercise) wait for the next catalog update.
+    const unresolved: string[] = [];
+    for (const id of pendingIds.current) {
+      const exercise = catalogById.get(id);
+      if (!exercise) {
+        unresolved.push(id);
+        continue;
+      }
+      useActiveWorkoutStore.getState().addExercise(id, exercise.trackingType); // ignores exercises already in the session
+    }
+    pendingIds.current = unresolved;
+  }, [resultVersion, catalogById]);
 
   function handleAddExercise() {
+    awaitingPicker.current = true;
     openExercisePicker(
       'multi',
       activeExercises.map((e) => e.exerciseId),
@@ -125,40 +164,51 @@ export default function ActiveWorkoutScreen() {
     router.push('/exercise-picker');
   }
 
+  function leaveAndDiscard() {
+    leaving.current = true;
+    discardActiveWorkout();
+    router.back();
+  }
+
   function handleCancel() {
     Alert.alert(
       t('workout.active.cancelConfirmTitle'),
       t('workout.active.cancelConfirmMessage'),
       [
-        { text: t('workout.active.cancel'), style: 'cancel' },
+        { text: t('workout.active.keepTraining'), style: 'cancel' },
         {
           text: t('workout.active.cancelWorkout'),
           style: 'destructive',
-          onPress: () => {
-            useActiveWorkoutStore.getState().reset();
-            router.back();
-          },
+          onPress: leaveAndDiscard,
         },
       ],
     );
   }
 
-  async function finish() {
-    if (!userId) return;
+  function finish() {
+    if (!userId) {
+      Alert.alert(t('workout.active.finishError'));
+      return;
+    }
+    leaving.current = true;
     const result = finishActiveWorkout({
       userId,
       latestWeightKg: weightKg,
       eatBackFactor: profile?.eat_back_factor ?? 0.7,
       exerciseCatalog: catalog,
     });
-    if (!result) return;
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (!result) {
+      leaving.current = false;
+      Alert.alert(t('workout.active.finishError'));
+      return;
+    }
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace({
       pathname: '/workout/summary',
       params: {
         durationMinutes: String(Math.round(result.durationMinutes)),
         kcalBurned: String(result.kcalBurned),
-        volumeKg: String(Math.round(result.volumeKg)),
+        volumeKg: String(result.volumeKg),
         bonusKcal: String(result.workoutBonusKcal),
         prs: JSON.stringify(result.prs),
       },
@@ -166,34 +216,47 @@ export default function ActiveWorkoutScreen() {
   }
 
   function handleFinish() {
-    const anyDone = activeExercises.some((e) =>
-      e.sets.some((s) => s.completedAt !== null),
-    );
-    if (anyDone) {
-      void finish();
+    Keyboard.dismiss();
+    const { completedSets, uncheckedSetsWithData } =
+      countSessionSets(activeExercises);
+    if (completedSets === 0) {
+      // Nothing worth saving: offer to throw it away instead of storing an empty workout.
+      Alert.alert(
+        t('workout.active.discardTitle'),
+        t('workout.active.discardMessage'),
+        [
+          { text: t('workout.active.keepTraining'), style: 'cancel' },
+          {
+            text: t('workout.active.discard'),
+            style: 'destructive',
+            onPress: leaveAndDiscard,
+          },
+        ],
+      );
       return;
     }
-    Alert.alert(
-      t('workout.active.confirmFinishTitle'),
-      t('workout.active.noSetsDone'),
-      [
-        { text: t('workout.active.cancel'), style: 'cancel' },
-        { text: t('workout.active.finish'), onPress: () => void finish() },
-      ],
-    );
+    if (uncheckedSetsWithData > 0) {
+      Alert.alert(
+        t('workout.active.uncheckedTitle'),
+        t('workout.active.uncheckedMessage'),
+        [
+          { text: t('workout.active.keepTraining'), style: 'cancel' },
+          { text: t('workout.active.finishAnyway'), onPress: finish },
+        ],
+      );
+      return;
+    }
+    finish();
   }
 
-  if (!workoutId) {
-    // No active session (e.g. deep link / stale state) -> bounce back.
-    router.back();
-    return null;
-  }
+  if (!workoutId) return null;
 
   return (
     <View className="bg-system-background flex-1">
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
         contentContainerClassName="gap-5 px-5"
         contentContainerStyle={{
@@ -202,7 +265,10 @@ export default function ActiveWorkoutScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-label text-center text-lg font-semibold">
+        <Text
+          accessibilityRole="header"
+          className="text-label text-center text-lg font-semibold"
+        >
           {t('workout.active.title')}
         </Text>
 
@@ -210,32 +276,8 @@ export default function ActiveWorkoutScreen() {
           <Text className="text-secondary-label text-xs font-semibold uppercase">
             {t('workout.active.elapsedLabel')}
           </Text>
-          <Text
-            className="text-label text-6xl font-bold"
-            style={{ fontVariant: ['tabular-nums'] }}
-          >
-            {formatClock(elapsed)}
-          </Text>
-          {restRemaining > 0 && (
-            <View className="bg-system-background mt-3 flex-row items-center gap-3 rounded-full py-2 pl-4 pr-2">
-              <SymbolView
-                name="timer"
-                size={16}
-                tintColor={themeColor('accent')}
-              />
-              <Text className="text-label text-base font-medium">
-                {t('workout.active.restRemaining', { seconds: restRemaining })}
-              </Text>
-              <Pressable
-                onPress={clearRestTimer}
-                className="bg-secondary-system-background rounded-full px-3 py-1.5"
-              >
-                <Text className="text-tint text-sm font-medium">
-                  {t('workout.active.skipRest')}
-                </Text>
-              </Pressable>
-            </View>
-          )}
+          <ElapsedClock />
+          <RestTimer />
         </Card>
 
         {activeExercises.length === 0 && (
@@ -249,12 +291,18 @@ export default function ActiveWorkoutScreen() {
             <ExerciseCard
               key={exercise.exerciseId}
               exercise={exercise}
-              name={entry ? exerciseDisplayName(entry, t) : '…'}
+              unitSystem={unitSystem}
+              name={
+                entry
+                  ? exerciseDisplayName(entry, t)
+                  : t('workout.active.exerciseLoading')
+              }
             />
           );
         })}
 
         <Pressable
+          accessibilityRole="button"
           onPress={handleAddExercise}
           className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
         >
@@ -268,7 +316,11 @@ export default function ActiveWorkoutScreen() {
           </Text>
         </Pressable>
 
-        <Pressable onPress={handleCancel} className="items-center py-3">
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleCancel}
+          className="items-center py-3"
+        >
           <Text className="text-destructive text-sm font-medium">
             {t('workout.active.cancelWorkout')}
           </Text>
@@ -290,12 +342,95 @@ export default function ActiveWorkoutScreen() {
   );
 }
 
+/** Own component so the 1 Hz tick re-renders only the clock, not every input. */
+function ElapsedClock() {
+  const startedAt = useActiveWorkoutStore((s) => s.startedAt);
+  const now = useNow(1000);
+  return (
+    <Text
+      accessibilityRole="timer"
+      className="text-label text-6xl font-bold"
+      style={{ fontVariant: ['tabular-nums'] }}
+    >
+      {formatClock(elapsedSeconds(startedAt, now))}
+    </Text>
+  );
+}
+
+function RestTimer() {
+  const { t } = useTranslation();
+  const restEndsAt = useActiveWorkoutStore((s) => s.restEndsAt);
+  const clearRestTimer = useActiveWorkoutStore((s) => s.clearRestTimer);
+  const adjustRestTimer = useActiveWorkoutStore((s) => s.adjustRestTimer);
+  const now = useNow(250, restEndsAt !== null);
+
+  const remainingMs = restEndsAt === null ? 0 : restEndsAt - now;
+  const expired = restEndsAt !== null && remainingMs <= 0;
+  useEffect(() => {
+    if (!expired) return;
+    clearRestTimer();
+    // The timer may have run out while suspended: only buzz when we're actually looking at it.
+    if (AppState.currentState === 'active') {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  }, [expired, clearRestTimer]);
+
+  if (restEndsAt === null || expired) return null;
+  const seconds = Math.ceil(remainingMs / 1000);
+
+  return (
+    <View className="bg-system-background mt-3 flex-row items-center gap-2 rounded-full py-2 pl-4 pr-2">
+      <SymbolView name="timer" size={16} tintColor={themeColor('accent')} />
+      <Text
+        accessibilityRole="timer"
+        className="text-label text-base font-medium"
+        style={{ fontVariant: ['tabular-nums'] }}
+      >
+        {t('workout.active.restRemaining', { time: formatClock(seconds) })}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('workout.active.restMinus')}
+        hitSlop={6}
+        onPress={() => adjustRestTimer(-REST_ADJUST_SECONDS)}
+        className="bg-secondary-system-background rounded-full px-2.5 py-1.5"
+      >
+        <Text className="text-tint text-sm font-medium">
+          −{REST_ADJUST_SECONDS}
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('workout.active.restPlus')}
+        hitSlop={6}
+        onPress={() => adjustRestTimer(REST_ADJUST_SECONDS)}
+        className="bg-secondary-system-background rounded-full px-2.5 py-1.5"
+      >
+        <Text className="text-tint text-sm font-medium">
+          +{REST_ADJUST_SECONDS}
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        onPress={clearRestTimer}
+        className="bg-secondary-system-background rounded-full px-3 py-1.5"
+      >
+        <Text className="text-tint text-sm font-medium">
+          {t('workout.active.skipRest')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function ExerciseCard({
   exercise,
   name,
+  unitSystem,
 }: {
   exercise: ActiveExercise;
   name: string;
+  unitSystem: UnitSystem;
 }) {
   const { t } = useTranslation();
   const addSet = useActiveWorkoutStore((s) => s.addSet);
@@ -304,13 +439,23 @@ function ExerciseCard({
     () => getPreviousSetValues(exercise.exerciseId),
     [exercise.exerciseId],
   );
-  const columns = FIELDS_BY_TRACKING[exercise.trackingType];
+  const fields = FIELDS_BY_TRACKING[exercise.trackingType];
+  const columns = fields.map((field) => ({
+    field,
+    unit: setInputUnit(field, exercise.trackingType, unitSystem),
+  }));
 
   return (
     <Card className="gap-2">
       <View className="flex-row items-center justify-between">
-        <Text className="text-label flex-1 text-lg font-semibold">{name}</Text>
+        <Text
+          accessibilityRole="header"
+          className="text-label flex-1 text-lg font-semibold"
+        >
+          {name}
+        </Text>
         <Pressable
+          accessibilityRole="button"
           accessibilityLabel={t('workout.active.removeExercise')}
           hitSlop={10}
           onPress={() =>
@@ -324,7 +469,11 @@ function ExerciseCard({
             ])
           }
         >
-          <SymbolView name="ellipsis" size={20} tintColor="secondaryLabel" />
+          <SymbolView
+            name="ellipsis"
+            size={20}
+            tintColor={PlatformColor('secondaryLabel')}
+          />
         </Pressable>
       </View>
 
@@ -337,14 +486,14 @@ function ExerciseCard({
             key={c.field}
             className="text-secondary-label flex-1 text-center text-xs font-semibold uppercase"
           >
-            {t(c.labelKey)}
+            {t(UNIT_LABEL_KEY[c.unit])}
           </Text>
         ))}
         <View className="w-11">
           <SymbolView
             name="checkmark"
             size={12}
-            tintColor="secondaryLabel"
+            tintColor={PlatformColor('secondaryLabel')}
             style={{ alignSelf: 'center' }}
           />
         </View>
@@ -358,10 +507,12 @@ function ExerciseCard({
           set={set}
           index={index}
           previous={previousValues[index]}
+          targetReps={exercise.targetReps ?? null}
         />
       ))}
 
       <Pressable
+        accessibilityRole="button"
         onPress={() => addSet(exercise.exerciseId)}
         className="bg-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
       >
@@ -374,34 +525,52 @@ function ExerciseCard({
   );
 }
 
+type Column = { field: SetField; unit: SetInputUnit };
+
 function SetRow({
   exerciseId,
   columns,
   set,
   index,
   previous,
+  targetReps,
 }: {
   exerciseId: string;
-  columns: { field: SetField; labelKey: LabelKey }[];
+  columns: Column[];
   set: ActiveSet;
   index: number;
-  previous?: {
-    reps: number | null;
-    weightKg: number | null;
-    durationS: number | null;
-    distanceM: number | null;
-  };
+  previous?: LastSetValue;
+  targetReps: number | null;
 }) {
+  const { t } = useTranslation();
   const updateSet = useActiveWorkoutStore((s) => s.updateSet);
   const toggleSetCompleted = useActiveWorkoutStore((s) => s.toggleSetCompleted);
   const removeSet = useActiveWorkoutStore((s) => s.removeSet);
   const completed = set.completedAt !== null;
 
+  function handleToggle() {
+    Keyboard.dismiss();
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const hint = { ...previous, reps: previous?.reps ?? targetReps };
+    toggleSetCompleted(exerciseId, set.id, {
+      restSeconds: DEFAULT_REST_SECONDS,
+      prefill: fillFromPrevious(
+        set,
+        hint,
+        columns.map((c) => c.field),
+      ),
+    });
+    if (!completed) void ensureRestNotificationPermission();
+  }
+
+  const setNumber = index + 1;
   return (
     <Swipeable
       overshootRight={false}
       renderRightActions={() => (
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('workout.active.deleteSet')}
           onPress={() => removeSet(exerciseId, set.id)}
           className="bg-destructive ml-2 w-16 items-center justify-center rounded-xl"
         >
@@ -410,50 +579,107 @@ function SetRow({
       )}
     >
       <View
+        accessible={false}
+        accessibilityActions={[
+          { name: 'delete', label: t('workout.active.deleteSet') },
+        ]}
+        onAccessibilityAction={(e) => {
+          if (e.nativeEvent.actionName === 'delete')
+            removeSet(exerciseId, set.id);
+        }}
         className={`flex-row items-center gap-2 rounded-xl px-1 py-1 ${
           completed ? 'bg-tint/15' : ''
         }`}
       >
         <Text className="text-secondary-label w-10 text-center text-base font-semibold">
-          {index + 1}
+          {setNumber}
         </Text>
-        {columns.map(({ field }) => {
-          const value = set[field];
-          const placeholder = previous?.[field];
-          return (
-            <TextInput
-              key={field}
-              value={value !== null ? String(value) : ''}
-              onChangeText={(text) =>
-                updateSet(exerciseId, set.id, {
-                  [field]: text === '' ? null : Number(text.replace(',', '.')),
-                })
-              }
-              placeholder={placeholder != null ? String(placeholder) : '-'}
-              placeholderTextColor="gray"
-              keyboardType="decimal-pad"
-              selectTextOnFocus
-              editable={!completed}
-              className="bg-system-background text-label h-11 flex-1 rounded-xl text-center text-lg font-medium"
-            />
-          );
-        })}
+        {columns.map(({ field, unit }) => (
+          <SetInput
+            key={field}
+            value={set[field]}
+            unit={unit}
+            placeholder={
+              field === 'reps'
+                ? (previous?.reps ?? targetReps)
+                : (previous?.[field] ?? null)
+            }
+            label={t('workout.active.setInputLabel', {
+              field: t(UNIT_LABEL_KEY[unit]),
+              set: setNumber,
+            })}
+            onCommit={(next) =>
+              updateSet(exerciseId, set.id, { [field]: next })
+            }
+          />
+        ))}
         <Pressable
           accessibilityRole="checkbox"
+          accessibilityLabel={t('workout.active.completeSet', {
+            set: setNumber,
+          })}
           accessibilityState={{ checked: completed }}
-          onPress={() => {
-            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            toggleSetCompleted(exerciseId, set.id, DEFAULT_REST_SECONDS);
-          }}
+          onPress={handleToggle}
           className="h-11 w-11 items-center justify-center"
         >
           <SymbolView
             name={completed ? 'checkmark.circle.fill' : 'circle'}
             size={30}
-            tintColor={completed ? themeColor('accent') : 'secondaryLabel'}
+            tintColor={
+              completed ? themeColor('accent') : PlatformColor('secondaryLabel')
+            }
           />
         </Pressable>
       </View>
     </Swipeable>
+  );
+}
+
+/**
+ * Numeric input in the user's unit. The text being typed is kept locally
+ * (`draft`) so "8." / "82," survive re-renders; the store always gets the
+ * metric value (hard rule #4), or null while the text isn't a number.
+ */
+function SetInput({
+  value,
+  unit,
+  placeholder,
+  label,
+  onCommit,
+}: {
+  value: number | null;
+  unit: SetInputUnit;
+  /** previous value in stored (metric) units, or the routine's target reps */
+  placeholder: number | null;
+  label: string;
+  onCommit: (stored: number | null) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const integer = isIntegerUnit(unit);
+  const text =
+    draft ??
+    (value === null ? '' : formatInputNumber(storedToDisplay(value, unit)));
+
+  return (
+    <TextInput
+      accessibilityLabel={label}
+      value={text}
+      onChangeText={(next) => {
+        setDraft(next);
+        const parsed = parseNumericInput(next, integer);
+        onCommit(parsed === null ? null : displayToStored(parsed, unit));
+      }}
+      onBlur={() => setDraft(null)}
+      placeholder={
+        placeholder !== null
+          ? formatInputNumber(storedToDisplay(placeholder, unit))
+          : '-'
+      }
+      placeholderTextColor={PlatformColor('placeholderText')}
+      keyboardType={integer ? 'number-pad' : 'decimal-pad'}
+      maxLength={7}
+      selectTextOnFocus
+      className="bg-system-background text-label h-11 flex-1 rounded-xl text-center text-lg font-medium"
+    />
   );
 }

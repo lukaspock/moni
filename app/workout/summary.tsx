@@ -6,6 +6,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
 import { Card, GlassActionButton, SectionHeader } from '@/components/ui';
+import { formatWeight } from '@/features/auth';
+import { useProfile } from '@/features/targets';
+import type { UnitSystem } from '@/domain';
 import { themeColor } from '@/theme/colors';
 
 interface PrParam {
@@ -24,6 +27,10 @@ export default function WorkoutSummaryScreen() {
     bonusKcal: string;
     prs: string;
   }>();
+
+  const { profile } = useProfile();
+  const unitSystem: UnitSystem =
+    profile?.unit_system === 'imperial' ? 'imperial' : 'metric';
 
   const prs: PrParam[] = useMemo(() => {
     try {
@@ -60,11 +67,13 @@ export default function WorkoutSummaryScreen() {
         <Card className="flex-row justify-between px-6 py-5">
           <Stat
             label={t('workout.summary.duration')}
-            value={`${params.durationMinutes} min`}
+            value={t('workout.summary.minutes', {
+              minutes: params.durationMinutes ?? 0,
+            })}
           />
           <Stat
             label={t('workout.summary.volume')}
-            value={`${params.volumeKg} kg`}
+            value={formatWeight(Number(params.volumeKg ?? 0), unitSystem, 0)}
           />
           <Stat
             label={t('workout.summary.kcalBurned')}
@@ -96,11 +105,23 @@ export default function WorkoutSummaryScreen() {
                     <Text className="text-label flex-1 text-sm">
                       {pr.previousOneRepMaxKg !== null
                         ? t('workout.summary.prNew', {
-                            kg: Math.round(pr.newOneRepMaxKg),
-                            previous: Math.round(pr.previousOneRepMaxKg),
+                            weight: formatWeight(
+                              pr.newOneRepMaxKg,
+                              unitSystem,
+                              0,
+                            ),
+                            previous: formatWeight(
+                              pr.previousOneRepMaxKg,
+                              unitSystem,
+                              0,
+                            ),
                           })
                         : t('workout.summary.prFirst', {
-                            kg: Math.round(pr.newOneRepMaxKg),
+                            weight: formatWeight(
+                              pr.newOneRepMaxKg,
+                              unitSystem,
+                              0,
+                            ),
                           })}
                     </Text>
                   </View>
@@ -119,7 +140,7 @@ export default function WorkoutSummaryScreen() {
         <GlassActionButton
           label={t('workout.summary.done')}
           symbol="checkmark"
-          onPress={() => router.dismissAll()}
+          onPress={() => router.back()}
         />
       </View>
     </View>

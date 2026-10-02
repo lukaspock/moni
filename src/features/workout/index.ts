@@ -63,6 +63,8 @@ export * from './routines';
 export * from './plan';
 export * from './session';
 export * from './start';
+export * from './finish';
+export * from './restTimer';
 export * from './history';
 export * from './progress';
 export * from './weight';

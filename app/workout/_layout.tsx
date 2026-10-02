@@ -9,8 +9,14 @@ import { Stack } from 'expo-router';
 export default function WorkoutStackLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="active" />
-      <Stack.Screen name="summary" options={{ gestureEnabled: false }} />
+      <Stack.Screen
+        name="active"
+        options={{ gestureEnabled: false, fullScreenGestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="summary"
+        options={{ gestureEnabled: false, fullScreenGestureEnabled: false }}
+      />
     </Stack>
   );
 }
