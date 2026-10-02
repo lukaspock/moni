@@ -303,38 +303,48 @@ Deno.serve(async (req: Request) => {
   let lastStatus = 0;
   let lastDetail = '';
   try {
-    for (const model of GEMINI_MODEL_FALLBACKS) {
-      const geminiResp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': GEMINI_API_KEY,
-          },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts }],
-            generationConfig: {
-              responseMimeType: 'application/json',
-              responseSchema:
-                mode === 'label' ? GEMINI_LABEL_SCHEMA : GEMINI_RESPONSE_SCHEMA,
-              temperature: 0.2,
+    // Per model: retry transient overload (429/5xx) with short backoff, then move on to the
+    // next model. 404 (retired model) skips straight to the next one; other 4xx abort.
+    const RETRY_DELAYS_MS = [0, 700, 1800];
+    const TRANSIENT = new Set([429, 500, 502, 503, 504]);
+    outer: for (const model of GEMINI_MODEL_FALLBACKS) {
+      for (const delayMs of RETRY_DELAYS_MS) {
+        if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
+        const geminiResp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': GEMINI_API_KEY,
             },
-          }),
-        },
-      );
-      if (geminiResp.ok) {
-        geminiJson = await geminiResp.json();
-        break;
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts }],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                responseSchema:
+                  mode === 'label'
+                    ? GEMINI_LABEL_SCHEMA
+                    : GEMINI_RESPONSE_SCHEMA,
+                temperature: 0.2,
+              },
+            }),
+          },
+        );
+        if (geminiResp.ok) {
+          geminiJson = await geminiResp.json();
+          break outer;
+        }
+        lastStatus = geminiResp.status;
+        lastDetail = (await geminiResp.text()).slice(0, 300);
+        console.error(
+          `analyze-food: Gemini error (model ${model})`,
+          lastStatus,
+          lastDetail,
+        );
+        if (lastStatus === 404) break; // retired model -> next candidate
+        if (!TRANSIENT.has(lastStatus)) break outer; // 400/403/...: retrying won't help
       }
-      lastStatus = geminiResp.status;
-      lastDetail = (await geminiResp.text()).slice(0, 300);
-      console.error(
-        `analyze-food: Gemini error (model ${model})`,
-        lastStatus,
-        lastDetail,
-      );
-      if (lastStatus !== 404) break; // only a missing/retired model warrants the next candidate
     }
   } catch (err) {
     console.error('analyze-food: Gemini fetch failed', err);
