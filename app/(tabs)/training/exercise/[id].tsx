@@ -3,6 +3,8 @@ import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 
+import { formatWeight } from '@/features/auth/format';
+import { useProfile } from '@/features/targets';
 import {
   exerciseDisplayName,
   useExerciseCatalog,
@@ -15,8 +17,21 @@ import {
  * intentionally simple — a Skia chart can replace the bars later without
  * touching the data layer in `src/features/workout/progress.ts`).
  */
+/**
+ * `YYYY-MM-DD` (a DB `date`) as a local calendar date: `new Date('YYYY-MM-DD')`
+ * parses as UTC midnight and shows the previous day west of UTC.
+ */
+function formatWeekStart(isoDate: string, locale: string): string {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(locale);
+}
+
 export default function ExerciseProgressScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { profile } = useProfile();
+  // The DB is metric (hard rule #4); only the display follows the user's unit system.
+  const unitSystem =
+    profile?.unit_system === 'imperial' ? 'imperial' : 'metric';
   const { id } = useLocalSearchParams<{ id: string }>();
   const { exercises } = useExerciseCatalog();
   const { points, isLoading } = useExerciseProgress(id ?? null);
@@ -53,10 +68,10 @@ export default function ExerciseProgressScreen() {
           <View key={point.weekStart} className="gap-1">
             <View className="flex-row items-center justify-between">
               <Text className="text-secondary-label text-xs">
-                {new Date(point.weekStart).toLocaleDateString()}
+                {formatWeekStart(point.weekStart, i18n.language)}
               </Text>
               <Text className="text-label text-sm font-medium">
-                {Math.round(point.estimated1RmKg)} kg
+                {formatWeight(point.estimated1RmKg, unitSystem, 0)}
               </Text>
             </View>
             <View className="bg-secondary-system-background h-3 overflow-hidden rounded-full">

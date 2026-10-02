@@ -28,7 +28,8 @@ import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
 
 import {
-  calculateKcalBurned,
+  estimateWorkoutKcal,
+  FALLBACK_WEIGHT_KG,
   metForIntensity,
   STRENGTH_MET_MIN,
 } from '@/domain/met';
@@ -56,7 +57,6 @@ import {
 } from './mappers';
 import { useHealthSettingsStore } from './settingsStore';
 
-const FALLBACK_WEIGHT_KG = 75;
 const IN_CHUNK = 100;
 
 export interface HealthSyncResult {
@@ -96,6 +96,7 @@ async function latestWeightKg(userId: string): Promise<number> {
     .select('weight_kg')
     .eq('user_id', userId)
     .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
   return data?.weight_kg ?? FALLBACK_WEIGHT_KG;
@@ -230,9 +231,11 @@ async function syncWorkouts(
               : metForIntensity('moderate');
           const hours =
             (Date.parse(w.endedAt) - Date.parse(w.startedAt)) / 3_600_000;
-          kcal = Math.round(
-            calculateKcalBurned(met, weightKg, Math.max(0, hours)),
-          );
+          kcal = estimateWorkoutKcal({
+            metValue: met,
+            weightKg,
+            durationMinutes: hours * 60,
+          });
           kcalSource = 'met';
         }
         enqueueUpsert('workouts', await importedWorkoutId(userId, w.uuid), {
@@ -327,7 +330,11 @@ async function unmergeDeletedWorkouts(
       ended_at: row.ended_at,
       category: row.category,
       notes: row.notes,
-      kcal_burned: Math.round(calculateKcalBurned(met, weightKg, hours)),
+      kcal_burned: estimateWorkoutKcal({
+        metValue: met,
+        weightKg,
+        durationMinutes: hours * 60,
+      }),
       kcal_source: 'met',
       healthkit_uuid: null,
     });

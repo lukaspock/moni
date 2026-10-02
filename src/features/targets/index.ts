@@ -147,7 +147,9 @@ function useUpsertDailyTargets(
   const lastWrittenRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!userId || !targets) return;
+    // Only today is cached: a past/future day viewed on Today would otherwise be overwritten
+    // with a value computed from *today's* profile, weight and TDEE.
+    if (!userId || !targets || date !== toISODate()) return;
     const signature = JSON.stringify({ userId, date, targets, tdeeUsed });
     if (lastWrittenRef.current === signature) return;
     lastWrittenRef.current = signature;
@@ -279,7 +281,8 @@ export function useDailyTargets(date: string): {
   useUpsertDailyTargets(
     userId,
     date,
-    computed?.targets ?? null,
+    // not while inputs are still loading (workouts start as [] -> bonus 0 would be cached)
+    isLoading ? null : (computed?.targets ?? null),
     computed?.tdeeUsed ?? null,
   );
 

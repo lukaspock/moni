@@ -8,6 +8,7 @@ import { exportWorkoutToHealth } from '@/features/health';
 import {
   calculateSessionKcal,
   calculateSetVolume,
+  calculateWorkoutBonus,
   deriveSessionCategory,
   estimateOneRepMaxEpley,
   resolveSessionEnd,
@@ -192,7 +193,11 @@ export function finishActiveWorkout(opts: {
       opts.exerciseCatalog,
     ),
   });
-  const workoutBonusKcal = Math.round(kcalBurned * opts.eatBackFactor);
+  const workoutBonusKcal = calculateWorkoutBonus({
+    baseKcal: 0,
+    actualKcalBurned: kcalBurned,
+    eatBackFactor: opts.eatBackFactor,
+  }).workoutBonusKcal;
 
   const volumeKg = calculateSetVolume(
     completedSets

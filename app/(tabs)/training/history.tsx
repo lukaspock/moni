@@ -1,13 +1,18 @@
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui';
 import { WorkoutHistoryRow } from '@/features/workout/WorkoutHistoryRow';
 import { useWorkoutHistory } from '@/features/workout';
 
+const PAGE_SIZE = 30;
+
 export default function TrainingHistoryScreen() {
   const { t } = useTranslation();
-  const { workouts, isLoading } = useWorkoutHistory(100);
+  // Pagination: the list grows by one page per tap (the hook reads `limit` rows, newest first).
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const { workouts, isLoading, hasMore } = useWorkoutHistory(limit);
 
   return (
     <ScrollView
@@ -27,6 +32,20 @@ export default function TrainingHistoryScreen() {
               <WorkoutHistoryRow workout={workout} />
             </View>
           ))}
+          {hasMore && (
+            <>
+              <View className="bg-separator h-px" />
+              <Pressable
+                disabled={isLoading}
+                onPress={() => setLimit((l) => l + PAGE_SIZE)}
+                className="px-4 py-3"
+              >
+                <Text className="text-tint text-center text-base">
+                  {t('workout.history.loadMore')}
+                </Text>
+              </Pressable>
+            </>
+          )}
         </Card>
       )}
     </ScrollView>

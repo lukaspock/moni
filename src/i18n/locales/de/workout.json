@@ -6,6 +6,7 @@
     "volume": "{{volume}} kg Volumen",
     "kcal": "{{kcal}} kcal",
     "showAll": "Alle anzeigen",
+    "loadMore": "Ältere Workouts laden",
     "exercises": "{{count}} Übungen"
   },
   "training": {
