@@ -17,7 +17,7 @@ import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 
-import { Card, GlassActionButton } from '@/components/ui';
+import { Card, GlassActionButton, ModalTopBar } from '@/components/ui';
 import {
   countSessionSets,
   discardActiveWorkout,
@@ -26,10 +26,9 @@ import {
   exerciseDisplayName,
   finishActiveWorkout,
   getPreviousSetValues,
-  openExercisePicker,
+  ExercisePickerView,
   useActiveWorkoutStore,
   useExerciseCatalog,
-  useExercisePickerStore,
   useLatestWeightKg,
   useRestTimerNotification,
   type ActiveExercise,
@@ -127,20 +126,11 @@ export default function ActiveWorkoutScreen() {
     [catalog],
   );
 
-  // ---- exercise picker result (sheet over this modal, result via store) ----
-  const awaitingPicker = useRef(false);
+  // ---- exercise picker: rendered inline (a formSheet over this fullScreenModal showed blank) ----
+  const [picking, setPicking] = useState(false);
   const pendingIds = useRef<string[]>([]);
-  const resultVersion = useExercisePickerStore((s) => s.resultVersion);
-  const lastHandledVersion = useRef(resultVersion);
+  const [pendingTick, setPendingTick] = useState(0);
   useEffect(() => {
-    if (resultVersion !== lastHandledVersion.current) {
-      lastHandledVersion.current = resultVersion;
-      // Only take results of a picker that this screen opened.
-      if (awaitingPicker.current) {
-        awaitingPicker.current = false;
-        pendingIds.current = [...useExercisePickerStore.getState().selectedIds];
-      }
-    }
     if (pendingIds.current.length === 0) return;
     // Ids whose catalog entry isn't there yet (fresh custom exercise) wait for the next catalog update.
     const unresolved: string[] = [];
@@ -153,15 +143,16 @@ export default function ActiveWorkoutScreen() {
       useActiveWorkoutStore.getState().addExercise(id, exercise.trackingType); // ignores exercises already in the session
     }
     pendingIds.current = unresolved;
-  }, [resultVersion, catalogById]);
+  }, [pendingTick, catalogById]);
+
+  function handlePickerConfirm(ids: string[]) {
+    pendingIds.current = [...pendingIds.current, ...ids];
+    setPendingTick((n) => n + 1);
+    setPicking(false);
+  }
 
   function handleAddExercise() {
-    awaitingPicker.current = true;
-    openExercisePicker(
-      'multi',
-      activeExercises.map((e) => e.exerciseId),
-    );
-    router.push('/exercise-picker');
+    setPicking(true);
   }
 
   function leaveAndDiscard() {
@@ -250,6 +241,25 @@ export default function ActiveWorkoutScreen() {
   }
 
   if (!workoutId) return null;
+
+  if (picking) {
+    return (
+      <View className="bg-system-background flex-1">
+        <ModalTopBar
+          title={t('workout.exercisePicker.title')}
+          icon="chevron.left"
+          label={t('workout.exercisePicker.back')}
+          onPress={() => setPicking(false)}
+        />
+        <ExercisePickerView
+          embedded
+          mode="multi"
+          initialSelectedIds={activeExercises.map((e) => e.exerciseId)}
+          onConfirm={handlePickerConfirm}
+        />
+      </View>
+    );
+  }
 
   return (
     <View className="bg-system-background flex-1">

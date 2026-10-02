@@ -169,7 +169,6 @@ function RootNavigator() {
         options={{ presentation: 'fullScreenModal' }}
       />
       <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
-      <Stack.Screen name="exercise-picker" options={FULL_SHEET_OPTIONS} />
       {/* Outside the tabs: no tab bar over the save/add buttons, no native header. */}
       <Stack.Screen
         name="routine-editor"
