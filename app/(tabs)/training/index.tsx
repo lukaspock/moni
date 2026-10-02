@@ -38,7 +38,7 @@ export default function TrainingScreen() {
         text: t('workout.routine.edit'),
         onPress: () =>
           router.push({
-            pathname: '/(tabs)/training/routine-editor',
+            pathname: '/routine-editor',
             params: { id: routine.id },
           }),
       },
@@ -130,7 +130,7 @@ export default function TrainingScreen() {
               <View className="bg-separator h-px" />
             )}
             <Pressable
-              onPress={() => router.push('/(tabs)/training/routine-editor')}
+              onPress={() => router.push('/routine-editor')}
               className="flex-row items-center gap-2 px-4 py-3"
             >
               <SymbolView

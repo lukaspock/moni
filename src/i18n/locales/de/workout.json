@@ -21,6 +21,7 @@
     "doneToday": "Heute schon trainiert"
   },
   "routine": {
+    "close": "Schließen",
     "title": "Routine",
     "namePlaceholder": "z. B. Push Day",
     "nameLabel": "Name",

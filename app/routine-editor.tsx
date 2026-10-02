@@ -9,7 +9,8 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { themeColor } from '@/theme/colors';
 
@@ -116,26 +117,12 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   // can't throw the draft away.
   if (picking) {
     return (
-      <>
-        <Stack.Screen
-          options={{
-            title: t('workout.exercisePicker.title'),
-            gestureEnabled: false,
-            headerBackVisible: false,
-            headerLeft: () => (
-              <Pressable
-                onPress={() => setPicking(false)}
-                hitSlop={12}
-                accessibilityLabel={t('workout.exercisePicker.back')}
-              >
-                <SymbolView
-                  name="chevron.left"
-                  size={18}
-                  tintColor={themeColor('accent')}
-                />
-              </Pressable>
-            ),
-          }}
+      <View className="bg-system-background flex-1">
+        <EditorTopBar
+          title={t('workout.exercisePicker.title')}
+          icon="chevron.left"
+          label={t('workout.exercisePicker.back')}
+          onPress={() => setPicking(false)}
         />
         <ExercisePickerView
           embedded
@@ -143,7 +130,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
           initialSelectedIds={exercises.map((e) => e.exerciseId)}
           onConfirm={addExercises}
         />
-      </>
+      </View>
     );
   }
 
@@ -152,10 +139,14 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
       behavior="padding"
       className="bg-system-background flex-1"
     >
-      <Stack.Screen options={{ title: t('workout.routine.title') }} />
+      <EditorTopBar
+        title={t('workout.routine.title')}
+        icon="xmark"
+        label={t('workout.routine.close')}
+        onPress={() => router.back()}
+      />
       <ScrollView
         className="flex-1"
-        contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-5 p-5 pb-32"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -295,6 +286,40 @@ function NumberField({
         selectTextOnFocus
         className="bg-system-background text-label rounded-xl px-3 py-2.5 text-center text-base"
       />
+    </View>
+  );
+}
+
+/** Own top bar (this route lives outside the tabs, so no native header / tab bar). */
+function EditorTopBar({
+  title,
+  icon,
+  label,
+  onPress,
+}: {
+  title: string;
+  icon: 'xmark' | 'chevron.left';
+  label: string;
+  onPress: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View
+      className="bg-system-background flex-row items-center px-5 pb-3"
+      style={{ paddingTop: insets.top + 8 }}
+    >
+      <Pressable
+        onPress={onPress}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        className="bg-secondary-system-background h-10 w-10 items-center justify-center rounded-full"
+      >
+        <SymbolView name={icon} size={16} tintColor={themeColor('accent')} />
+      </Pressable>
+      <Text className="text-label flex-1 pr-10 text-center text-lg font-semibold">
+        {title}
+      </Text>
     </View>
   );
 }

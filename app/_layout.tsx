@@ -170,6 +170,11 @@ function RootNavigator() {
       />
       <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
       <Stack.Screen name="exercise-picker" options={FULL_SHEET_OPTIONS} />
+      {/* Outside the tabs: no tab bar over the save/add buttons, no native header. */}
+      <Stack.Screen
+        name="routine-editor"
+        options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
+      />
       {/* Stays full screen (no drag-to-dismiss) so a running workout can't be swiped away. */}
       <Stack.Screen
         name="workout"
