@@ -87,13 +87,15 @@ export function calculateBaseTarget(params: {
  * There is deliberately no provisional/planned bonus.
  */
 export const DEFAULT_EAT_BACK_FACTOR = 0.7;
+/** `profiles.eat_back_factor` DB check range. */
+export const MAX_EAT_BACK_FACTOR = 1.5;
 
 export interface DynamicLimitInput {
   baseKcal: number;
   /** summed kcal_burned of the day's completed workouts; 0/undefined = none */
   actualKcalBurned?: number;
-  /** profiles.eat_back_factor, default 0.7 */
-  eatBackFactor?: number;
+  /** profiles.eat_back_factor, default 0.7; clamped to 0..1.5, invalid values fall back to the default */
+  eatBackFactor?: number | null;
 }
 
 export interface DynamicLimitResult {
@@ -104,8 +106,14 @@ export interface DynamicLimitResult {
 export function calculateWorkoutBonus(
   input: DynamicLimitInput,
 ): DynamicLimitResult {
-  const eatBackFactor = input.eatBackFactor ?? DEFAULT_EAT_BACK_FACTOR;
-  const burned = Math.max(0, input.actualKcalBurned ?? 0);
+  // null/NaN/out-of-range values (a bad profile row) must never leak NaN into the daily limit.
+  const rawFactor = input.eatBackFactor;
+  const eatBackFactor =
+    typeof rawFactor === 'number' && Number.isFinite(rawFactor)
+      ? Math.min(MAX_EAT_BACK_FACTOR, Math.max(0, rawFactor))
+      : DEFAULT_EAT_BACK_FACTOR;
+  const rawBurned = input.actualKcalBurned ?? 0;
+  const burned = Number.isFinite(rawBurned) ? Math.max(0, rawBurned) : 0;
   const bonus = Math.round(burned * eatBackFactor);
   return {
     workoutBonusKcal: bonus,

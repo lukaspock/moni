@@ -1,7 +1,7 @@
 // CONTRACT (owner: `workout` agent). Signatures are fixed, implementation is replaced.
 import { useSession } from '@/features/auth';
 import { useWorkoutsForDateImpl } from './history';
-import { usePlannedDaysWithRoutineNames } from './plan';
+import { useWeeklyPlan } from './plan';
 import { weekdayOf } from '@/lib/date';
 
 export type WorkoutSummary = {
@@ -30,22 +30,25 @@ export function useWorkoutsForDate(date: string): {
   return useWorkoutsForDateImpl(userId, date);
 }
 
-/** Weekly plan entry for that date's weekday, or null = rest day. */
+/**
+ * Training-day entry for that date's weekday, or null = rest day. A
+ * `training_plan_days` row *is* the flag: rows written by the profile's weekday
+ * toggles have neither a routine nor expected kcal, and must still count
+ * (previously such rows were treated as rest days). `routineName` is always
+ * null now — the plan no longer links routines in the UI.
+ */
 export function usePlannedDay(date: string): {
   plannedDay: PlannedDay | null;
   isLoading: boolean;
 } {
-  const { days, isLoading } = usePlannedDaysWithRoutineNames();
-  const weekday = weekdayOf(date);
-  const day = days.find((d) => d.weekday === weekday);
-  if (!day || (day.routineId === null && day.expectedKcal === null)) {
-    return { plannedDay: null, isLoading };
-  }
+  const { planByWeekday, isLoading } = useWeeklyPlan();
+  const row = planByWeekday.get(weekdayOf(date));
+  if (!row) return { plannedDay: null, isLoading };
   return {
     plannedDay: {
-      routineId: day.routineId,
-      routineName: day.routineName,
-      expectedKcal: day.expectedKcal ?? 0,
+      routineId: row.routine_id,
+      routineName: null,
+      expectedKcal: row.expected_kcal ?? 0,
     },
     isLoading,
   };

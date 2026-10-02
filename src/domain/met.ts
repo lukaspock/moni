@@ -74,23 +74,38 @@ export function calculateSetVolume(sets: SetVolumeInput[]): number {
   return sets.reduce((sum, s) => sum + s.reps * s.weightKg, 0);
 }
 
-/** Assumed length of a "typical" planned strength session when estimating a weekly-plan day's `expected_kcal`. */
-export const TYPICAL_SESSION_DURATION_MINUTES = 45;
+/**
+ * Longest session that is credited with energy expenditure. A workout left
+ * running overnight (forgotten "finish") must not earn a thousands-of-kcal
+ * eat-back bonus; the stored start/end still show the real duration.
+ */
+export const MAX_KCAL_DURATION_MINUTES = 4 * 60;
+
+/** Fallback bodyweight (kg) when no weight has been logged yet. */
+export const FALLBACK_WEIGHT_KG = 75;
 
 /**
- * Estimated kcal burn for a *planned* strength session, before it's actually
- * logged (PLAN §6.4/§7.4's `training_plan_days.expected_kcal`). Assumes a
- * typical session length and derives session density (and therefore MET)
- * from the routine's total target sets, same model as a completed session.
+ * Guarded kcal estimate for a whole session: non-finite / non-positive inputs
+ * give 0 (never NaN), the duration is capped at MAX_KCAL_DURATION_MINUTES and
+ * a missing/invalid bodyweight falls back to FALLBACK_WEIGHT_KG. Rounded to
+ * whole kcal.
  */
-export function estimatePlannedStrengthKcal(
-  totalTargetSets: number,
-  weightKg: number,
-  durationMinutes: number = TYPICAL_SESSION_DURATION_MINUTES,
-): number {
-  const density = calculateSessionDensity(totalTargetSets, durationMinutes);
-  const met = estimateStrengthMET(density);
-  return calculateKcalBurned(met, weightKg, durationMinutes / 60);
+export function estimateWorkoutKcal(params: {
+  metValue: number;
+  weightKg: number | null | undefined;
+  durationMinutes: number;
+}): number {
+  const { metValue, durationMinutes } = params;
+  if (!Number.isFinite(metValue) || metValue <= 0) return 0;
+  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) return 0;
+  const weightKg =
+    typeof params.weightKg === 'number' &&
+    Number.isFinite(params.weightKg) &&
+    params.weightKg > 0
+      ? params.weightKg
+      : FALLBACK_WEIGHT_KG;
+  const minutes = Math.min(durationMinutes, MAX_KCAL_DURATION_MINUTES);
+  return Math.round(calculateKcalBurned(metValue, weightKg, minutes / 60));
 }
 
 /**

@@ -27,7 +27,7 @@ const HISTORY_PREVIEW_COUNT = 5;
 export default function TrainingScreen() {
   const { t } = useTranslation();
   const { workouts: todaysWorkouts } = useWorkoutsForDate(toISODate());
-  const { routines, isLoading: routinesLoading, refresh } = useRoutines();
+  const { routines, isLoading: routinesLoading } = useRoutines();
   const { workouts: history } = useWorkoutHistory(HISTORY_PREVIEW_COUNT + 1);
   const deleteRoutine = useDeleteRoutine();
   const { startEmpty, startFromRoutine } = useStartWorkout();
@@ -54,10 +54,7 @@ export default function TrainingScreen() {
               {
                 text: t('workout.routine.delete'),
                 style: 'destructive',
-                onPress: () => {
-                  deleteRoutine(routine.id);
-                  refresh();
-                },
+                onPress: () => deleteRoutine(routine.id),
               },
             ],
           ),

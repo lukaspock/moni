@@ -5,7 +5,9 @@ import {
   estimateOneRepMaxEpley,
   estimateOneRepMaxBrzycki,
   calculateSetVolume,
-  estimatePlannedStrengthKcal,
+  estimateWorkoutKcal,
+  FALLBACK_WEIGHT_KG,
+  MAX_KCAL_DURATION_MINUTES,
   metForIntensity,
   STRENGTH_MET_MIN,
   STRENGTH_MET_MAX,
@@ -78,30 +80,54 @@ describe('calculateSetVolume', () => {
   });
 });
 
-describe('estimatePlannedStrengthKcal', () => {
-  it('matches manual density -> MET -> kcal chain for a 45min default session', () => {
-    const totalSets = 20;
-    const weightKg = 80;
-    const density = calculateSessionDensity(totalSets, 45);
-    const met = estimateStrengthMET(density);
-    const expected = calculateKcalBurned(met, weightKg, 45 / 60);
-    expect(estimatePlannedStrengthKcal(totalSets, weightKg)).toBeCloseTo(
-      expected,
-      6,
+describe('estimateWorkoutKcal', () => {
+  it('matches MET x kg x hours, rounded', () => {
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: 80, durationMinutes: 60 }),
+    ).toBe(400);
+  });
+
+  it('caps the credited duration (forgotten session)', () => {
+    const capped = estimateWorkoutKcal({
+      metValue: 3.5,
+      weightKg: 75,
+      durationMinutes: 14 * 60,
+    });
+    expect(capped).toBe(
+      Math.round(3.5 * 75 * (MAX_KCAL_DURATION_MINUTES / 60)),
     );
   });
 
-  it('a denser (more sets in the same time) session burns more', () => {
-    const light = estimatePlannedStrengthKcal(10, 80, 45);
-    const dense = estimatePlannedStrengthKcal(30, 80, 45);
-    expect(dense).toBeGreaterThan(light);
+  it('is 0 (never NaN) for invalid MET or duration', () => {
+    expect(
+      estimateWorkoutKcal({ metValue: NaN, weightKg: 80, durationMinutes: 30 }),
+    ).toBe(0);
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: 80, durationMinutes: 0 }),
+    ).toBe(0);
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: 80, durationMinutes: -5 }),
+    ).toBe(0);
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: 80, durationMinutes: NaN }),
+    ).toBe(0);
   });
 
-  it('respects a custom duration', () => {
-    const kcal = estimatePlannedStrengthKcal(20, 80, 60);
-    const density = calculateSessionDensity(20, 60);
-    const met = estimateStrengthMET(density);
-    expect(kcal).toBeCloseTo(calculateKcalBurned(met, 80, 1), 6);
+  it('falls back to the default bodyweight when weight is missing or invalid', () => {
+    const expected = estimateWorkoutKcal({
+      metValue: 5,
+      weightKg: FALLBACK_WEIGHT_KG,
+      durationMinutes: 60,
+    });
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: null, durationMinutes: 60 }),
+    ).toBe(expected);
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: 0, durationMinutes: 60 }),
+    ).toBe(expected);
+    expect(
+      estimateWorkoutKcal({ metValue: 5, weightKg: NaN, durationMinutes: 60 }),
+    ).toBe(expected);
   });
 });
 

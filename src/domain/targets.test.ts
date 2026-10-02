@@ -122,6 +122,24 @@ describe('calculateWorkoutBonus', () => {
     expect(result.dailyLimitKcal).toBe(2250);
   });
 
+  it('falls back to the default factor for null/NaN and clamps out-of-range factors', () => {
+    const at = (eatBackFactor: number | null) =>
+      calculateWorkoutBonus({
+        baseKcal: base,
+        actualKcalBurned: 100,
+        eatBackFactor,
+      }).workoutBonusKcal;
+    expect(at(null)).toBe(70);
+    expect(at(NaN)).toBe(70);
+    expect(at(-1)).toBe(0);
+    expect(at(5)).toBe(150); // capped at 1.5
+  });
+
+  it('never produces NaN for a non-finite kcal value', () => {
+    const r = calculateWorkoutBonus({ baseKcal: base, actualKcalBurned: NaN });
+    expect(r).toEqual({ workoutBonusKcal: 0, dailyLimitKcal: base });
+  });
+
   it('ignores negative kcal values', () => {
     expect(
       calculateWorkoutBonus({ baseKcal: base, actualKcalBurned: -50 })
