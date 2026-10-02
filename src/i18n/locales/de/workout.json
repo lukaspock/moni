@@ -46,6 +46,7 @@
     "other": "Sonstiges"
   },
   "exercisePicker": {
+    "back": "Zurück",
     "title": "Übung wählen",
     "searchPlaceholder": "Übung suchen…",
     "categoryAll": "Alle",

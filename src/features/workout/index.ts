@@ -58,6 +58,7 @@ export function usePlannedDay(date: string): {
 export * from './types';
 export * from './exercises';
 export * from './pickerStore';
+export { ExercisePickerView } from './ExercisePickerView';
 export * from './routines';
 export * from './plan';
 export * from './session';

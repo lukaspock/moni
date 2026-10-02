@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -8,9 +8,8 @@ import { themeColor } from '@/theme/colors';
 import { GlassActionButton, SectionHeader, SheetScreen } from '@/components/ui';
 import {
   exerciseDisplayName,
-  openExercisePicker,
   useExerciseCatalog,
-  useExercisePickerStore,
+  ExercisePickerView,
   useRoutines,
   useSaveRoutine,
   type Routine,
@@ -49,12 +48,9 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
     [catalog],
   );
 
-  const resultVersion = useExercisePickerStore((s) => s.resultVersion);
-  const lastHandledVersion = useRef(resultVersion);
-  useEffect(() => {
-    if (resultVersion === lastHandledVersion.current) return;
-    lastHandledVersion.current = resultVersion;
-    const selectedIds = useExercisePickerStore.getState().selectedIds;
+  const [picking, setPicking] = useState(false);
+
+  function addExercises(selectedIds: string[]) {
     setExercises((prev) => {
       const existingIds = new Set(prev.map((e) => e.exerciseId));
       const added = selectedIds
@@ -62,7 +58,8 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
         .map((exerciseId) => ({ exerciseId, targetSets: 3, targetReps: 10 }));
       return [...prev, ...added];
     });
-  }, [resultVersion]);
+    setPicking(false);
+  }
 
   function move(index: number, dir: -1 | 1) {
     setExercises((prev) => {
@@ -88,6 +85,19 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
     if (!name.trim()) return;
     await saveRoutine({ id, name: name.trim(), exercises });
     router.back();
+  }
+
+  // The picker renders inline (a formSheet stacked on this formSheet showed an
+  // empty sheet on device); local draft state survives because we stay mounted.
+  if (picking) {
+    return (
+      <ExercisePickerView
+        mode="multi"
+        initialSelectedIds={exercises.map((e) => e.exerciseId)}
+        onConfirm={addExercises}
+        onClose={() => setPicking(false)}
+      />
+    );
   }
 
   return (
@@ -174,13 +184,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
           })}
 
           <Pressable
-            onPress={() => {
-              openExercisePicker(
-                'multi',
-                exercises.map((e) => e.exerciseId),
-              );
-              router.push('/exercise-picker');
-            }}
+            onPress={() => setPicking(true)}
             className="flex-row items-center gap-2 px-4 py-4"
           >
             <SymbolView
