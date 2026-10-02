@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
+  KeyboardAvoidingView,
   PlatformColor,
   Pressable,
   ScrollView,
@@ -53,13 +54,13 @@ export function ExercisePickerView({
   mode,
   initialSelectedIds,
   onConfirm,
-  onClose,
+  embedded = false,
 }: {
   mode: ExercisePickerMode;
   initialSelectedIds: string[];
   onConfirm: (ids: string[]) => void;
-  /** Shows a back chevron (inline usage only). */
-  onClose?: () => void;
+  /** Inline usage: the host screen provides the header (title + back), so the title row is hidden. */
+  embedded?: boolean;
 }) {
   const { t } = useTranslation();
   const { userId } = useSession();
@@ -103,7 +104,9 @@ export function ExercisePickerView({
       .map((id) => byId.get(id))
       .filter((e): e is Exercise => !!e);
   }, [exercises]);
-  const list = hasFilter ? filtered : recents;
+  // No filter: recents first (if any), then the whole catalog, so the first
+  // visit never shows an empty sheet.
+  const list = hasFilter ? filtered : exercises;
   const canConfirm = selectedIds.length > 0;
 
   function muscleLabel(mg: string): string {
@@ -111,10 +114,10 @@ export function ExercisePickerView({
     return known ?? mg.replace(/_/g, ' ');
   }
 
-  function renderRow(item: Exercise, last: boolean) {
+  function renderRow(item: Exercise, last: boolean, keyPrefix = '') {
     const selected = selectedIds.includes(item.id);
     return (
-      <View key={item.id}>
+      <View key={keyPrefix + item.id}>
         <Pressable
           onPress={() => toggle(item)}
           className="flex-row items-center justify-between px-4 py-3"
@@ -147,32 +150,22 @@ export function ExercisePickerView({
   }
 
   return (
-    <View className="bg-system-background flex-1">
+    <KeyboardAvoidingView
+      behavior="padding"
+      className="bg-system-background flex-1"
+    >
       <ScrollView
         className="flex-1"
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 p-5 pt-6"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <View className="items-center justify-center">
+        {!embedded && (
           <Text className="text-label text-center text-lg font-semibold">
             {t('workout.exercisePicker.title')}
           </Text>
-          {onClose && (
-            <Pressable
-              onPress={onClose}
-              hitSlop={12}
-              accessibilityLabel={t('workout.exercisePicker.back')}
-              className="absolute left-0"
-            >
-              <SymbolView
-                name="chevron.left"
-                size={18}
-                tintColor={themeColor('accent')}
-              />
-            </Pressable>
-          )}
-        </View>
+        )}
         <View className="bg-secondary-system-background flex-row items-center gap-2 rounded-xl px-3 py-2.5">
           <SymbolView
             name="magnifyingglass"
@@ -226,7 +219,17 @@ export function ExercisePickerView({
         </View>
 
         {!hasFilter && recents.length > 0 && (
-          <SectionHeader title={t('workout.exercisePicker.recent')} />
+          <View className="gap-2">
+            <SectionHeader title={t('workout.exercisePicker.recent')} />
+            <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+              {recents.map((e, i) =>
+                renderRow(e, i === recents.length - 1, 'recent-'),
+              )}
+            </View>
+          </View>
+        )}
+        {!hasFilter && recents.length > 0 && list.length > 0 && (
+          <SectionHeader title={t('workout.exercisePicker.all')} />
         )}
         {list.length > 0 ? (
           <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
@@ -280,7 +283,7 @@ export function ExercisePickerView({
           />
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -1,17 +1,26 @@
-import { Fragment, useMemo, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Fragment, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { themeColor } from '@/theme/colors';
 
-import { GlassActionButton, SectionHeader, SheetScreen } from '@/components/ui';
+import { GlassActionButton, SectionHeader } from '@/components/ui';
 import {
   exerciseDisplayName,
   useExerciseCatalog,
   ExercisePickerView,
   useRoutines,
   useSaveRoutine,
+  parseTargetInput,
   type Routine,
   type RoutineExerciseInput,
 } from '@/features/workout';
@@ -23,7 +32,13 @@ export default function RoutineEditorScreen() {
   // Wait for the existing routine to load before mounting the form, so its
   // local draft state can be seeded directly from `existing` at mount time
   // instead of being synchronized in afterwards via an effect.
-  if (id && isLoading) return null;
+  if (id && isLoading) {
+    return (
+      <View className="bg-system-background flex-1 items-center justify-center">
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   const existing = routines.find((r) => r.id === id);
   return <RoutineForm id={id} existing={existing} />;
@@ -49,6 +64,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   );
 
   const [picking, setPicking] = useState(false);
+  const saving = useRef(false);
 
   function addExercises(selectedIds: string[]) {
     setExercises((prev) => {
@@ -82,133 +98,180 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   }
 
   async function handleSave() {
-    if (!name.trim()) return;
-    await saveRoutine({ id, name: name.trim(), exercises });
-    router.back();
+    if (!name.trim() || saving.current) return;
+    saving.current = true; // double-tap would otherwise create two routines
+    try {
+      await saveRoutine({ id, name: name.trim(), exercises });
+      router.back();
+    } catch (error) {
+      console.warn('[routine-editor] save failed', error);
+      saving.current = false;
+    }
   }
 
-  // The picker renders inline (a formSheet stacked on this formSheet showed an
+  // The picker renders inline (a formSheet stacked on a formSheet showed an
   // empty sheet on device); local draft state survives because we stay mounted.
+  // The native header takes over: back arrow returns to the form instead of
+  // leaving the editor, and the swipe-back gesture is off so a stray swipe
+  // can't throw the draft away.
   if (picking) {
     return (
-      <ExercisePickerView
-        mode="multi"
-        initialSelectedIds={exercises.map((e) => e.exerciseId)}
-        onConfirm={addExercises}
-        onClose={() => setPicking(false)}
-      />
+      <>
+        <Stack.Screen
+          options={{
+            title: t('workout.exercisePicker.title'),
+            gestureEnabled: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <Pressable
+                onPress={() => setPicking(false)}
+                hitSlop={12}
+                accessibilityLabel={t('workout.exercisePicker.back')}
+              >
+                <SymbolView
+                  name="chevron.left"
+                  size={18}
+                  tintColor={themeColor('accent')}
+                />
+              </Pressable>
+            ),
+          }}
+        />
+        <ExercisePickerView
+          embedded
+          mode="multi"
+          initialSelectedIds={exercises.map((e) => e.exerciseId)}
+          onConfirm={addExercises}
+        />
+      </>
     );
   }
 
   return (
-    <SheetScreen title={t('workout.routine.title')}>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder={t('workout.routine.namePlaceholder')}
-        placeholderTextColor="gray"
-        className="bg-secondary-system-background text-label rounded-2xl px-4 py-4 text-base"
-      />
-
-      <View className="gap-2">
-        <SectionHeader title={t('workout.routine.exercises')} />
-        {exercises.length === 0 && (
-          <Text className="text-secondary-label px-1 text-sm">
-            {t('workout.routine.empty')}
-          </Text>
-        )}
-
-        <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
-          {exercises.map((ex, index) => {
-            const exercise = catalogById.get(ex.exerciseId);
-            return (
-              <Fragment key={ex.exerciseId}>
-                <View className="gap-3 p-4">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-label flex-1 text-base font-semibold">
-                      {exercise ? exerciseDisplayName(exercise, t) : '…'}
-                    </Text>
-                    <Pressable
-                      accessibilityLabel={t('workout.routine.moveUp')}
-                      onPress={() => move(index, -1)}
-                      hitSlop={8}
-                      className="px-2"
-                    >
-                      <SymbolView
-                        name="chevron.up"
-                        size={14}
-                        tintColor="secondaryLabel"
-                      />
-                    </Pressable>
-                    <Pressable
-                      accessibilityLabel={t('workout.routine.moveDown')}
-                      onPress={() => move(index, 1)}
-                      hitSlop={8}
-                      className="px-2"
-                    >
-                      <SymbolView
-                        name="chevron.down"
-                        size={14}
-                        tintColor="secondaryLabel"
-                      />
-                    </Pressable>
-                    <Pressable
-                      accessibilityLabel={t('workout.routine.remove')}
-                      onPress={() => removeExercise(index)}
-                      hitSlop={8}
-                      className="pl-2"
-                    >
-                      <SymbolView
-                        name="trash"
-                        size={15}
-                        tintColor={themeColor('danger')}
-                      />
-                    </Pressable>
-                  </View>
-                  <View className="flex-row gap-3">
-                    <NumberField
-                      label={t('workout.routine.targetSets')}
-                      value={ex.targetSets}
-                      onChange={(v) => updateExercise(index, { targetSets: v })}
-                    />
-                    <NumberField
-                      label={t('workout.routine.targetReps')}
-                      value={ex.targetReps}
-                      onChange={(v) => updateExercise(index, { targetReps: v })}
-                    />
-                  </View>
-                </View>
-                <View className="bg-separator mx-4 h-px" />
-              </Fragment>
-            );
-          })}
-
-          <Pressable
-            onPress={() => setPicking(true)}
-            className="flex-row items-center gap-2 px-4 py-4"
-          >
-            <SymbolView
-              name="plus.circle.fill"
-              size={20}
-              tintColor={themeColor('accent')}
-            />
-            <Text className="text-tint text-base font-semibold">
-              {t('workout.routine.addExercise')}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <View style={{ opacity: name.trim() ? 1 : 0.4 }}>
-        <GlassActionButton
-          label={t('workout.routine.save')}
-          symbol="checkmark"
-          onPress={() => {
-            if (name.trim()) void handleSave();
-          }}
+    <KeyboardAvoidingView
+      behavior="padding"
+      className="bg-system-background flex-1"
+    >
+      <Stack.Screen options={{ title: t('workout.routine.title') }} />
+      <ScrollView
+        className="flex-1"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerClassName="gap-5 p-5 pb-32"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder={t('workout.routine.namePlaceholder')}
+          placeholderTextColor="gray"
+          className="bg-secondary-system-background text-label rounded-2xl px-4 py-4 text-base"
         />
-      </View>
-    </SheetScreen>
+
+        <View className="gap-2">
+          <SectionHeader title={t('workout.routine.exercises')} />
+          {exercises.length === 0 && (
+            <Text className="text-secondary-label px-1 text-sm">
+              {t('workout.routine.empty')}
+            </Text>
+          )}
+
+          <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+            {exercises.map((ex, index) => {
+              const exercise = catalogById.get(ex.exerciseId);
+              return (
+                <Fragment key={ex.exerciseId}>
+                  <View className="gap-3 p-4">
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-label flex-1 text-base font-semibold">
+                        {exercise ? exerciseDisplayName(exercise, t) : '…'}
+                      </Text>
+                      <Pressable
+                        accessibilityLabel={t('workout.routine.moveUp')}
+                        onPress={() => move(index, -1)}
+                        hitSlop={8}
+                        className="px-2"
+                      >
+                        <SymbolView
+                          name="chevron.up"
+                          size={14}
+                          tintColor="secondaryLabel"
+                        />
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={t('workout.routine.moveDown')}
+                        onPress={() => move(index, 1)}
+                        hitSlop={8}
+                        className="px-2"
+                      >
+                        <SymbolView
+                          name="chevron.down"
+                          size={14}
+                          tintColor="secondaryLabel"
+                        />
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={t('workout.routine.remove')}
+                        onPress={() => removeExercise(index)}
+                        hitSlop={8}
+                        className="pl-2"
+                      >
+                        <SymbolView
+                          name="trash"
+                          size={15}
+                          tintColor={themeColor('danger')}
+                        />
+                      </Pressable>
+                    </View>
+                    <View className="flex-row gap-3">
+                      <NumberField
+                        label={t('workout.routine.targetSets')}
+                        value={ex.targetSets}
+                        onChange={(v) =>
+                          updateExercise(index, { targetSets: v })
+                        }
+                      />
+                      <NumberField
+                        label={t('workout.routine.targetReps')}
+                        value={ex.targetReps}
+                        onChange={(v) =>
+                          updateExercise(index, { targetReps: v })
+                        }
+                      />
+                    </View>
+                  </View>
+                  <View className="bg-separator mx-4 h-px" />
+                </Fragment>
+              );
+            })}
+
+            <Pressable
+              onPress={() => setPicking(true)}
+              className="flex-row items-center gap-2 px-4 py-4"
+            >
+              <SymbolView
+                name="plus.circle.fill"
+                size={20}
+                tintColor={themeColor('accent')}
+              />
+              <Text className="text-tint text-base font-semibold">
+                {t('workout.routine.addExercise')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={{ opacity: name.trim() ? 1 : 0.4 }}>
+          <GlassActionButton
+            label={t('workout.routine.save')}
+            symbol="checkmark"
+            onPress={() => {
+              if (name.trim()) void handleSave();
+            }}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -226,8 +289,10 @@ function NumberField({
       <Text className="text-secondary-label mb-1 text-[11px]">{label}</Text>
       <TextInput
         value={value !== null ? String(value) : ''}
-        onChangeText={(text) => onChange(text === '' ? null : Number(text))}
+        onChangeText={(text) => onChange(parseTargetInput(text))}
         keyboardType="number-pad"
+        maxLength={2}
+        selectTextOnFocus
         className="bg-system-background text-label rounded-xl px-3 py-2.5 text-center text-base"
       />
     </View>

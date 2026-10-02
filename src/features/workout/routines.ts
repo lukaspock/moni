@@ -4,11 +4,23 @@
  * against Supabase.
  */
 import * as Crypto from 'expo-crypto';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/supabase';
-import { enqueueDelete, enqueueUpsert } from '@/lib/outbox';
+import {
+  enqueueDelete,
+  enqueueUpsert,
+  pendingDeleteIdsForTable,
+  pendingUpsertsForTable,
+  subscribeOutbox,
+} from '@/lib/outbox';
 import { useSession } from '@/features/auth';
+import {
+  mergeRoutinesWithPending,
+  type PendingRoutineExerciseRow,
+  type PendingRoutineRow,
+} from './routineLogic';
 import type { Routine, RoutineExercise } from './types';
 
 export const routinesQueryKey = (userId: string | null) =>
@@ -55,19 +67,62 @@ async function fetchRoutines(userId: string): Promise<Routine[]> {
   }));
 }
 
+/** Pending (not yet synced) outbox state for routines, overlaid onto server reads. */
+function pendingRoutineState() {
+  return {
+    routines: pendingUpsertsForTable(
+      'routines',
+    ) as unknown as PendingRoutineRow[],
+    routineExercises: pendingUpsertsForTable(
+      'routine_exercises',
+    ) as unknown as PendingRoutineExerciseRow[],
+    deletedRoutineIds: pendingDeleteIdsForTable('routines'),
+    deletedExerciseRowIds: pendingDeleteIdsForTable('routine_exercises'),
+  };
+}
+
 export function useRoutines(): {
   routines: Routine[];
   isLoading: boolean;
   refresh: () => void;
 } {
   const { userId } = useSession();
+  const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: routinesQueryKey(userId),
     queryFn: () => fetchRoutines(userId as string),
     enabled: !!userId,
   });
+
+  // Re-render when the outbox changes (so unsynced saves/deletes show up
+  // immediately) and refetch the server state once routine writes have drained.
+  const [outboxVersion, setOutboxVersion] = useState(0);
+  useEffect(() => {
+    return subscribeOutbox((queue) => {
+      setOutboxVersion((v) => v + 1);
+      const stillPending = queue.some(
+        (e) => e.table === 'routines' || e.table === 'routine_exercises',
+      );
+      if (!stillPending) {
+        void queryClient.invalidateQueries({
+          queryKey: routinesQueryKey(userId),
+        });
+      }
+    });
+  }, [queryClient, userId]);
+
+  const serverRoutines = query.data;
+  const routines = useMemo(() => {
+    void outboxVersion; // recompute whenever the outbox changed
+    return mergeRoutinesWithPending(
+      serverRoutines ?? [],
+      pendingRoutineState(),
+      userId ?? '',
+    );
+  }, [serverRoutines, outboxVersion, userId]);
+
   return {
-    routines: query.data ?? [],
+    routines,
     isLoading: query.isLoading,
     refresh: () => void query.refetch(),
   };
@@ -97,15 +152,22 @@ export function useSaveRoutine() {
       name: params.name,
     });
 
-    // Replace the routine's exercise list: delete existing rows we know about, then upsert the new set.
+    // Replace the routine's exercise list: delete the rows we know about
+    // (cached server state + still-unsynced outbox rows) then upsert the new
+    // set. No network call here, so saving can't hang on a bad connection.
     if (params.id) {
-      const { data: existing } = await supabase
-        .from('routine_exercises')
-        .select('id')
-        .eq('routine_id', routineId);
-      for (const row of existing ?? []) {
-        enqueueDelete('routine_exercises', row.id);
+      const known = new Set<string>();
+      const cached = queryClient.getQueryData<Routine[]>(
+        routinesQueryKey(userId),
+      );
+      for (const r of cached ?? []) {
+        if (r.id !== routineId) continue;
+        for (const e of r.exercises) known.add(e.id);
       }
+      for (const row of pendingRoutineState().routineExercises) {
+        if (row.routine_id === routineId) known.add(row.id);
+      }
+      for (const rowId of known) enqueueDelete('routine_exercises', rowId);
     }
     params.exercises.forEach((ex, index) => {
       const rowId = Crypto.randomUUID();
@@ -127,7 +189,17 @@ export function useDeleteRoutine() {
   const { userId } = useSession();
   const queryClient = useQueryClient();
   return (routineId: string) => {
+    // Drop still-unsynced child rows first: otherwise they'd hit an FK error
+    // after the routine delete replaced the pending routine upsert, and block
+    // the outbox.
+    for (const row of pendingRoutineState().routineExercises) {
+      if (row.routine_id === routineId) {
+        enqueueDelete('routine_exercises', row.id);
+      }
+    }
     enqueueDelete('routines', routineId);
     void queryClient.invalidateQueries({ queryKey: routinesQueryKey(userId) });
   };
 }
+
+export { parseTargetInput } from './routineLogic';

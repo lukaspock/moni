@@ -62,7 +62,8 @@
     "confirm": "Übernehmen ({{count}})",
     "noResults": "Keine Übungen gefunden.",
     "hint": "Suche oder wähle eine Kategorie oder Muskelgruppe.",
-    "recent": "Zuletzt verwendet"
+    "recent": "Zuletzt verwendet",
+    "all": "Alle Übungen"
   },
   "active": {
     "finish": "Workout beenden",

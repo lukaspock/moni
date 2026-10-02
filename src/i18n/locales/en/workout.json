@@ -62,7 +62,8 @@
     "confirm": "Add ({{count}})",
     "noResults": "No exercises found.",
     "hint": "Search, or pick a category or muscle group.",
-    "recent": "Recently used"
+    "recent": "Recently used",
+    "all": "All exercises"
   },
   "active": {
     "finish": "Finish workout",
