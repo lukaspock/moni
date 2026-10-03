@@ -9,6 +9,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View 
 import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
 import { roundTo } from '@/domain';
 import { signOut, useSession } from '@/features/auth';
+import { PersonalSection } from '@/features/auth/components/PersonalSection';
 import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
 import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
@@ -145,6 +146,9 @@ export default function ProfileScreen() {
           <Row label={t('account.onboarding.result.protein')} value={`${Math.round(targets.proteinG)} g`} />
         ) : null}
       </SectionBody>
+
+      {/* Personal (onboarding v2: name, motivation, diet, experience, goal weight, reminders) */}
+      <PersonalSection key={profile.id} profile={profile} />
 
       {/* Body / weight */}
       <SectionHeader label={t('account.profile.sections.body')} />

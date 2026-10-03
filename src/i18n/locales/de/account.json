@@ -2,36 +2,76 @@
   "common": {
     "continue": "Weiter",
     "back": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "skip": "Überspringen",
+    "notNow": "Nicht jetzt",
+    "decrease": "Weniger",
+    "increase": "Mehr"
+  },
+  "greeting": {
+    "morning": "Guten Morgen, {{name}}",
+    "afternoon": "Hi {{name}}",
+    "evening": "Guten Abend, {{name}}"
   },
   "onboarding": {
+    "progressLabel": "Fortschritt der Einrichtung",
     "welcome": {
-      "title": "Willkommen bei møni",
-      "subtitle": "Ein paar kurze Fragen, damit wir dein tägliches Kalorien- und Makro-Ziel setzen können — an Trainingstagen automatisch angepasst.",
-      "cta": "Loslegen"
+      "eyebrow": "Willkommen bei møni",
+      "title": "Deine Kalorien, im Takt mit deinem Training",
+      "subtitle": "Ein paar kurze Fragen, dann bauen wir dir einen Plan, der zu dir passt. Dauert etwa zwei Minuten.",
+      "value1Title": "Foto, fertig",
+      "value1Body": "Mahlzeiten per Foto, Text oder Barcode loggen – die KI rechnet für dich.",
+      "value2Title": "Mehr Training, mehr Essen",
+      "value2Body": "Dein Tageslimit wächst mit jedem Workout.",
+      "value3Title": "Passt sich dir an",
+      "value3Body": "Dein Plan lernt aus deinem echten Fortschritt.",
+      "cta": "Los geht's",
+      "haveAccount": "Ich habe schon ein Konto"
+    },
+    "name": {
+      "title": "Das Wichtigste zuerst – wie dürfen wir dich nennen?",
+      "subtitle": "Dein Vorname reicht völlig. So fühlt sich møni ein bisschen mehr nach dir an.",
+      "placeholder": "Dein Vorname",
+      "greeting": "Schön, dich kennenzulernen, {{name}}! 👋"
+    },
+    "motivation": {
+      "title": "Was treibt dich an, {{name}}?",
+      "titleNoName": "Was treibt dich an?",
+      "subtitle": "Wähl das, was dir am wichtigsten ist – wir behalten es im Blick.",
+      "health": "Gesünder fühlen",
+      "healthDescription": "In deine langfristige Gesundheit investieren",
+      "look": "Besser aussehen",
+      "lookDescription": "Dich in deiner Haut wohlfühlen",
+      "performance": "Mehr Leistung",
+      "performanceDescription": "Stärker, schneller, fitter",
+      "energy": "Mehr Energie",
+      "energyDescription": "Schluss mit dem Nachmittagstief",
+      "confidence": "Mehr Selbstvertrauen",
+      "confidenceDescription": "Deinem Körper wieder vertrauen"
     },
     "sex": {
       "title": "Welches Geschlecht hast du?",
-      "subtitle": "Wird für die Kalorienformel (Mifflin-St Jeor) verwendet.",
+      "subtitle": "Brauchen wir für eine genaue Kalorienformel (Mifflin-St Jeor).",
       "male": "Männlich",
       "female": "Weiblich"
     },
     "birthDate": {
-      "title": "Wann bist du geboren?",
-      "subtitle": "Wird für die Berechnung deines Alters in der Kalorienformel verwendet.",
-      "label": "Geburtsdatum"
+      "title": "Wann hast du Geburtstag?",
+      "subtitle": "Dein Stoffwechsel verändert sich mit dem Alter – so werden deine Werte genauer.",
+      "label": "Geburtsdatum",
+      "age": "Du bist {{value}}"
     },
     "body": {
       "title": "Größe & Gewicht",
-      "subtitle": "Werte werden metrisch gespeichert und in deiner bevorzugten Einheit angezeigt.",
+      "subtitle": "Dein Ausgangspunkt. Bleibt privat – versprochen.",
       "unitMetric": "Metrisch",
       "unitImperial": "Imperial",
       "heightLabel": "Größe",
-      "weightLabel": "Gewicht"
+      "weightLabel": "Aktuelles Gewicht"
     },
     "activity": {
-      "title": "Alltagsaktivität",
-      "subtitle": "Wie aktiv ist dein Alltag außerhalb von Workouts? Workouts werden separat dazugerechnet.",
+      "title": "Wie aktiv ist dein Alltag?",
+      "subtitle": "Ohne Workouts – die rechnen wir separat dazu, damit nichts doppelt zählt.",
       "sedentary": "Sitzend",
       "sedentaryDescription": "Schreibtischjob, wenig Bewegung",
       "light": "Leicht aktiv",
@@ -42,25 +82,59 @@
       "activeDescription": "Körperlich anspruchsvoller Job oder Lebensstil"
     },
     "goal": {
-      "title": "Was ist dein Ziel?",
+      "title": "Was möchtest du erreichen?",
       "subtitle": "Entscheidet, ob wir auf ein Defizit, Erhaltung oder einen Überschuss abzielen.",
       "lose": "Abnehmen",
       "loseDescription": "Moderates Kaloriendefizit",
       "maintain": "Gewicht halten",
       "maintainDescription": "Ungefähr beim aktuellen Gewicht bleiben",
       "gain": "Zunehmen",
-      "gainDescription": "Moderater Kalorienüberschuss"
+      "gainDescription": "Moderater Überschuss, ideal für Muskelaufbau"
+    },
+    "targetWeight": {
+      "title": "Was ist dein Wunschgewicht?",
+      "subtitle": "Wähl ein Ziel, das sich gut anfühlt – du kannst es jederzeit ändern.",
+      "current": "Jetzt: {{value}}",
+      "difference": "noch {{value}}",
+      "healthyRange": "Gesunder Bereich für deine Größe: {{min}} – {{max}}",
+      "projection": "In deinem aktuellen Tempo bist du etwa am {{date}} dort.",
+      "warnUnderweight": "Das liegt unter einem gesunden BMI von 18,5. Ein etwas höheres Ziel tut deinem Körper besser.",
+      "warnTooLow": "Dieses Ziel ist für deine Größe zu niedrig, um gesund zu sein.",
+      "noRange": "Du bist schon am unteren Ende eines gesunden Gewichts für deine Größe. Vielleicht ist „Gewicht halten“ das bessere Ziel?"
     },
     "rate": {
-      "title": "Wie schnell?",
+      "title": "Wie schnell möchtest du vorankommen?",
       "subtitleLose": "Ziel-Tempo für die Gewichtsabnahme pro Woche.",
       "subtitleGain": "Ziel-Tempo für die Gewichtszunahme pro Woche.",
       "subtitleMaintain": "Du hältst dein Gewicht, also gibt es hier kein Tempo einzustellen.",
-      "perWeek": "{{value}} kg / Woche"
+      "perWeek": "{{value}} kg / Woche",
+      "perWeekFormatted": "{{value}} / Woche",
+      "paceGentle": "Entspannt",
+      "paceBalanced": "Ausgewogen · empfohlen",
+      "paceAggressive": "Ehrgeizig",
+      "paceGentleHint": "Leicht durchzuhalten. Langsam und stetig gewinnt.",
+      "paceBalancedHint": "Der Sweet Spot zwischen Fortschritt und Durchhaltevermögen.",
+      "paceAggressiveHint": "Schwer durchzuhalten, und du riskierst Muskelverlust. Wir empfehlen ein etwas ruhigeres Tempo.",
+      "dailyTarget": "Dein Tagesziel",
+      "kcalPerDay": "kcal / Tag",
+      "deficit": "{{value}} kcal unter deinem Erhaltungsbedarf",
+      "surplus": "{{value}} kcal über deinem Erhaltungsbedarf",
+      "reachBy": "Ziel erreicht etwa am",
+      "capped": "Zu deiner Sicherheit begrenzen wir das auf etwa {{value}} pro Woche."
+    },
+    "experience": {
+      "title": "Wie viel Trainingserfahrung hast du?",
+      "subtitle": "Damit wir alles auf deinem Level ansetzen.",
+      "beginner": "Ich fange gerade an",
+      "beginnerDescription": "Neu dabei oder nach langer Pause zurück",
+      "intermediate": "Etwas Erfahrung",
+      "intermediateDescription": "Seit ein paar Monaten regelmäßig",
+      "advanced": "Alter Hase",
+      "advancedDescription": "Seit Jahren konsequent im Training"
     },
     "schedule": {
       "title": "Trainingstage",
-      "subtitle": "Wie oft trainierst du pro Woche und an welchen Tagen?",
+      "subtitle": "Wie oft trainierst du pro Woche und an welchen Tagen? An diesen Tagen steigt dein Limit.",
       "workoutsPerWeekLabel": "Workouts pro Woche",
       "weekdaysLabel": "An welchen Tagen?",
       "weekday": {
@@ -73,70 +147,162 @@
         "6": "Sa"
       }
     },
+    "diet": {
+      "title": "Wie ernährst du dich?",
+      "subtitle": "So können wir Vorschläge machen, die auf deinen Teller passen.",
+      "omnivore": "Von allem etwas",
+      "omnivoreDescription": "Keine Einschränkungen",
+      "flexitarian": "Flexitarisch",
+      "flexitarianDescription": "Meist pflanzlich, ab und zu Fleisch",
+      "pescetarian": "Pescetarisch",
+      "pescetarianDescription": "Fisch ja, Fleisch nein",
+      "vegetarian": "Vegetarisch",
+      "vegetarianDescription": "Kein Fleisch, kein Fisch",
+      "vegan": "Vegan",
+      "veganDescription": "Komplett pflanzlich"
+    },
+    "disclaimer": {
+      "title": "Ein wichtiger Hinweis",
+      "subtitle": "Bevor wir deine Zahlen berechnen:",
+      "point1": "møni liefert Schätzungen und allgemeine Orientierung – keine medizinische Beratung.",
+      "point2": "Wenn du schwanger bist, eine Erkrankung oder eine Essstörung (auch früher) hast, sprich bitte mit einer Ärztin oder einem Arzt, bevor du deine Ernährung umstellst.",
+      "point3": "Wir gehen nie unter sichere Kalorien-Mindestwerte und begrenzen zu große Defizite.",
+      "accept": "Ich habe das gelesen und verstanden",
+      "cta": "Akzeptieren & weiter"
+    },
+    "calculating": {
+      "title": "Wir bauen deinen Plan, {{name}} …",
+      "titleNoName": "Wir bauen deinen Plan …",
+      "step1": "Grundumsatz berechnen",
+      "step2": "Alltagsaktivität einrechnen",
+      "step3": "Trainingstage einplanen",
+      "step4": "Makros ausbalancieren",
+      "done": "Dein Plan ist fertig!"
+    },
     "result": {
-      "title": "Deine Tagesziele",
+      "title": "{{name}}, dein Plan steht 🎉",
+      "titleNoName": "Dein Plan steht 🎉",
       "subtitle": "Dein Limit passt sich automatisch an: höher an Trainingstagen, basierend auf deinem tatsächlichen Verbrauch.",
+      "motivation": {
+        "health": "Gemacht, damit du dich Tag für Tag gesünder fühlst.",
+        "look": "Gemacht, damit du dich in deiner Haut richtig wohlfühlst.",
+        "performance": "Gemacht, um deine Leistung zu befeuern.",
+        "energy": "Gemacht, damit deine Energie den ganzen Tag hält.",
+        "confidence": "Gemacht, damit du deinem Körper wieder vertraust."
+      },
+      "projectionTitle": "Deine Prognose",
+      "projectionReach": "{{target}} etwa am {{date}}",
+      "projectionMaintain": "Stabil bei etwa {{value}}",
+      "projectionNote": "Eine Schätzung auf Basis deines Tempos. Dein Plan passt sich an, sobald du dein Gewicht einträgst.",
       "restDay": "Ruhetag",
       "trainingDay": "Trainingstag",
       "kcal": "kcal",
       "protein": "Protein",
       "carbs": "Kohlenhydrate",
       "fat": "Fett",
-      "workoutBonus": "+{{value}} kcal vom Training",
-      "explanation": "An Ruhetagen ist dein Limit deine angepasste Erhaltungskalorienzahl. An Trainingstagen kommt ein Teil des Verbrauchs (abhängig vom Eat-Back-Faktor) dazu — hauptsächlich als Kohlenhydrate, da Protein und Fett gleich bleiben.",
-      "guardrailDeficit": "Dein gewünschtes Tempo war steiler als ein sicheres Defizit (max. 25% unter Erhaltung), deshalb haben wir es begrenzt.",
-      "guardrailSurplus": "Dein gewünschtes Tempo war steiler als ein sicherer Überschuss (max. +500 kcal/Tag), deshalb haben wir es begrenzt.",
+      "workoutBonus": "+{{value}} kcal durch Training",
+      "explanation": "An Ruhetagen ist dein Limit dein angepasster Erhaltungsbedarf. An Trainingstagen rechnen wir einen Teil deines Verbrauchs wieder dazu – vor allem als Kohlenhydrate, da Protein und Fett stabil bleiben.",
+      "guardrailDeficit": "Dein gewünschtes Tempo lag über einem sicheren Defizit (max. 25 % unter dem Erhaltungsbedarf), deshalb haben wir es begrenzt.",
+      "guardrailSurplus": "Dein gewünschtes Tempo lag über einem sicheren Überschuss (max. +500 kcal/Tag), deshalb haben wir es begrenzt.",
       "guardrailMinimum": "Dein Ziel hat das sichere Tagesminimum erreicht, deshalb haben wir es leicht angehoben.",
-      "cta": "Konto erstellen"
+      "cta": "Weiter"
+    },
+    "health": {
+      "title": "Mit Apple Health verbinden",
+      "subtitle": "Mit Health wird møni noch besser:",
+      "benefit1": "Workouts von deiner Apple Watch und anderen Apps übernehmen",
+      "benefit2": "Dein Gewicht automatisch synchron halten",
+      "benefit3": "Genauerer Kalorienverbrauch an Trainingstagen",
+      "privacy": "Du entscheidest genau, was møni lesen und schreiben darf. Jederzeit in den Einstellungen änderbar.",
+      "cta": "Apple Health verbinden",
+      "later": "Nicht jetzt",
+      "denied": "Kein Problem – du kannst Health später in deinem Profil verbinden."
+    },
+    "notifications": {
+      "title": "Sanfte Erinnerungen?",
+      "subtitle": "Ein freundlicher Stupser zu den Mahlzeiten macht das Loggen zur Gewohnheit. Max. 3 am Tag, mit einem Tipp wieder aus.",
+      "previewApp": "møni",
+      "previewNow": "jetzt",
+      "cta": "Erinnerungen aktivieren",
+      "later": "Nicht jetzt",
+      "denied": "Alles klar! Du kannst Erinnerungen später in deinem Profil einschalten."
     }
   },
   "auth": {
     "signIn": {
       "title": "Anmelden",
-      "subtitle": "Melde dich an, um deine Ziele zu speichern und loszulegen.",
+      "subtitle": "Melde dich an, um deine Ziele zu speichern und mit dem Tracking zu beginnen.",
+      "signUpTitle": "Fast geschafft, {{name}}!",
+      "signUpTitleNoName": "Fast geschafft!",
+      "signUpSubtitle": "Erstelle dein kostenloses Konto, damit dein Plan sicher gespeichert ist.",
+      "signInTitle": "Willkommen zurück",
+      "signInSubtitle": "Melde dich an und mach da weiter, wo du aufgehört hast.",
       "emailLabel": "E-Mail",
       "passwordLabel": "Passwort",
       "signInCta": "Anmelden",
       "signUpCta": "Konto erstellen",
+      "haveAccount": "Ich habe schon ein Konto",
+      "createInstead": "Stattdessen neues Konto erstellen",
+      "newHere": "Neu hier? møni einrichten",
       "toggleToSignUp": "Neu hier? Konto erstellen",
       "toggleToSignIn": "Schon ein Konto? Anmelden",
       "orDivider": "oder",
       "otp": {
         "title": "Mit Code anmelden",
-        "subtitle": "Wir schicken dir einen 6-stelligen Code per E-Mail — kein Passwort, kein Link zum Antippen.",
+        "subtitle": "Wir schicken dir einen 6-stelligen Code per E-Mail – kein Passwort, kein Link.",
         "sendCta": "Code senden",
         "codeLabel": "6-stelliger Code",
         "codeSentTo": "Code gesendet an {{email}}",
         "verifyCta": "Bestätigen & anmelden",
         "resendCta": "Code erneut senden"
       },
-      "appleCta": "Mit Apple fortfahren",
-      "googleCta": "Mit Google fortfahren",
-      "socialComingSoon": "Demnächst — benötigt ein Apple Developer-Konto",
+      "usePassword": "Stattdessen mit Passwort",
+      "appleCta": "Weiter mit Apple",
+      "googleCta": "Weiter mit Google",
+      "socialComingSoon": "Bald verfügbar – benötigt einen Apple-Developer-Account",
+      "checkEmail": "Bitte bestätige deine E-Mail-Adresse über den Link in deinem Postfach und melde dich dann an.",
       "errors": {
         "missingEmail": "Gib deine E-Mail-Adresse ein.",
         "missingPassword": "Gib dein Passwort ein.",
         "invalidCode": "Gib den 6-stelligen Code ein.",
-        "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+        "generic": "Etwas ist schiefgelaufen. Bitte versuch es erneut."
       }
+    },
+    "applying": {
+      "title": "Wir richten deinen Plan ein …",
+      "error": "Wir konnten deinen Plan nicht speichern. Prüf deine Verbindung und versuch es noch einmal.",
+      "retry": "Erneut versuchen",
+      "signOut": "Abmelden"
     }
   },
   "profile": {
     "sections": {
+      "personal": "Persönlich",
       "goals": "Ziel",
       "body": "Körper",
       "activity": "Aktivität & Training",
       "preferences": "Einstellungen",
       "account": "Konto"
     },
+    "personal": {
+      "name": "Name",
+      "namePlaceholder": "Dein Vorname",
+      "motivation": "Motivation",
+      "diet": "Ernährung",
+      "experience": "Trainingserfahrung",
+      "targetWeight": "Wunschgewicht",
+      "notSet": "Nicht gesetzt",
+      "reminders": "Essens-Erinnerungen",
+      "remindersDenied": "Mitteilungen sind für møni ausgeschaltet. Du kannst sie in der iOS-Einstellungen-App erlauben."
+    },
     "todayTargets": "Heutiges Ziel",
-    "restDayLimit": "Limit am Ruhetag",
-    "trainingDayLimit": "Limit am Trainingstag (geschätzt)",
+    "restDayLimit": "Limit Ruhetag",
+    "trainingDayLimit": "Limit Trainingstag (geschätzt)",
     "sex": "Geschlecht",
     "birthDate": "Geburtsdatum",
     "height": "Größe",
     "weight": "Gewicht",
-    "logWeight": "Gewicht erfassen",
+    "logWeight": "Gewicht eintragen",
     "logWeightCta": "Speichern",
     "weightSaved": "Gewicht gespeichert",
     "activityLevel": "Alltagsaktivität",
@@ -146,14 +312,14 @@
     "trainingDays": "Trainingstage",
     "unitSystem": "Einheiten",
     "language": "Sprache",
-    "eatBackFactor": "Eat-Back-Faktor",
-    "eatBackFactorDescription": "Wie viel von deinem Trainingsverbrauch zu deinem Limit dazukommt.",
+    "eatBackFactor": "Eat-back-Faktor",
+    "eatBackFactorDescription": "Wie viel deines Trainingsverbrauchs zu deinem Limit dazugerechnet wird.",
     "signOut": "Abmelden",
     "signOutConfirmTitle": "Abmelden?",
     "signOutConfirmMessage": "Du kannst dich jederzeit wieder anmelden.",
     "save": "Speichern",
     "saved": "Gespeichert",
     "loading": "Profil wird geladen…",
-    "noProfile": "Noch kein Profil vorhanden."
+    "noProfile": "Noch kein Profil."
   }
 }

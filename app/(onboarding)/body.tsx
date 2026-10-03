@@ -1,18 +1,28 @@
 import { Host, Picker, Text as UIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, TextInput, View } from 'react-native';
 
-import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg, roundTo, type UnitSystem } from '@/domain';
+import {
+  cmToFeetInches,
+  feetInchesToCm,
+  isPlausibleHeightCm,
+  isPlausibleWeightKg,
+  kgToLb,
+  lbToKg,
+  roundTo,
+  type UnitSystem,
+} from '@/domain';
 import { useOnboardingStore } from '@/features/auth';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
+import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 
 export default function BodyScreen() {
   const { t } = useTranslation();
   const draft = useOnboardingStore((s) => s.draft);
   const update = useOnboardingStore((s) => s.update);
+  const { goNext } = useOnboardingNavigation('body');
 
   const [heightImperialText, setHeightImperialText] = useState(() => {
     if (!draft.heightCm) return { feet: '', inches: '' };
@@ -78,8 +88,8 @@ export default function BodyScreen() {
       title={t('account.onboarding.body.title')}
       subtitle={t('account.onboarding.body.subtitle')}
       continueLabel={t('account.common.continue')}
-      continueDisabled={!draft.heightCm || !draft.weightKg}
-      onContinue={() => router.push('/(onboarding)/activity')}
+      continueDisabled={!isPlausibleHeightCm(draft.heightCm) || !isPlausibleWeightKg(draft.weightKg)}
+      onContinue={() => goNext()}
     >
       <Host matchContents>
         <Picker

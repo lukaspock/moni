@@ -23,13 +23,17 @@ export function GlassButton({
   onPress,
   disabled,
   loading,
+  variant = 'primary',
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  /** 'secondary' = clearly visible outlined button (e.g. "I already have an account") */
+  variant?: 'primary' | 'secondary';
 }) {
   const isDisabled = !!disabled || !!loading;
+  const isPrimary = variant === 'primary';
 
   return (
     <Pressable
@@ -37,12 +41,18 @@ export function GlassButton({
       accessibilityState={{ disabled: isDisabled }}
       disabled={isDisabled}
       onPress={() => {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        void Haptics.impactAsync(isPrimary ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      className={`h-14 w-full flex-row items-center justify-center rounded-full bg-tint ${isDisabled ? 'opacity-40' : ''}`}
+      className={`h-14 w-full flex-row items-center justify-center rounded-full ${
+        isPrimary ? 'bg-tint' : 'border border-separator bg-secondary-system-background'
+      } ${isDisabled ? 'opacity-40' : ''}`}
     >
-      {loading ? <ActivityIndicator color="white" /> : <Text className="text-lg font-semibold text-white">{label}</Text>}
+      {loading ? (
+        <ActivityIndicator color={isPrimary ? 'white' : undefined} />
+      ) : (
+        <Text className={`text-lg font-semibold ${isPrimary ? 'text-white' : 'text-label'}`}>{label}</Text>
+      )}
     </Pressable>
   );
 }

@@ -33,8 +33,11 @@ export type DailyTargets = {
   isTrainingDay: boolean;
 };
 
-/** Signed-in user's profile, or null while loading / before onboarding. */
-export function useProfile(): { profile: Profile | null; isLoading: boolean } {
+/**
+ * Signed-in user's profile, or null while loading / before onboarding.
+ * `isError` = the fetch failed (e.g. offline) — "unknown", not "no profile".
+ */
+export function useProfile(): { profile: Profile | null; isLoading: boolean; isError: boolean } {
   const { userId } = useSession();
 
   const query = useQuery({
@@ -47,7 +50,7 @@ export function useProfile(): { profile: Profile | null; isLoading: boolean } {
     enabled: !!userId,
   });
 
-  return { profile: query.data ?? null, isLoading: !!userId && query.isLoading };
+  return { profile: query.data ?? null, isLoading: !!userId && query.isLoading, isError: query.isError };
 }
 
 /** Most recent `weight_logs` entry at or before `date`, or null if none yet. */

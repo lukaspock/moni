@@ -1,0 +1,16 @@
+{
+  "meal": {
+    "breakfast": {
+      "title": "Guten Morgen! ☀️",
+      "body": "Schon gefrühstückt? Ein schnelles Foto reicht – møni rechnet den Rest."
+    },
+    "lunch": {
+      "title": "Mittagspause? 🍽️",
+      "body": "Halt dein Mittagessen kurz fest, dann behältst du deinen Tag im Blick."
+    },
+    "dinner": {
+      "title": "Wie war dein Tag?",
+      "body": "Trag dein Abendessen ein und sieh, wie nah du deinem Ziel heute gekommen bist."
+    }
+  }
+}
