@@ -11,7 +11,6 @@ import {
 import Animated, {
   FadeIn,
   FadeOut,
-  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -240,10 +239,9 @@ function MealGroup({
   };
 
   return (
-    <Animated.View
-      layout={LinearTransition.duration(220)}
-      className="bg-secondary-system-background overflow-hidden rounded-2xl"
-    >
+    // Plain View on purpose: a Reanimated `layout` transition here left the first group
+    // (Breakfast) stuck at its pre-load position when the content above it changed height.
+    <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
       <Pressable
         onPress={toggle}
         disabled={!hasLogs}
@@ -322,6 +320,6 @@ function MealGroup({
           ))}
         </Animated.View>
       )}
-    </Animated.View>
+    </View>
   );
 }
