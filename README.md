@@ -4,6 +4,8 @@
 
 > Status: in active development, iOS only. Built as a personal project.
 
+> **How this was built:** implemented with [Claude Code](https://claude.com/claude-code). The product plan, architecture and structure were defined and reviewed by me, and I reviewed the generated code.
+
 ## The idea
 
 Most apps do one half of the job. Calorie trackers do not know that you trained today, and workout trackers do not know what you ate. møni treats both as one system:
