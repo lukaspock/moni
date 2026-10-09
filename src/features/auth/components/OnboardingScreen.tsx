@@ -1,13 +1,9 @@
 import type { ReactNode } from 'react';
-import {
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { PressableScale } from '@/components/motion';
 
 import { GlassButton } from './GlassButton';
 
@@ -49,10 +45,7 @@ export function OnboardingScreen({
   const hasFooter = !!continueLabel || !!secondaryLabel || !!footerNote;
 
   return (
-    <KeyboardAvoidingView
-      behavior="padding"
-      className="bg-system-background flex-1"
-    >
+    <KeyboardAvoidingView behavior="padding" className="bg-bg flex-1">
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-6 px-6 pb-8 pt-6"
@@ -65,9 +58,14 @@ export function OnboardingScreen({
         keyboardDismissMode="interactive"
       >
         <Animated.View entering={FadeInDown.duration(280)} className="gap-2">
-          <Text className="text-label text-3xl font-bold">{title}</Text>
+          <Text
+            accessibilityRole="header"
+            className="text-label font-display-black text-[34px] leading-[36px] tracking-tight"
+          >
+            {title}
+          </Text>
           {subtitle ? (
-            <Text className="text-secondary-label text-base leading-6">
+            <Text className="text-label-secondary text-[15px] leading-5">
               {subtitle}
             </Text>
           ) : null}
@@ -94,15 +92,17 @@ export function OnboardingScreen({
             />
           ) : null}
           {secondaryLabel && onSecondary ? (
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
+              haptic={false}
+              preset="subtle"
               onPress={onSecondary}
               className="h-12 items-center justify-center"
             >
-              <Text className="text-secondary-label text-base font-medium">
+              <Text className="text-label-secondary text-base font-medium">
                 {secondaryLabel}
               </Text>
-            </Pressable>
+            </PressableScale>
           ) : null}
         </View>
       ) : null}

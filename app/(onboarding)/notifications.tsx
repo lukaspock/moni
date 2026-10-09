@@ -1,14 +1,15 @@
-import * as Haptics from 'expo-haptics';
-import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { Illustration, LogoMark } from '@/components/brand';
+import { Reveal } from '@/components/motion';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 import { useMealReminders } from '@/features/notifications';
-import { themeColor } from '@/theme/colors';
+import { fixedColors } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
 
 function PreviewBanner({
   title,
@@ -23,17 +24,20 @@ function PreviewBanner({
   return (
     <Animated.View
       entering={FadeInUp.duration(300).delay(150 + index * 160)}
-      className="bg-secondary-system-background flex-row items-start gap-3 rounded-2xl p-3.5"
+      className="bg-surface flex-row items-start gap-3 rounded-2xl p-3.5"
     >
-      <View className="bg-tint h-9 w-9 items-center justify-center rounded-lg">
-        <SymbolView name="leaf.fill" size={18} tintColor="white" />
+      <View
+        className="h-9 w-9 items-center justify-center rounded-lg"
+        style={{ backgroundColor: fixedColors.forest }}
+      >
+        <LogoMark size={24} variant="color" decorative />
       </View>
       <View className="flex-1 gap-0.5">
         <View className="flex-row justify-between">
-          <Text className="text-secondary-label text-xs font-semibold uppercase">
+          <Text className="text-label-secondary text-xs font-semibold uppercase">
             {t('account.onboarding.notifications.previewApp')}
           </Text>
-          <Text className="text-secondary-label text-xs">
+          <Text className="text-label-secondary text-xs">
             {t('account.onboarding.notifications.previewNow')}
           </Text>
         </View>
@@ -55,10 +59,7 @@ export default function NotificationsPrimerScreen() {
     setBusy(true);
     try {
       const enabled = await setEnabled(true);
-      if (enabled)
-        void Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        );
+      if (enabled) haptic.onboardResult();
     } catch (error) {
       console.warn('[onboarding] enabling reminders failed', error);
     } finally {
@@ -77,18 +78,11 @@ export default function NotificationsPrimerScreen() {
       secondaryLabel={t('account.onboarding.notifications.later')}
       onSecondary={() => goNext()}
     >
-      <Animated.View
-        entering={FadeInDown.duration(260)}
-        className="items-center py-2"
-      >
-        <SymbolView
-          name="bell.badge.fill"
-          size={56}
-          type="hierarchical"
-          tintColor={themeColor('accent')}
-          animationSpec={{ effect: { type: 'bounce' }, repeating: false }}
-        />
-      </Animated.View>
+      <Reveal>
+        <View className="items-center py-2">
+          <Illustration name="notifications" size={200} />
+        </View>
+      </Reveal>
       <View className="gap-2.5">
         <PreviewBanner
           index={0}

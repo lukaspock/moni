@@ -1,5 +1,4 @@
 import { Host, Slider } from '@expo/ui/swift-ui';
-import * as Haptics from 'expo-haptics';
 import { SymbolView } from 'expo-symbols';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
@@ -16,7 +15,8 @@ import {
 } from '@/features/auth/format';
 import { useDraftProjection } from '@/features/auth/useDraftProjection';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
-import { themeColor } from '@/theme/colors';
+import { themeColor, useThemeHex } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
 
 const MIN_RATE = 0.1;
 const MAX_RATE_LOSE = 1.0;
@@ -29,6 +29,7 @@ export default function RateScreen() {
   const update = useOnboardingStore((s) => s.update);
   const { goNext } = useOnboardingNavigation('rate');
   const projection = useDraftProjection();
+  const onTint = useThemeHex('onAccent');
 
   const isLoss = draft.goal === 'lose';
   const maxRate = isLoss ? MAX_RATE_LOSE : MAX_RATE_GAIN;
@@ -41,7 +42,7 @@ export default function RateScreen() {
   function onRateChange(value: number) {
     const next = roundTo(isLoss ? -value : value, 2);
     if (next === draft.goalRateKgPerWeek) return;
-    void Haptics.selectionAsync();
+    haptic.select();
     update({ goalRateKgPerWeek: next });
   }
 
@@ -76,7 +77,7 @@ export default function RateScreen() {
       onContinue={() => goNext()}
     >
       <View className="items-center gap-3 pt-2">
-        <Text className="text-label text-4xl font-bold">
+        <Text className="text-label font-display-black text-[40px] leading-[44px]">
           {t('account.onboarding.rate.perWeekFormatted', {
             value: formatSignedWeight(isLoss ? -magnitude : magnitude, unit),
           })}
@@ -94,9 +95,9 @@ export default function RateScreen() {
                 : 'checkmark.seal.fill'
             }
             size={14}
-            tintColor="white"
+            tintColor={onTint}
           />
-          <Text className="text-sm font-semibold text-white">
+          <Text className="text-on-tint text-sm font-semibold">
             {paceLabels[pace].label}
           </Text>
         </Animated.View>
@@ -113,47 +114,49 @@ export default function RateScreen() {
       </Host>
 
       <Text
-        className={`text-center text-sm ${isAggressive ? 'text-destructive' : 'text-secondary-label'}`}
+        className={`text-center text-sm ${isAggressive ? 'text-destructive' : 'text-label-secondary'}`}
       >
         {paceLabels[pace].hint}
       </Text>
 
       {projection ? (
         <View className="flex-row gap-3">
-          <View className="bg-secondary-system-background flex-1 gap-1 rounded-2xl p-4">
-            <Text className="text-secondary-label text-xs font-semibold uppercase">
+          <View className="bg-surface flex-1 gap-1 rounded-2xl p-4">
+            <Text className="text-label-secondary text-xs font-semibold uppercase">
               {t('account.onboarding.rate.dailyTarget')}
             </Text>
             <CountUpText
               value={projection.preview.restDay.totalKcal}
               format={formatKcal}
-              className="text-label text-3xl font-bold"
+              className="text-label font-display-bold text-[28px]"
             />
-            <Text className="text-secondary-label text-xs">
+            <Text className="text-label-secondary text-xs">
               {t('account.onboarding.rate.kcalPerDay')}
             </Text>
           </View>
-          <View className="bg-secondary-system-background flex-1 gap-1 rounded-2xl p-4">
-            <Text className="text-secondary-label text-xs font-semibold uppercase">
+          <View className="bg-surface flex-1 gap-1 rounded-2xl p-4">
+            <Text className="text-label-secondary text-xs font-semibold uppercase">
               {t('account.onboarding.rate.reachBy')}
             </Text>
             {projection.targetDate ? (
               <Animated.Text
                 key={projection.targetDate.toDateString()}
                 entering={FadeIn.duration(200)}
-                className="text-tint text-lg font-bold"
+                className="text-tint font-display-bold text-lg"
               >
                 {formatLongDate(projection.targetDate)}
               </Animated.Text>
             ) : (
-              <Text className="text-secondary-label text-lg font-bold">—</Text>
+              <Text className="text-label-secondary font-display-bold text-lg">
+                —
+              </Text>
             )}
           </View>
         </View>
       ) : null}
 
       {projection ? (
-        <Text className="text-secondary-label text-center text-sm">
+        <Text className="text-label-secondary text-center text-sm">
           {t(
             projection.dailyDeltaKcal < 0
               ? 'account.onboarding.rate.deficit'
@@ -166,7 +169,7 @@ export default function RateScreen() {
       ) : null}
 
       {capped && projection ? (
-        <View className="bg-secondary-system-background flex-row items-start gap-2 rounded-2xl p-4">
+        <View className="bg-surface flex-row items-start gap-2 rounded-2xl p-4">
           <SymbolView
             name="shield.lefthalf.filled"
             size={18}
@@ -183,7 +186,7 @@ export default function RateScreen() {
         </View>
       ) : null}
       {flags?.minimumFloorApplied ? (
-        <Text className="text-secondary-label text-center text-sm">
+        <Text className="text-label-secondary text-center text-sm">
           {t('account.onboarding.result.guardrailMinimum')}
         </Text>
       ) : null}

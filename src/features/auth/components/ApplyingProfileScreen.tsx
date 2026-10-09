@@ -21,7 +21,7 @@ export function ApplyingProfileScreen({
   const { t } = useTranslation();
 
   return (
-    <View className="bg-system-background flex-1 items-center justify-center gap-5 px-8">
+    <View className="bg-bg flex-1 items-center justify-center gap-5 px-8">
       {failed ? (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -43,7 +43,7 @@ export function ApplyingProfileScreen({
       ) : (
         <>
           <ActivityIndicator size="large" />
-          <Text className="text-secondary-label text-center text-base">
+          <Text className="text-label-secondary text-center text-base">
             {t('account.auth.applying.title')}
           </Text>
         </>

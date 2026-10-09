@@ -119,7 +119,7 @@ export default function BodyScreen() {
       </Host>
 
       <View className="gap-2">
-        <Text className="text-secondary-label text-sm font-medium">
+        <Text className="text-label-secondary text-sm font-medium">
           {t('account.onboarding.body.heightLabel')}
         </Text>
         {isImperial ? (
@@ -131,7 +131,7 @@ export default function BodyScreen() {
               }
               keyboardType="number-pad"
               placeholder="ft"
-              className="border-separator text-label h-14 flex-1 rounded-xl border px-4 text-lg"
+              className="border-line text-label h-14 flex-1 rounded-xl border px-4 text-lg"
             />
             <TextInput
               value={heightImperialText.inches}
@@ -140,7 +140,7 @@ export default function BodyScreen() {
               }
               keyboardType="number-pad"
               placeholder="in"
-              className="border-separator text-label h-14 flex-1 rounded-xl border px-4 text-lg"
+              className="border-line text-label h-14 flex-1 rounded-xl border px-4 text-lg"
             />
           </View>
         ) : (
@@ -149,13 +149,13 @@ export default function BodyScreen() {
             onChangeText={onHeightCmChange}
             keyboardType="decimal-pad"
             placeholder="cm"
-            className="border-separator text-label h-14 rounded-xl border px-4 text-lg"
+            className="border-line text-label h-14 rounded-xl border px-4 text-lg"
           />
         )}
       </View>
 
       <View className="gap-2">
-        <Text className="text-secondary-label text-sm font-medium">
+        <Text className="text-label-secondary text-sm font-medium">
           {t('account.onboarding.body.weightLabel')}
         </Text>
         <TextInput
@@ -169,7 +169,7 @@ export default function BodyScreen() {
           onChangeText={isImperial ? onWeightImperialChange : onWeightKgChange}
           keyboardType="decimal-pad"
           placeholder={isImperial ? 'lb' : 'kg'}
-          className="border-separator text-label h-14 rounded-xl border px-4 text-lg"
+          className="border-line text-label h-14 rounded-xl border px-4 text-lg"
         />
       </View>
     </OnboardingScreen>

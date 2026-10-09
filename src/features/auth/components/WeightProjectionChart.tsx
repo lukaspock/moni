@@ -11,6 +11,7 @@ import { Text, View } from 'react-native';
 import {
   Easing,
   useDerivedValue,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
@@ -45,14 +46,32 @@ export function WeightProjectionChart({
 }) {
   const [width, setWidth] = useState(0);
   const accent = useThemeHex('accent');
+  const onTint = useThemeHex('onAccent');
+  const reduceMotion = useReducedMotion();
   const progress = useSharedValue(0);
+  // "Ignition" of the goal dot: a halo ring that expands and fades once the
+  // line has arrived (skipped under Reduce Motion — the dot just appears).
+  const halo = useSharedValue(0);
 
   useEffect(() => {
+    if (reduceMotion) {
+      progress.value = 1;
+      return;
+    }
     progress.value = withDelay(
       150,
       withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }),
     );
-  }, [progress]);
+    halo.value = withDelay(
+      1050,
+      withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) }),
+    );
+  }, [progress, halo, reduceMotion]);
+
+  const haloRadius = useDerivedValue(() => 8 + halo.value * 18);
+  const haloOpacity = useDerivedValue(() =>
+    halo.value > 0 ? 0.5 * (1 - halo.value) : 0,
+  );
 
   const geometry = useMemo(() => {
     if (width === 0 || points.length < 2) return null;
@@ -126,6 +145,13 @@ export function WeightProjectionChart({
             <Circle
               cx={geometry.goal.x}
               cy={geometry.goal.y}
+              r={haloRadius}
+              color={accent}
+              opacity={haloOpacity}
+            />
+            <Circle
+              cx={geometry.goal.x}
+              cy={geometry.goal.y}
               r={8}
               color={accent}
               opacity={goalOpacity}
@@ -134,20 +160,20 @@ export function WeightProjectionChart({
               cx={geometry.goal.x}
               cy={geometry.goal.y}
               r={3.5}
-              color="white"
+              color={onTint}
               opacity={goalOpacity}
             />
           </Canvas>
         ) : null}
       </View>
       <View className="flex-row items-start justify-between">
-        <Text className="text-secondary-label text-sm font-semibold">
+        <Text className="text-label-secondary text-sm font-semibold">
           {startLabel}
         </Text>
         <View className="items-end">
           <Text className="text-tint text-sm font-semibold">{endLabel}</Text>
           {endCaption ? (
-            <Text className="text-secondary-label text-xs">{endCaption}</Text>
+            <Text className="text-label-tertiary text-xs">{endCaption}</Text>
           ) : null}
         </View>
       </View>

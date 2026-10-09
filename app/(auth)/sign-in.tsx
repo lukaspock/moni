@@ -20,13 +20,14 @@ import {
   useOnboardingStore,
   verifyEmailOtp,
 } from '@/features/auth';
+import { LogoMark } from '@/components/brand';
 import { GlassButton } from '@/features/auth/components/GlassButton';
 
 type Mode = 'signUp' | 'signIn';
 type Method = 'password' | 'otp';
 
 const inputClass =
-  'h-14 rounded-2xl border border-separator bg-secondary-system-background px-4 text-lg text-label';
+  'h-14 rounded-2xl border border-line bg-surface px-4 text-lg text-label';
 
 /**
  * Sign-up is the default after onboarding ("Almost there, {name}!"); a
@@ -146,10 +147,7 @@ export default function SignInScreen() {
     : t('account.auth.signIn.signInSubtitle');
 
   return (
-    <KeyboardAvoidingView
-      behavior="padding"
-      className="bg-system-background flex-1"
-    >
+    <KeyboardAvoidingView behavior="padding" className="bg-bg flex-1">
       <ScrollView
         contentContainerClassName="gap-5 px-6"
         contentContainerStyle={{
@@ -162,10 +160,13 @@ export default function SignInScreen() {
         <Animated.View
           key={mode}
           entering={FadeInDown.duration(250)}
-          className="gap-2 pb-2"
+          className="gap-3 pb-2"
         >
-          <Text className="text-label text-3xl font-bold">{title}</Text>
-          <Text className="text-secondary-label text-base leading-6">
+          <LogoMark size={56} variant="adaptive" decorative />
+          <Text className="text-label font-display-black text-[34px] leading-[36px] tracking-tight">
+            {title}
+          </Text>
+          <Text className="text-label-secondary text-base leading-6">
             {subtitle}
           </Text>
         </Animated.View>
@@ -173,7 +174,7 @@ export default function SignInScreen() {
         {notice ? (
           <Animated.View
             entering={FadeIn.duration(200)}
-            className="bg-secondary-system-background rounded-2xl p-4"
+            className="bg-surface rounded-2xl p-4"
           >
             <Text className="text-label text-sm">{notice}</Text>
           </Animated.View>
@@ -222,7 +223,7 @@ export default function SignInScreen() {
           <View className="gap-4">
             {otpSent ? (
               <>
-                <Text className="text-secondary-label text-sm">
+                <Text className="text-label-secondary text-sm">
                   {t('account.auth.signIn.otp.codeSentTo', { email })}
                 </Text>
                 <TextInput
@@ -254,7 +255,7 @@ export default function SignInScreen() {
               </>
             ) : (
               <>
-                <Text className="text-secondary-label text-sm">
+                <Text className="text-label-secondary text-sm">
                   {t('account.auth.signIn.otp.subtitle')}
                 </Text>
                 {error ? (
@@ -287,11 +288,11 @@ export default function SignInScreen() {
         </Pressable>
 
         <View className="flex-row items-center gap-3 py-1">
-          <View className="bg-separator h-px flex-1" />
-          <Text className="text-secondary-label text-sm">
+          <View className="bg-line h-px flex-1" />
+          <Text className="text-label-secondary text-sm">
             {t('account.auth.signIn.orDivider')}
           </Text>
-          <View className="bg-separator h-px flex-1" />
+          <View className="bg-line h-px flex-1" />
         </View>
 
         {isSignUp ? (
@@ -317,7 +318,7 @@ export default function SignInScreen() {
         <View className="mt-2 gap-3">
           <Pressable
             disabled
-            className="border-separator h-14 items-center justify-center rounded-2xl border opacity-40"
+            className="border-line h-14 items-center justify-center rounded-2xl border opacity-40"
           >
             <Text className="text-label text-base font-medium">
               {t('account.auth.signIn.appleCta')}
@@ -325,13 +326,13 @@ export default function SignInScreen() {
           </Pressable>
           <Pressable
             disabled
-            className="border-separator h-14 items-center justify-center rounded-2xl border opacity-40"
+            className="border-line h-14 items-center justify-center rounded-2xl border opacity-40"
           >
             <Text className="text-label text-base font-medium">
               {t('account.auth.signIn.googleCta')}
             </Text>
           </Pressable>
-          <Text className="text-tertiary-label text-center text-xs">
+          <Text className="text-label-tertiary text-center text-xs">
             {t('account.auth.signIn.socialComingSoon')}
           </Text>
         </View>

@@ -22,7 +22,7 @@ export function SettingsGroup({
       <Card className="gap-0 overflow-hidden p-0">
         {rows.map((row, i) => (
           <Fragment key={i}>
-            {i > 0 && <View className="bg-separator h-px" />}
+            {i > 0 && <View className="bg-line h-px" />}
             {row}
           </Fragment>
         ))}

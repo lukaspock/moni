@@ -1,7 +1,7 @@
-import * as Haptics from 'expo-haptics';
 import { GlassView } from 'expo-glass-effect';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 
+import { PressableScale } from '@/components/motion';
 import { useThemeHex } from '@/theme/colors';
 
 /**
@@ -40,49 +40,51 @@ export function GlassButton({
   const isDisabled = !!disabled || !!loading;
   const isPrimary = variant === 'primary';
   const tint = useThemeHex('accent');
+  const onTint = useThemeHex('onAccent');
 
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: !!loading }}
       disabled={isDisabled}
-      onPress={() => {
-        void Haptics.impactAsync(
-          isPrimary
-            ? Haptics.ImpactFeedbackStyle.Medium
-            : Haptics.ImpactFeedbackStyle.Light,
-        );
-        onPress();
-      }}
-      style={{ opacity: isDisabled ? 0.4 : 1 }}
+      haptic={isPrimary ? 'onboardContinue' : 'tapLight'}
+      preset="default"
+      onPress={onPress}
     >
-      {isPrimary ? (
-        <GlassView
-          glassEffectStyle="regular"
-          tintColor={tint}
-          isInteractive
-          style={{
-            height: 56,
-            borderRadius: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-lg font-semibold text-white">{label}</Text>
-          )}
-        </GlassView>
-      ) : (
-        <View className="border-separator bg-secondary-system-background h-14 w-full items-center justify-center rounded-full border">
-          {loading ? (
-            <ActivityIndicator />
-          ) : (
-            <Text className="text-label text-lg font-semibold">{label}</Text>
-          )}
-        </View>
-      )}
-    </Pressable>
+      <View style={{ opacity: isDisabled ? 0.4 : 1 }}>
+        {isPrimary ? (
+          <GlassView
+            glassEffectStyle="regular"
+            tintColor={tint}
+            isInteractive
+            style={{
+              height: 56,
+              borderRadius: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {loading ? (
+              <ActivityIndicator color={onTint} />
+            ) : (
+              <Text className="text-on-tint text-[17px] font-semibold">
+                {label}
+              </Text>
+            )}
+          </GlassView>
+        ) : (
+          <View className="border-line bg-surface h-14 w-full items-center justify-center rounded-full border">
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text className="text-label text-[17px] font-semibold">
+                {label}
+              </Text>
+            )}
+          </View>
+        )}
+      </View>
+    </PressableScale>
   );
 }

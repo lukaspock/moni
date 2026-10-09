@@ -68,7 +68,7 @@ function OnboardingProgressBar() {
         left: BAR_SIDE_INSET,
         right: BAR_SIDE_INSET,
       }}
-      className="bg-secondary-system-background h-1.5 overflow-hidden rounded-full"
+      className="bg-surface-raised h-1 overflow-hidden rounded-full"
     >
       <Animated.View
         style={fillStyle}
@@ -85,7 +85,7 @@ function OnboardingProgressBar() {
  */
 export default function OnboardingLayout() {
   return (
-    <View className="bg-system-background flex-1">
+    <View className="bg-bg flex-1">
       <Stack
         screenOptions={{
           headerShown: true,

@@ -1,7 +1,6 @@
 import { Host, Picker, Text as UIText, Toggle } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Text, TextInput, View } from 'react-native';
@@ -19,6 +18,7 @@ import { supabase } from '../../../lib/supabase';
 import { useMealReminders } from '../../notifications';
 import { SettingsGroup } from './SettingsGroup';
 import type { Database } from '../../../types/database';
+import { haptic } from '@/lib/haptics';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
@@ -115,7 +115,7 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
       Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
       return;
     }
-    void Haptics.selectionAsync();
+    haptic.select();
     void queryClient.invalidateQueries({ queryKey: ['profile', profile.id] });
   }
 
@@ -209,7 +209,7 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
           autoCorrect={false}
           maxLength={40}
           returnKeyType="done"
-          className="text-secondary-label min-w-32 text-right text-base"
+          className="text-label-secondary min-w-32 text-right text-base"
         />
       </Row>
       <Row label={t('account.profile.personal.motivation')}>
@@ -246,10 +246,10 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
             onEndEditing={saveTarget}
             placeholder={t('account.profile.personal.notSet')}
             keyboardType="decimal-pad"
-            className="text-secondary-label min-w-20 text-right text-base"
+            className="text-label-secondary min-w-20 text-right text-base"
           />
           {targetText ? (
-            <Text className="text-secondary-label text-base">
+            <Text className="text-label-secondary text-base">
               {isImperial ? 'lb' : 'kg'}
             </Text>
           ) : null}
