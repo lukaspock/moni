@@ -1,8 +1,13 @@
-import { Host, Picker, Slider, Text as UIText } from '@expo/ui/swift-ui';
+import {
+  Host,
+  Picker,
+  Slider,
+  Toggle,
+  Text as UIText,
+} from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,7 +19,14 @@ import {
   View,
 } from 'react-native';
 
-import { ScreenTitle } from '@/components/ui';
+import { ListRow, ScreenTitle } from '@/components/ui';
+import { useAchievements } from '@/features/rhythm';
+import {
+  MyMoeniHeader,
+  RhythmSettingsGroup,
+  StageCard,
+  achievementCopy,
+} from '@/features/review';
 import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
 import { cmToFeetInches, roundTo } from '@/domain';
 import { signOut, useSession } from '@/features/auth';
@@ -23,8 +35,9 @@ import { PersonalSection } from '@/features/auth/components/PersonalSection';
 import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
 import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
 import { toISODate } from '@/lib/date';
+import { haptic, useHapticsSetting } from '@/lib/haptics';
 import { supabase } from '@/lib/supabase';
-import i18n, { fallbackLanguage, supportedLanguages } from '@/i18n';
+import { fallbackLanguage, supportedLanguages } from '@/i18n';
 
 const ACTIVITY_LEVELS: ActivityLevel[] = [
   'sedentary',
@@ -59,12 +72,22 @@ function Row({
 }
 
 export default function ProfileScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { userId } = useSession();
   const { profile, isLoading } = useProfile();
   const { targets } = useDailyTargets(toISODate());
   const queryClient = useQueryClient();
   const { enabled: healthEnabled } = useHealthSettings();
+  const { enabled: hapticsOn, setEnabled: setHapticsOn } = useHapticsSetting();
+  const achievements = useAchievements();
+  const copy = achievementCopy(t);
+  const nextStamp = achievements.statuses
+    .filter((st) => !st.unlocked && st.progress)
+    .sort(
+      (a, b) =>
+        b.progress!.current / b.progress!.target -
+        a.progress!.current / a.progress!.target,
+    )[0];
 
   const isImperial = profile?.unit_system === 'imperial';
 
@@ -82,7 +105,7 @@ export default function ProfileScreen() {
   }
 
   async function toggleWeekday(day: number, current: number[]) {
-    void Haptics.selectionAsync();
+    haptic.select();
     const next = current.includes(day)
       ? current.filter((d) => d !== day)
       : [...current, day].sort();
@@ -171,6 +194,42 @@ export default function ProfileScreen() {
         className="flex-1"
         contentContainerClassName="px-4 pb-12 pt-6"
       >
+        <MyMoeniHeader
+          name={profile.display_name}
+          goal={(profile.goal ?? null) as Goal | null}
+          rateKgPerWeek={profile.goal_rate_kg_per_week ?? null}
+          memberSince={
+            profile.created_at
+              ? new Date(profile.created_at).toLocaleDateString(i18n.language, {
+                  month: 'long',
+                  year: 'numeric',
+                })
+              : null
+          }
+        />
+        <StageCard />
+        <View className="pt-5">
+          <View className="bg-surface overflow-hidden rounded-3xl">
+            <ListRow
+              title={t('rhythm.profile.achievementsRow')}
+              subtitle={
+                nextStamp
+                  ? t('rhythm.profile.achievementsNext', {
+                      name: copy[nextStamp.id].name,
+                    })
+                  : undefined
+              }
+              symbol="seal.fill"
+              value={t('achievements.shelf.count', {
+                unlocked: achievements.unlockedCount,
+                total: achievements.total,
+              })}
+              onPress={() => router.push('/profile/achievements')}
+            />
+          </View>
+        </View>
+        <RhythmSettingsGroup />
+
         {/* Today's target */}
         <SettingsGroup title={t('account.profile.todayTargets')}>
           <Row
@@ -377,6 +436,25 @@ export default function ProfileScreen() {
                 : t('health.settings.statusOff')
             }
             onPress={() => router.push('/profile/health')}
+          />
+        </SettingsGroup>
+
+        <SettingsGroup title={t('rhythm.profile.sections.app')}>
+          <View className="gap-1 px-4 py-2">
+            <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+              <Toggle
+                isOn={hapticsOn}
+                label={t('rhythm.profile.hapticsTitle')}
+                onIsOnChange={(v) => setHapticsOn(v)}
+              />
+            </Host>
+            <Text className="text-secondary-label text-xs">
+              {t('rhythm.profile.hapticsHint')}
+            </Text>
+          </View>
+          <Row
+            label={t('rhythm.profile.notificationsRow')}
+            onPress={() => router.push('/profile/notifications')}
           />
         </SettingsGroup>
 

@@ -1,5 +1,4 @@
 import { Host, Toggle } from '@expo/ui/swift-ui';
-import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,6 +18,8 @@ import {
 } from '@/features/health';
 import { GlassActionButton } from '@/components/ui';
 import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
+import { textStyles } from '@/theme/typography';
+import { haptic } from '@/lib/haptics';
 import { themeColor } from '@/theme/colors';
 
 function Footnote({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,7 @@ export default function HealthSettingsScreen() {
     setRequesting(false);
     setAuthResult(result);
     if (result === 'granted') {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      haptic.aiDone();
       setEnabled(true); // useHealthAutoSync picks this up and runs the first import
     }
   }
@@ -71,10 +72,10 @@ export default function HealthSettingsScreen() {
   if (!available) {
     return (
       <ScrollView
-        className="bg-system-background flex-1"
+        className="bg-bg flex-1"
         contentContainerClassName="px-4 pb-12 pt-4"
       >
-        <Text className="text-label text-base">
+        <Text className="text-label" style={textStyles.body}>
           {t('health.settings.intro')}
         </Text>
         <Text className="text-secondary-label pt-4 text-base">
@@ -86,10 +87,12 @@ export default function HealthSettingsScreen() {
 
   return (
     <ScrollView
-      className="bg-system-background flex-1"
+      className="bg-bg flex-1"
       contentContainerClassName="px-4 pb-12 pt-4"
     >
-      <Text className="text-label text-base">{t('health.settings.intro')}</Text>
+      <Text className="text-label" style={textStyles.body}>
+        {t('health.settings.intro')}
+      </Text>
 
       {!enabled ? (
         <View className="pt-5">

@@ -11,6 +11,14 @@ export default function ProfileStackLayout() {
         name="health"
         options={{ title: t('health.settings.title') }}
       />
+      <Stack.Screen
+        name="achievements"
+        options={{ title: t('achievements.shelf.title') }}
+      />
+      <Stack.Screen
+        name="notifications"
+        options={{ title: t('rhythm.profile.notificationsRow') }}
+      />
     </Stack>
   );
 }
