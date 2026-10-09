@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import * as Crypto from 'expo-crypto';
-import * as Haptics from 'expo-haptics';
-import { Host, Picker, Slider, Text as SwiftUIText } from '@expo/ui/swift-ui';
-import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+
+import { Illustration } from '@/components/brand';
+import { RollingNumber, Reveal } from '@/components/motion';
 import {
   Card,
+  Chip,
   GlassActionButton,
   SectionHeader,
   SheetScreen,
 } from '@/components/ui';
+import { haptic } from '@/lib/haptics';
 import { themeColor } from '@/theme/colors';
 
-import type { MealType } from '@/domain';
+import type { FoodSource, MealType } from '@/domain';
 import {
   PORTION_PRESETS,
   clampPortionMultiplier,
@@ -36,10 +36,33 @@ import {
   useFoodDraftStore,
   useFoodLogById,
   useSaveFoodDraft,
-  type DraftFoodItem,
+  useMealFlightBridge,
 } from '@/features/food';
+import {
+  AnalysisProgress,
+  type AnalysisKind,
+} from '@/features/food/ui/AnalysisProgress';
+import { FieldInput } from '@/features/food/ui/FieldInput';
+import { IngredientList } from '@/features/food/ui/IngredientList';
+import { MacroLine } from '@/features/food/ui/MacroLine';
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+const PORTION_STEP = 0.25;
+
+function analysisKind(source: FoodSource): AnalysisKind {
+  switch (source) {
+    case 'photo':
+      return 'photo';
+    case 'text':
+      return 'text';
+    case 'barcode':
+      return 'barcode';
+    case 'label':
+      return 'label';
+    default:
+      return 'other';
+  }
+}
 
 export default function FoodReviewScreen() {
   const { t } = useTranslation();
@@ -52,10 +75,6 @@ export default function FoodReviewScreen() {
   const setMealType = useFoodDraftStore((s) => s.setMealType);
   const setItems = useFoodDraftStore((s) => s.setItems);
   const setStatus = useFoodDraftStore((s) => s.setStatus);
-  const addItem = useFoodDraftStore((s) => s.addItem);
-  const updateItem = useFoodDraftStore((s) => s.updateItem);
-  const removeItem = useFoodDraftStore((s) => s.removeItem);
-  const scaleItemGrams = useFoodDraftStore((s) => s.scaleItemGrams);
   const setPortionMultiplier = useFoodDraftStore((s) => s.setPortionMultiplier);
   const setSaveAsFavorite = useFoodDraftStore((s) => s.setSaveAsFavorite);
 
@@ -64,6 +83,7 @@ export default function FoodReviewScreen() {
 
   const saveDraft = useSaveFoodDraft();
   const [isSaving, setIsSaving] = useState(false);
+  const saveButtonRef = useRef<View>(null);
 
   // Load an existing food_log into the draft once (edit flow from the dashboard). Guarded via
   // the (Zustand, not React) draft store's own id rather than a React state setter, so no
@@ -95,15 +115,25 @@ export default function FoodReviewScreen() {
     });
   }, [editFoodLogId, existingLog, start]);
 
+  // Haptics for the analysis outcome (only for a fresh analysis, not the edit flow).
+  const previousStatus = useRef(draft.status);
+  useEffect(() => {
+    const before = previousStatus.current;
+    previousStatus.current = draft.status;
+    if (editFoodLogId || before !== 'analyzing') return;
+    if (draft.status === 'ready') haptic.aiDone();
+    else if (draft.status === 'error') haptic.aiFail();
+  }, [draft.status, editFoodLogId]);
+
   const isAnalyzing = draft.status === 'analyzing' && !editFoodLogId;
   const multiplier = draft.portionMultiplier;
   // Rows show (and save) the portion-scaled values; edits are divided back into base values.
   const scaledItems = scaleFoodItems(draft.items, multiplier);
   const totals = sumFoodItems(scaledItems);
-  const showConfidenceNote =
-    draft.aiConfidence != null &&
-    draft.aiConfidence < 0.6 &&
-    draft.status === 'ready';
+  const isAiSource = draft.source === 'photo' || draft.source === 'text';
+  const lowConfidence = draft.aiConfidence != null && draft.aiConfidence < 0.6;
+  const showEstimateNote =
+    draft.status === 'ready' && !editFoodLogId && (lowConfidence || isAiSource);
 
   const enterManually = () => {
     setItems([
@@ -120,12 +150,26 @@ export default function FoodReviewScreen() {
     setStatus('ready');
   };
 
+  const stepPortion = (direction: 1 | -1) => {
+    haptic.select();
+    setPortionMultiplier(
+      clampPortionMultiplier(
+        Math.round((multiplier + direction * PORTION_STEP) * 100) / 100,
+      ),
+    );
+  };
+
   const handleSave = () => {
     if (draft.items.length === 0) {
       Alert.alert(t('food.review.noItemsTitle'), t('food.review.noItemsBody'));
       return;
     }
     setIsSaving(true);
+    // Start point of the "+kcal" flight on Today: the centre of the save button.
+    let from: { x: number; y: number } | undefined;
+    saveButtonRef.current?.measureInWindow((x, y, w, h) => {
+      from = { x: x + w / 2, y: y + h / 2 };
+    });
     saveDraft.mutate(
       {
         id: draft.id,
@@ -143,9 +187,10 @@ export default function FoodReviewScreen() {
       },
       {
         onSuccess: () => {
-          void Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success,
-          );
+          haptic.mealSaved();
+          if (!editFoodLogId) {
+            useMealFlightBridge.getState().queue(totals.kcal, from);
+          }
           useFoodDraftStore.getState().reset();
           router.dismissAll();
         },
@@ -160,49 +205,54 @@ export default function FoodReviewScreen() {
     );
   };
 
+  const title = t('food.review.title');
+
   if (editFoodLogId && existingLoading && draft.id !== editFoodLogId) {
     return (
-      <View className="bg-system-background flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
+      <SheetScreen title={title}>
+        <AnalysisProgress kind="other" size={96} />
+      </SheetScreen>
     );
   }
-
-  const title = t('food.review.title');
 
   if (isAnalyzing) {
     return (
       <SheetScreen title={title}>
-        <View className="items-center gap-4 py-16">
-          <ActivityIndicator size="large" />
-          <Text className="text-secondary-label text-base">
-            {t('food.review.analyzing')}
-          </Text>
-        </View>
+        <AnalysisProgress kind={analysisKind(draft.source)} />
       </SheetScreen>
     );
   }
 
   if (draft.status === 'error') {
+    const limit = draft.errorKind === 'ai_limit_reached';
     return (
       <SheetScreen title={title}>
-        <Card className="items-center gap-4 py-6">
-          <SymbolView name="exclamationmark.triangle" size={32} />
-          <Text className="text-label text-center text-base">
-            {draft.errorKind === 'ai_limit_reached'
+        <View className="items-center gap-4 pt-4">
+          <Illustration name="error" size={160} />
+          <Text
+            accessibilityRole="header"
+            className="text-label text-center font-display-bold text-[20px]"
+            maxFontSizeMultiplier={1.3}
+          >
+            {limit
+              ? t('food.paywall.title')
+              : t('food.logFood.analyzeErrorTitle')}
+          </Text>
+          <Text className="text-label-secondary text-center text-base">
+            {limit
               ? t('food.review.limitReachedBody')
               : t('food.logFood.analyzeErrorBody')}
           </Text>
-          {draft.errorCode && draft.errorKind !== 'ai_limit_reached' && (
+          {draft.errorCode && !limit && (
             <Text
               selectable
-              className="text-secondary-label text-center text-xs"
+              className="text-label-tertiary text-center text-xs"
             >
               {t('food.review.errorCode', { code: draft.errorCode })}
             </Text>
           )}
-        </Card>
-        {draft.errorKind === 'ai_limit_reached' && (
+        </View>
+        {limit && (
           <GlassActionButton
             label={t('food.review.getPremium')}
             symbol="sparkles"
@@ -211,7 +261,7 @@ export default function FoodReviewScreen() {
         )}
         <Pressable
           onPress={enterManually}
-          className="bg-secondary-system-background items-center rounded-2xl py-4"
+          className="bg-surface-raised h-14 items-center justify-center rounded-full"
           accessibilityRole="button"
         >
           <Text className="text-tint text-base font-semibold">
@@ -225,154 +275,135 @@ export default function FoodReviewScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="bg-system-background flex-1"
+      className="bg-bg flex-1"
     >
       <SheetScreen title={title}>
-        <Card>
-          <TextInput
-            value={draft.title}
-            onChangeText={setTitle}
-            placeholder={t('food.review.titlePlaceholder')}
-            placeholderTextColor="rgba(120,120,128,0.6)"
-            className="text-label text-xl font-bold"
-          />
-        </Card>
-
-        {showConfidenceNote && (
-          <Card className="flex-row items-start gap-2">
-            <SymbolView name="exclamationmark.circle" size={16} />
-            <Text className="text-secondary-label flex-1 text-sm">
-              {t('food.review.lowConfidenceNote')}
+        <Reveal once="food-review-hero">
+          <Card variant="tinted" className="gap-3">
+            <Text
+              className="text-label-secondary text-[13px] font-medium"
+              maxFontSizeMultiplier={1.3}
+            >
+              {t('food.review.totals')}
             </Text>
+            <View className="flex-row items-end gap-2">
+              <RollingNumber
+                value={Math.round(totals.kcal)}
+                fontSize={40}
+                accessibilityLabel={`${Math.round(totals.kcal)} ${t('food.dashboard.kcalUnit')}`}
+              />
+              <Text
+                className="text-label-secondary pb-1.5 text-[15px] font-medium"
+                maxFontSizeMultiplier={1.3}
+              >
+                {t('food.dashboard.kcalUnit')}
+              </Text>
+            </View>
+            <MacroLine
+              proteinG={totals.proteinG}
+              carbsG={totals.carbsG}
+              fatG={totals.fatG}
+            />
           </Card>
+        </Reveal>
+
+        <FieldInput
+          value={draft.title}
+          onChangeText={setTitle}
+          placeholder={t('food.review.titlePlaceholder')}
+          accessibilityLabel={t('food.review.titlePlaceholder')}
+          display
+        />
+
+        {showEstimateNote && (
+          <View className="flex-row items-start gap-2 px-1">
+            <SymbolView
+              name="sparkles"
+              size={16}
+              tintColor={themeColor('labelSecondary')}
+            />
+            <Text className="text-label-secondary flex-1 text-sm">
+              {lowConfidence
+                ? t('food.review.lowConfidenceNote')
+                : t('identity.ai.estimate')}
+            </Text>
+          </View>
         )}
 
         {draft.clarification && (
-          <Card className="flex-row items-start gap-2">
-            <SymbolView name="questionmark.circle" size={16} />
-            <Text className="text-secondary-label flex-1 text-sm">
+          <View className="flex-row items-start gap-2 px-1">
+            <SymbolView
+              name="questionmark.circle"
+              size={16}
+              tintColor={themeColor('labelSecondary')}
+            />
+            <Text className="text-label-secondary flex-1 text-sm">
               {draft.clarification}
             </Text>
-          </Card>
+          </View>
         )}
 
         <View className="gap-2">
           <SectionHeader title={t('food.review.mealCategory')} />
-          <Card>
-            <Host matchContents style={{ width: '100%' }}>
-              <Picker
-                selection={draft.mealType}
-                onSelectionChange={(value) => setMealType(value as MealType)}
-                modifiers={[pickerStyle('segmented')]}
-              >
-                {MEAL_TYPES.map((mt) => (
-                  <SwiftUIText key={mt} modifiers={[tag(mt)]}>
-                    {t(`food.mealType.${mt}`)}
-                  </SwiftUIText>
-                ))}
-              </Picker>
-            </Host>
-          </Card>
-        </View>
-
-        <View className="gap-2">
-          <SectionHeader
-            title={`${t('food.review.portion')} · ${multiplier.toFixed(2)}×`}
-          />
-          <Card>
-            <View className="flex-row gap-2">
-              {PORTION_PRESETS.map((preset) => {
-                const selected = Math.abs(multiplier - preset) < 0.001;
-                return (
-                  <Pressable
-                    key={preset}
-                    onPress={() => {
-                      void Haptics.selectionAsync();
-                      setPortionMultiplier(preset);
-                    }}
-                    className={`flex-1 items-center rounded-xl py-2.5 ${selected ? 'bg-tint' : 'bg-system-background'}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                  >
-                    <Text
-                      className={`text-base font-semibold ${selected ? 'text-white' : 'text-label'}`}
-                    >
-                      {preset === 0.5 ? '½' : `${preset}×`}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Host matchContents style={{ width: '100%' }}>
-              <Slider
-                value={multiplier}
-                min={0.25}
-                max={3}
-                step={0.05}
-                onValueChange={(v) =>
-                  setPortionMultiplier(clampPortionMultiplier(v))
-                }
+          <View className="flex-row flex-wrap gap-2">
+            {MEAL_TYPES.map((mt) => (
+              <Chip
+                key={mt}
+                label={t(`food.mealType.${mt}`)}
+                selected={draft.mealType === mt}
+                onPress={() => {
+                  haptic.select();
+                  setMealType(mt);
+                }}
               />
-            </Host>
-          </Card>
-        </View>
-
-        <View className="gap-2">
-          <View className="flex-row items-center justify-between">
-            <SectionHeader title={t('food.review.ingredients')} />
-            <Pressable
-              onPress={() =>
-                addItem({
-                  name: '',
-                  grams: 100,
-                  kcal: 0,
-                  proteinG: 0,
-                  carbsG: 0,
-                  fatG: 0,
-                })
-              }
-              className="flex-row items-center gap-1 px-1"
-            >
-              <SymbolView
-                name="plus.circle.fill"
-                size={18}
-                tintColor={themeColor('accent')}
-              />
-              <Text className="text-tint text-sm font-medium">
-                {t('food.review.addItem')}
-              </Text>
-            </Pressable>
+            ))}
           </View>
-
-          {scaledItems.map((item) => (
-            <IngredientRow
-              key={item.id}
-              item={item}
-              onChangeName={(name) => updateItem(item.id, { name })}
-              onChangeGrams={(grams) =>
-                scaleItemGrams(item.id, grams / multiplier)
-              }
-              onChangeField={(field, value) =>
-                updateItem(item.id, { [field]: value / multiplier })
-              }
-              onDelete={() => removeItem(item.id)}
-            />
-          ))}
-          {draft.items.length === 0 && (
-            <Text className="text-secondary-label py-4 text-center text-sm">
-              {t('food.review.noItems')}
-            </Text>
-          )}
         </View>
 
         <View className="gap-2">
-          <SectionHeader title={t('food.review.totals')} />
-          <Card>
-            <Text className="text-label text-base font-semibold">
-              {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)}g
-              · C {Math.round(totals.carbsG)}g · F {Math.round(totals.fatG)}g
-            </Text>
+          <SectionHeader title={t('food.review.portion')} />
+          <Card className="gap-4">
+            <View className="flex-row items-center justify-between">
+              <StepButton
+                symbol="minus"
+                label={t('food.review.portionMinus')}
+                disabled={multiplier <= 0.25}
+                onPress={() => stepPortion(-1)}
+              />
+              <Text
+                className="text-label font-display-bold"
+                style={{ fontSize: 28, fontVariant: ['tabular-nums'] }}
+                accessibilityLabel={`${t('food.review.portion')} ${multiplier.toFixed(2)}×`}
+                maxFontSizeMultiplier={1.2}
+              >
+                {multiplier.toFixed(2)}×
+              </Text>
+              <StepButton
+                symbol="plus"
+                label={t('food.review.portionPlus')}
+                disabled={multiplier >= 3}
+                onPress={() => stepPortion(1)}
+              />
+            </View>
+            <View className="flex-row flex-wrap gap-2">
+              {PORTION_PRESETS.map((preset) => (
+                <Chip
+                  key={preset}
+                  label={preset === 0.5 ? '½' : `${preset}×`}
+                  selected={Math.abs(multiplier - preset) < 0.001}
+                  onPress={() => {
+                    haptic.select();
+                    setPortionMultiplier(preset);
+                  }}
+                />
+              ))}
+            </View>
           </Card>
+        </View>
+
+        <View className="gap-2">
+          <SectionHeader title={t('food.review.ingredients')} />
+          <IngredientList items={scaledItems} multiplier={multiplier} />
         </View>
 
         <Card className="flex-row items-center justify-between">
@@ -381,138 +412,51 @@ export default function FoodReviewScreen() {
           </Text>
           <Switch
             value={draft.saveAsFavorite}
-            onValueChange={setSaveAsFavorite}
+            onValueChange={(v) => {
+              haptic.toggle();
+              setSaveAsFavorite(v);
+            }}
             trackColor={{ true: themeColor('accent') }}
           />
         </Card>
 
-        {isSaving ? (
-          <ActivityIndicator />
-        ) : (
+        <View ref={saveButtonRef} collapsable={false}>
           <GlassActionButton
             label={t('food.review.saveWithKcal', {
               kcal: Math.round(totals.kcal),
             })}
             symbol="checkmark"
+            disabled={isSaving}
             onPress={handleSave}
           />
-        )}
+        </View>
       </SheetScreen>
     </KeyboardAvoidingView>
   );
 }
 
-function IngredientRow({
-  item,
-  onChangeName,
-  onChangeGrams,
-  onChangeField,
-  onDelete,
-}: {
-  item: DraftFoodItem;
-  onChangeName: (name: string) => void;
-  onChangeGrams: (grams: number) => void;
-  onChangeField: (
-    field: 'kcal' | 'proteinG' | 'carbsG' | 'fatG',
-    value: number,
-  ) => void;
-  onDelete: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Card className="gap-2 p-3">
-      <View className="flex-row items-center gap-2">
-        <TextInput
-          value={item.name}
-          onChangeText={onChangeName}
-          placeholder={t('food.review.ingredientNamePlaceholder')}
-          placeholderTextColor="rgba(120,120,128,0.6)"
-          className="text-label flex-1 text-base font-medium"
-        />
-        <Pressable onPress={onDelete} hitSlop={8}>
-          <SymbolView
-            name="minus.circle.fill"
-            size={20}
-            tintColor={themeColor('danger')}
-          />
-        </Pressable>
-      </View>
-      <View className="flex-row flex-wrap gap-2">
-        <NumberField
-          label={t('food.review.grams')}
-          value={item.grams}
-          onChange={onChangeGrams}
-        />
-        <NumberField
-          label="kcal"
-          value={item.kcal}
-          onChange={(v) => onChangeField('kcal', v)}
-        />
-        <NumberField
-          label="P"
-          value={item.proteinG}
-          onChange={(v) => onChangeField('proteinG', v)}
-        />
-        <NumberField
-          label="C"
-          value={item.carbsG}
-          onChange={(v) => onChangeField('carbsG', v)}
-        />
-        <NumberField
-          label="F"
-          value={item.fatG}
-          onChange={(v) => onChangeField('fatG', v)}
-        />
-      </View>
-    </Card>
-  );
-}
-
-function NumberField({
+function StepButton({
+  symbol,
   label,
-  value,
-  onChange,
+  disabled,
+  onPress,
 }: {
+  symbol: 'plus' | 'minus';
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  disabled: boolean;
+  onPress: () => void;
 }) {
-  const rounded = Math.round(value * 10) / 10;
-  // Remounts (via `key`) whenever the value changes from outside (e.g. the portion slider or
-  // grams-triggered auto-scale) so the field picks up the new number, while the user's own
-  // in-progress typing (which doesn't change `value` until `onEndEditing`) is left alone —
-  // avoids syncing local state from a prop inside an effect.
   return (
-    <NumberFieldInput
-      key={rounded}
-      label={label}
-      initialValue={rounded}
-      onChange={onChange}
-    />
-  );
-}
-
-function NumberFieldInput({
-  label,
-  initialValue,
-  onChange,
-}: {
-  label: string;
-  initialValue: number;
-  onChange: (value: number) => void;
-}) {
-  const [text, setText] = useState(String(initialValue));
-
-  return (
-    <View className="min-w-[60px] gap-0.5">
-      <Text className="text-secondary-label text-xs">{label}</Text>
-      <TextInput
-        value={text}
-        onChangeText={setText}
-        onEndEditing={() => onChange(Number(text) || 0)}
-        keyboardType="decimal-pad"
-        className="bg-system-background text-label rounded-lg px-2 py-1.5 text-sm"
-      />
-    </View>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={4}
+      className="bg-surface-raised h-11 w-11 items-center justify-center rounded-full"
+      style={{ opacity: disabled ? 0.4 : 1 }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <SymbolView name={symbol} size={18} tintColor={themeColor('label')} />
+    </Pressable>
   );
 }

@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import * as Crypto from 'expo-crypto';
-import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -20,22 +12,27 @@ import {
   logToItems,
   useFoodAnalysis,
   useFoodDraftStore,
+  useMealFlightBridge,
   useQuickLogEntries,
   useQuickLogMeal,
   type AnalysisFailure,
   type QuickLogEntry,
 } from '@/features/food';
-import { Card, SectionHeader, SheetScreen } from '@/components/ui';
+import { FieldInput } from '@/features/food/ui/FieldInput';
+import { BrandIcon } from '@/components/brand';
+import { PressableScale, SkeletonBlock } from '@/components/motion';
+import { Card, ListRow, SectionHeader, SheetScreen } from '@/components/ui';
 import { toISODate } from '@/lib/date';
-import { themeColor } from '@/theme/colors';
-
-type SymbolName = Parameters<typeof SymbolView>[0]['name'];
+import { haptic } from '@/lib/haptics';
+import { themeColor, useThemeHex } from '@/theme/colors';
 
 export default function LogFoodScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ date?: string }>();
   // Day being viewed on the Today tab (route param `date`, YYYY-MM-DD); default/invalid = today.
   const logDate = resolveLogDate(params.date, toISODate());
+  const accent = useThemeHex('accent');
+  const label = useThemeHex('label');
   const start = useFoodDraftStore((s) => s.start);
   const setStatus = useFoodDraftStore((s) => s.setStatus);
   const setItems = useFoodDraftStore((s) => s.setItems);
@@ -66,6 +63,7 @@ export default function LogFoodScreen() {
     const text = description.trim();
     if (!text) return;
     setDescription('');
+    haptic.aiStart();
     openDraft('text');
     setStatus('analyzing');
     goToReview();
@@ -90,6 +88,7 @@ export default function LogFoodScreen() {
         ? await ImagePicker.launchCameraAsync({ quality: 0.9 })
         : await ImagePicker.launchImageLibraryAsync({ quality: 0.9 });
       if (result.canceled || !result.assets?.[0]) return;
+      haptic.aiStart();
       openDraft('photo');
       setStatus('analyzing');
       goToReview();
@@ -120,9 +119,8 @@ export default function LogFoodScreen() {
       {
         onSuccess: () => {
           setLoggedKey(entry.key);
-          void Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success,
-          );
+          haptic.mealQuickSaved();
+          useMealFlightBridge.getState().queue(entry.kcal);
           setTimeout(() => router.back(), 450);
         },
         onError: () =>
@@ -160,52 +158,76 @@ export default function LogFoodScreen() {
   const hasQuickEntries = quickFavorites.length > 0 || quickRecents.length > 0;
 
   return (
-    <>
-      <SheetScreen title={t('food.logFood.title')}>
-        <View className="flex-row gap-3">
-          <Pressable
-            onPress={() => void runPhoto(true)}
-            disabled={isBusy}
-            className="bg-tint flex-[2] items-center justify-center gap-2 rounded-3xl py-6"
-            style={{ opacity: isBusy ? 0.6 : 1 }}
-            accessibilityRole="button"
-            accessibilityLabel={t('food.logFood.takePhoto')}
+    <SheetScreen title={t('food.logFood.title')}>
+      <View className="gap-3">
+        <PressableScale
+          onPress={() => void runPhoto(true)}
+          disabled={isBusy}
+          accessibilityRole="button"
+          accessibilityLabel={t('food.logFood.takePhoto')}
+        >
+          <View
+            className="bg-tint-soft flex-row items-center gap-4 p-5"
+            style={{
+              borderRadius: 24,
+              borderCurve: 'continuous',
+              opacity: isBusy ? 0.6 : 1,
+            }}
           >
-            <SymbolView name="camera.fill" size={34} tintColor="white" />
-            <Text className="text-base font-semibold text-white">
-              {t('food.logFood.photo')}
-            </Text>
-          </Pressable>
-          <View className="flex-1 gap-3">
-            <SmallAction
-              icon="barcode.viewfinder"
-              label={t('food.logFood.barcode')}
-              onPress={() => router.push('/barcode-scanner')}
-            />
-            <SmallAction
-              icon="text.viewfinder"
-              label={t('food.logFood.label')}
-              onPress={() =>
-                router.push({
-                  pathname: '/barcode-scanner',
-                  params: { mode: 'label', date: logDate },
-                })
-              }
-            />
+            <BrandIcon name="photoMeal" size={40} color={accent} />
+            <View className="flex-1 gap-0.5">
+              <Text
+                className="text-label font-display-bold text-[20px]"
+                maxFontSizeMultiplier={1.3}
+              >
+                {t('food.logFood.photo')}
+              </Text>
+              <Text className="text-label-secondary text-sm">
+                {t('food.logFood.photoHint')}
+              </Text>
+            </View>
           </View>
-        </View>
+        </PressableScale>
 
-        <Card className="flex-row items-center gap-2 py-0 pl-4 pr-2">
-          <TextInput
-            value={description}
-            onChangeText={setDescription}
-            placeholder={t('food.logFood.describePlaceholder')}
-            placeholderTextColor="rgba(120,120,128,0.6)"
-            returnKeyType="send"
-            onSubmitEditing={submitDescription}
-            className="text-label min-h-[48px] flex-1 text-base"
+        <View className="flex-row gap-3">
+          <InputCard
+            icon={
+              <SymbolView
+                name="barcode.viewfinder"
+                size={30}
+                tintColor={themeColor('accent')}
+              />
+            }
+            title={t('food.logFood.barcode')}
+            onPress={() =>
+              router.push({
+                pathname: '/barcode-scanner',
+                params: { date: logDate },
+              })
+            }
           />
-          {description.trim() ? (
+          <InputCard
+            icon={<BrandIcon name="scanLabel" size={30} color={accent} />}
+            title={t('food.logFood.label')}
+            onPress={() =>
+              router.push({
+                pathname: '/barcode-scanner',
+                params: { mode: 'label', date: logDate },
+              })
+            }
+          />
+        </View>
+      </View>
+
+      <FieldInput
+        value={description}
+        onChangeText={setDescription}
+        placeholder={t('food.logFood.describePlaceholder')}
+        accessibilityLabel={t('food.logFood.describe')}
+        returnKeyType="send"
+        onSubmitEditing={submitDescription}
+        trailing={
+          description.trim() ? (
             <Pressable
               onPress={submitDescription}
               hitSlop={8}
@@ -214,7 +236,7 @@ export default function LogFoodScreen() {
             >
               <SymbolView
                 name="arrow.up.circle.fill"
-                size={30}
+                size={32}
                 tintColor={themeColor('accent')}
               />
             </Pressable>
@@ -225,90 +247,101 @@ export default function LogFoodScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('food.logFood.chooseFromLibrary')}
             >
-              <SymbolView name="photo.on.rectangle" size={22} />
+              <SymbolView
+                name="photo.on.rectangle"
+                size={22}
+                tintColor={themeColor('labelSecondary')}
+              />
             </Pressable>
+          )
+        }
+      />
+
+      {isLoading && !hasQuickEntries ? (
+        <SkeletonBlock width="100%" height={60} radius={24} />
+      ) : hasQuickEntries ? (
+        <View className="gap-5">
+          {quickFavorites.length > 0 && (
+            <QuickSection
+              title={t('food.logFood.favorites')}
+              entries={quickFavorites}
+              loggedKey={loggedKey}
+              onLog={logInstantly}
+              onOpen={openReviewWith}
+              subtitle={(e) => `${Math.round(e.kcal)} kcal`}
+            />
           )}
-        </Card>
+          {quickRecents.length > 0 && (
+            <QuickSection
+              title={t('food.logFood.quickLogAs', {
+                meal: t(`food.mealType.${suggestedMealType}`),
+              })}
+              entries={quickRecents}
+              loggedKey={loggedKey}
+              onLog={logInstantly}
+              onOpen={openReviewWith}
+              subtitle={(e) =>
+                e.count > 1
+                  ? t('food.logFood.loggedTimes', {
+                      count: e.count,
+                      kcal: Math.round(e.kcal),
+                    })
+                  : `${Math.round(e.kcal)} kcal`
+              }
+            />
+          )}
+        </View>
+      ) : (
+        <Text className="text-label-secondary px-2 text-center text-sm">
+          {t('food.logFood.noFavoritesYet')}
+        </Text>
+      )}
 
-        {isLoading && !hasQuickEntries ? (
-          <ActivityIndicator />
-        ) : hasQuickEntries ? (
-          <View className="gap-5">
-            {quickFavorites.length > 0 && (
-              <QuickSection
-                title={t('food.logFood.favorites')}
-                entries={quickFavorites}
-                loggedKey={loggedKey}
-                onLog={logInstantly}
-                onOpen={openReviewWith}
-                subtitle={(e) => `${Math.round(e.kcal)} kcal`}
-              />
-            )}
-            {quickRecents.length > 0 && (
-              <QuickSection
-                title={t('food.logFood.quickLogAs', {
-                  meal: t(`food.mealType.${suggestedMealType}`),
-                })}
-                entries={quickRecents}
-                loggedKey={loggedKey}
-                onLog={logInstantly}
-                onOpen={openReviewWith}
-                subtitle={(e) =>
-                  e.count > 1
-                    ? t('food.logFood.loggedTimes', {
-                        count: e.count,
-                        kcal: Math.round(e.kcal),
-                      })
-                    : `${Math.round(e.kcal)} kcal`
-                }
-              />
-            )}
-          </View>
-        ) : (
-          <Text className="text-secondary-label px-2 text-center text-sm">
-            {t('food.logFood.noFavoritesYet')}
-          </Text>
-        )}
-
-        <Pressable
+      <Card className="gap-0 overflow-hidden p-0">
+        <ListRow
+          title={t('food.logFood.manual')}
+          subtitle={t('food.logFood.manualHint')}
+          leading={
+            <SymbolView name="square.and.pencil" size={22} tintColor={label} />
+          }
           onPress={manualEntry}
-          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-5"
-          accessibilityRole="button"
-        >
-          <SymbolView
-            name="square.and.pencil"
-            size={22}
-            tintColor={themeColor('accent')}
-          />
-          <Text className="text-tint text-lg font-semibold">
-            {t('food.logFood.manual')}
-          </Text>
-        </Pressable>
-      </SheetScreen>
-    </>
+        />
+      </Card>
+    </SheetScreen>
   );
 }
 
-function SmallAction({
+function InputCard({
   icon,
-  label,
+  title,
   onPress,
 }: {
-  icon: SymbolName;
-  label: string;
+  icon: React.ReactNode;
+  title: string;
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="bg-secondary-system-background flex-1 items-center justify-center gap-1 rounded-2xl px-2 py-3"
-      accessibilityRole="button"
-    >
-      <SymbolView name={icon} size={22} tintColor={themeColor('accent')} />
-      <Text className="text-label text-xs font-medium" numberOfLines={1}>
-        {label}
-      </Text>
-    </Pressable>
+    <View className="flex-1">
+      <PressableScale
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+      >
+        <View
+          className="bg-surface items-start gap-3 p-4"
+          style={{ borderRadius: 24, borderCurve: 'continuous' }}
+        >
+          {icon}
+          <Text
+            className="text-label text-base font-semibold"
+            numberOfLines={1}
+            maxFontSizeMultiplier={1.3}
+          >
+            {title}
+          </Text>
+        </View>
+      </PressableScale>
+    </View>
   );
 }
 
@@ -331,41 +364,40 @@ function QuickSection({
   return (
     <View className="gap-2">
       <SectionHeader title={title} />
-      {entries.map((entry) => (
-        <Card key={entry.key} className="flex-row items-center gap-0 p-0">
-          <Pressable
+      <Card className="gap-0 overflow-hidden p-0">
+        {entries.map((entry, index) => (
+          <ListRow
+            key={entry.key}
+            title={entry.title || t('food.dashboard.untitledMeal')}
+            subtitle={subtitle(entry)}
+            chevron={false}
+            separator={index < entries.length - 1}
             onPress={() => onOpen(entry)}
-            className="flex-1 gap-0.5 py-3 pl-4"
-          >
-            <Text
-              className="text-label text-base font-medium"
-              numberOfLines={1}
-            >
-              {entry.title || t('food.dashboard.untitledMeal')}
-            </Text>
-            <Text className="text-secondary-label text-xs">
-              {subtitle(entry)}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => onLog(entry)}
-            hitSlop={6}
-            className="items-center justify-center self-stretch px-4"
-            accessibilityRole="button"
-            accessibilityLabel={t('food.logFood.logNow')}
-          >
-            <SymbolView
-              name={
-                loggedKey === entry.key
-                  ? 'checkmark.circle.fill'
-                  : 'plus.circle.fill'
-              }
-              size={30}
-              tintColor={themeColor('accent')}
-            />
-          </Pressable>
-        </Card>
-      ))}
+            trailing={
+              <Pressable
+                onPress={() => onLog(entry)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  loggedKey === entry.key
+                    ? t('food.logFood.logged')
+                    : t('food.logFood.logNow')
+                }
+              >
+                <SymbolView
+                  name={
+                    loggedKey === entry.key
+                      ? 'checkmark.circle.fill'
+                      : 'plus.circle.fill'
+                  }
+                  size={32}
+                  tintColor={themeColor('accent')}
+                />
+              </Pressable>
+            }
+          />
+        ))}
+      </Card>
     </View>
   );
 }

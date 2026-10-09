@@ -72,3 +72,7 @@ export type {
   FoodDraftErrorKind,
 } from './draftStore';
 export { foodKeys } from './keys';
+
+// UI bridge: the food sheets queue a "+kcal" meal flight, Today consumes it (see flightStore.ts).
+export { useMealFlightBridge } from './flightStore';
+export type { FlightPoint, PendingMealFlight } from './flightStore';
