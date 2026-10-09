@@ -1,4 +1,6 @@
-// Writes theme.config.js's accent as the iOS asset-catalog `AccentColor`
+// Writes every theme.config.js token that has an `asset` name as a named
+// Light/Dark colorset (MoniBg, MoniSurface1, ... -> PlatformColor('MoniBg')) and
+// theme.config.js's accent as the iOS asset-catalog `AccentColor`
 // (light + dark) and sets it as the target's global accent color
 // (ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME). That makes every native
 // control that uses the default tint — @expo/ui SwiftUI Slider/DatePicker/
@@ -11,8 +13,23 @@ const { withDangerousMod, withXcodeProject } = require('expo/config-plugins');
 
 const COLOR_NAME = 'AccentColor';
 
-function hexToComponents(hex) {
-  const h = hex.replace('#', '');
+/** Accepts `#RRGGBB` or `rgba(r,g,b,a)`. */
+function hexToComponents(value) {
+  const m =
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(
+      value,
+    );
+  if (m) {
+    const hex = (n) =>
+      `0x${Number(n).toString(16).toUpperCase().padStart(2, '0')}`;
+    return {
+      red: hex(m[1]),
+      green: hex(m[2]),
+      blue: hex(m[3]),
+      alpha: Number(m[4] ?? 1).toFixed(3),
+    };
+  }
+  const h = value.replace('#', '');
   const to = (i) => `0x${h.slice(i, i + 2).toUpperCase()}`;
   return { red: to(0), green: to(2), blue: to(4), alpha: '1.000' };
 }
@@ -39,19 +56,25 @@ function withAccentColorAsset(config) {
     'ios',
     async (cfg) => {
       delete require.cache[require.resolve('../theme.config.js')];
-      const { accent } = require('../theme.config.js');
-      const dir = path.join(
+      const theme = require('../theme.config.js');
+      const assets = path.join(
         cfg.modRequest.platformProjectRoot,
         cfg.modRequest.projectName,
         'Images.xcassets',
-        `${COLOR_NAME}.colorset`,
       );
-      fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(
-        path.join(dir, 'Contents.json'),
-        JSON.stringify(colorsetContents(accent.light, accent.dark), null, 2) +
-          '\n',
-      );
+      const write = (name, light, dark) => {
+        const dir = path.join(assets, `${name}.colorset`);
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(
+          path.join(dir, 'Contents.json'),
+          JSON.stringify(colorsetContents(light, dark), null, 2) + '\n',
+        );
+      };
+      write(COLOR_NAME, theme.accent.light, theme.accent.dark);
+      for (const [key, token] of Object.entries(theme)) {
+        if (key === 'fixed' || !token || !token.asset) continue;
+        write(token.asset, token.light, token.dark);
+      }
       return cfg;
     },
   ]);

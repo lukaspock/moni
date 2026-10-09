@@ -1,29 +1,49 @@
 {
   "fill": {
     "linear-gradient": [
-      "display-p3:1.00000,1.00000,1.00000,1.00000",
-      "display-p3:0.59329,0.96783,0.80678,1.00000"
-    ]
+      "display-p3:0.11373,0.30980,0.23137,1.00000",
+      "display-p3:0.03137,0.08235,0.05882,1.00000"
+    ],
+    "orientation": {
+      "start": {
+        "x": 0.3,
+        "y": 0
+      },
+      "stop": {
+        "x": 0.7,
+        "y": 1
+      }
+    }
   },
   "groups": [
     {
       "layers": [
         {
-          "image-name": "Image 3.png",
-          "name": "Image 3",
+          "glass": true,
+          "image-name": "lower.png",
+          "name": "lower",
           "position": {
-            "scale": 1.32,
+            "scale": 1,
+            "translation-in-points": [0, 0]
+          }
+        },
+        {
+          "glass": true,
+          "image-name": "upper.png",
+          "name": "upper",
+          "position": {
+            "scale": 1,
             "translation-in-points": [0, 0]
           }
         }
       ],
       "shadow": {
         "kind": "neutral",
-        "opacity": 0.5
+        "opacity": 0.4
       },
       "translucency": {
-        "enabled": true,
-        "value": 0.3
+        "enabled": false,
+        "value": 0
       }
     }
   ],
