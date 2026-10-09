@@ -3,7 +3,6 @@ import {
   Alert,
   AppState,
   Keyboard,
-  PlatformColor,
   Pressable,
   ScrollView,
   Text,
@@ -15,8 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
+import { CheckDraw, PressableScale } from '@/components/motion';
 import { Card, GlassActionButton, ModalTopBar } from '@/components/ui';
 import {
   countSessionSets,
@@ -25,6 +25,7 @@ import {
   ensureRestNotificationPermission,
   exerciseDisplayName,
   finishActiveWorkout,
+  getBestOneRepMaxKg,
   getPreviousSetValues,
   ExercisePickerView,
   useActiveWorkoutStore,
@@ -39,6 +40,7 @@ import { useSession } from '@/features/auth';
 import { useProfile } from '@/features/targets';
 import {
   displayToStored,
+  estimateOneRepMaxEpley,
   fillFromPrevious,
   formatClock,
   isIntegerUnit,
@@ -50,7 +52,9 @@ import {
   type UnitSystem,
 } from '@/domain';
 import i18n from '@/i18n';
-import { themeColor } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
+import { fixedColors, themeColor } from '@/theme/colors';
+import { textStyles } from '@/theme/typography';
 
 const DEFAULT_REST_SECONDS = 90;
 const REST_ADJUST_SECONDS = 15;
@@ -193,7 +197,7 @@ export default function ActiveWorkoutScreen() {
       Alert.alert(t('workout.active.finishError'));
       return;
     }
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // The finish haptic belongs to the summary's Celebration (no double buzz).
     router.replace({
       pathname: '/workout/summary',
       params: {
@@ -244,7 +248,7 @@ export default function ActiveWorkoutScreen() {
 
   if (picking) {
     return (
-      <View className="bg-system-background flex-1">
+      <View className="bg-bg flex-1">
         <ModalTopBar
           title={t('workout.exercisePicker.title')}
           icon="chevron.left"
@@ -262,7 +266,7 @@ export default function ActiveWorkoutScreen() {
   }
 
   return (
-    <View className="bg-system-background flex-1">
+    <View className="bg-bg flex-1">
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
@@ -277,21 +281,39 @@ export default function ActiveWorkoutScreen() {
       >
         <Text
           accessibilityRole="header"
-          className="text-label text-center text-lg font-semibold"
+          className="text-label text-center"
+          style={textStyles.headline}
         >
           {t('workout.active.title')}
         </Text>
 
-        <Card className="items-center gap-1 py-6">
-          <Text className="text-secondary-label text-xs font-semibold uppercase">
-            {t('workout.active.elapsedLabel')}
-          </Text>
-          <ElapsedClock />
-          <RestTimer />
-        </Card>
+        <View
+          className="overflow-hidden"
+          style={{ borderRadius: 32, borderCurve: 'continuous' }}
+        >
+          <LinearGradient
+            colors={[fixedColors.ember, fixedColors.emberHot]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ alignItems: 'center', gap: 4, paddingVertical: 24 }}
+          >
+            <Text
+              style={{
+                ...textStyles.caption,
+                color: fixedColors.ink,
+                opacity: 0.75,
+                textTransform: 'uppercase',
+              }}
+            >
+              {t('workout.active.elapsedLabel')}
+            </Text>
+            <ElapsedClock />
+            <RestTimer />
+          </LinearGradient>
+        </View>
 
         {activeExercises.length === 0 && (
-          <Text className="text-secondary-label px-4 text-center text-sm">
+          <Text className="text-label-secondary px-4 text-center text-sm">
             {t('workout.active.emptyExercises')}
           </Text>
         )}
@@ -311,10 +333,19 @@ export default function ActiveWorkoutScreen() {
           );
         })}
 
-        <Pressable
+        <PressableScale
           accessibilityRole="button"
           onPress={handleAddExercise}
-          className="bg-secondary-system-background flex-row items-center justify-center gap-2 rounded-2xl py-4"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            paddingVertical: 16,
+            borderRadius: 16,
+            borderCurve: 'continuous',
+            backgroundColor: themeColor('surface'),
+          }}
         >
           <SymbolView
             name="plus.circle.fill"
@@ -324,7 +355,7 @@ export default function ActiveWorkoutScreen() {
           <Text className="text-tint text-base font-semibold">
             {t('workout.active.addExercise')}
           </Text>
-        </Pressable>
+        </PressableScale>
 
         <Pressable
           accessibilityRole="button"
@@ -359,8 +390,8 @@ function ElapsedClock() {
   return (
     <Text
       accessibilityRole="timer"
-      className="text-label text-6xl font-bold"
-      style={{ fontVariant: ['tabular-nums'] }}
+      maxFontSizeMultiplier={1.2}
+      style={{ ...textStyles.numericHero, color: fixedColors.ink }}
     >
       {formatClock(elapsedSeconds(startedAt, now))}
     </Text>
@@ -380,56 +411,81 @@ function RestTimer() {
     if (!expired) return;
     clearRestTimer();
     // The timer may have run out while suspended: only buzz when we're actually looking at it.
-    if (AppState.currentState === 'active') {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
+    if (AppState.currentState === 'active') haptic.restDone();
   }, [expired, clearRestTimer]);
 
+  const seconds = restEndsAt === null ? 0 : Math.ceil(remainingMs / 1000);
+  const countdownTick = !expired && seconds >= 1 && seconds <= 3 ? seconds : 0;
+  useEffect(() => {
+    if (countdownTick > 0) haptic.restCountdown();
+  }, [countdownTick]);
+
   if (restEndsAt === null || expired) return null;
-  const seconds = Math.ceil(remainingMs / 1000);
 
   return (
-    <View className="bg-system-background mt-3 flex-row items-center gap-2 rounded-full py-2 pl-4 pr-2">
-      <SymbolView name="timer" size={16} tintColor={themeColor('accent')} />
-      <Text
-        accessibilityRole="timer"
-        className="text-label text-base font-medium"
-        style={{ fontVariant: ['tabular-nums'] }}
-      >
-        {t('workout.active.restRemaining', { time: formatClock(seconds) })}
-      </Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('workout.active.restMinus')}
-        hitSlop={6}
-        onPress={() => adjustRestTimer(-REST_ADJUST_SECONDS)}
-        className="bg-secondary-system-background rounded-full px-2.5 py-1.5"
-      >
-        <Text className="text-tint text-sm font-medium">
-          −{REST_ADJUST_SECONDS}
+    <View
+      accessible
+      accessibilityRole="timer"
+      accessibilityLabel={t('workout.active.restRemaining', {
+        time: formatClock(seconds),
+      })}
+      className="mt-3 items-center gap-2"
+    >
+      <View className="flex-row items-center gap-2">
+        <SymbolView name="timer" size={18} tintColor={fixedColors.ink} />
+        <Text
+          maxFontSizeMultiplier={1.2}
+          style={{ ...textStyles.numericL, color: fixedColors.ink }}
+        >
+          {formatClock(seconds)}
         </Text>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('workout.active.restPlus')}
-        hitSlop={6}
-        onPress={() => adjustRestTimer(REST_ADJUST_SECONDS)}
-        className="bg-secondary-system-background rounded-full px-2.5 py-1.5"
-      >
-        <Text className="text-tint text-sm font-medium">
-          +{REST_ADJUST_SECONDS}
-        </Text>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        onPress={clearRestTimer}
-        className="bg-secondary-system-background rounded-full px-3 py-1.5"
-      >
-        <Text className="text-tint text-sm font-medium">
-          {t('workout.active.skipRest')}
-        </Text>
-      </Pressable>
+      </View>
+      <View className="flex-row items-center gap-2">
+        <RestChip
+          label={`−${REST_ADJUST_SECONDS}`}
+          accessibilityLabel={t('workout.active.restMinus')}
+          onPress={() => adjustRestTimer(-REST_ADJUST_SECONDS)}
+        />
+        <RestChip
+          label={`+${REST_ADJUST_SECONDS}`}
+          accessibilityLabel={t('workout.active.restPlus')}
+          onPress={() => adjustRestTimer(REST_ADJUST_SECONDS)}
+        />
+        <RestChip
+          label={t('workout.active.skipRest')}
+          onPress={clearRestTimer}
+        />
+      </View>
     </View>
+  );
+}
+
+function RestChip({
+  label,
+  accessibilityLabel,
+  onPress,
+}: {
+  label: string;
+  accessibilityLabel?: string;
+  onPress: () => void;
+}) {
+  return (
+    <PressableScale
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      hitSlop={6}
+      onPress={onPress}
+      style={{
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 999,
+        backgroundColor: 'rgba(12,15,13,0.14)',
+      }}
+    >
+      <Text style={{ ...textStyles.callout, color: fixedColors.ink }}>
+        {label}
+      </Text>
+    </PressableScale>
   );
 }
 
@@ -460,7 +516,8 @@ function ExerciseCard({
       <View className="flex-row items-center justify-between">
         <Text
           accessibilityRole="header"
-          className="text-label flex-1 text-lg font-semibold"
+          className="text-label flex-1"
+          style={textStyles.title}
         >
           {name}
         </Text>
@@ -482,19 +539,19 @@ function ExerciseCard({
           <SymbolView
             name="ellipsis"
             size={20}
-            tintColor={PlatformColor('secondaryLabel')}
+            tintColor={themeColor('labelSecondary')}
           />
         </Pressable>
       </View>
 
       <View className="flex-row items-center gap-2 px-1">
-        <Text className="text-secondary-label w-10 text-center text-xs font-semibold uppercase">
+        <Text className="text-label-secondary w-10 text-center text-xs font-semibold uppercase">
           {t('workout.active.setColumn')}
         </Text>
         {columns.map((c) => (
           <Text
             key={c.field}
-            className="text-secondary-label flex-1 text-center text-xs font-semibold uppercase"
+            className="text-label-secondary flex-1 text-center text-xs font-semibold uppercase"
           >
             {t(UNIT_LABEL_KEY[c.unit])}
           </Text>
@@ -503,7 +560,7 @@ function ExerciseCard({
           <SymbolView
             name="checkmark"
             size={12}
-            tintColor={PlatformColor('secondaryLabel')}
+            tintColor={themeColor('labelSecondary')}
             style={{ alignSelf: 'center' }}
           />
         </View>
@@ -524,7 +581,7 @@ function ExerciseCard({
       <Pressable
         accessibilityRole="button"
         onPress={() => addSet(exercise.exerciseId)}
-        className="bg-system-background flex-row items-center justify-center gap-2 rounded-xl py-3"
+        className="bg-bg flex-row items-center justify-center gap-2 rounded-xl py-3"
       >
         <SymbolView name="plus" size={14} tintColor={themeColor('accent')} />
         <Text className="text-tint text-sm font-semibold">
@@ -536,6 +593,13 @@ function ExerciseCard({
 }
 
 type Column = { field: SetField; unit: SetInputUnit };
+
+/** Live PR check: this set's estimated 1RM beats the stored best (a first-ever set is celebrated on the summary). */
+function isLivePR(exerciseId: string, set: ActiveSet): boolean {
+  if (set.weightKg === null || set.reps === null || set.reps <= 0) return false;
+  const best = getBestOneRepMaxKg(exerciseId);
+  return best !== null && estimateOneRepMaxEpley(set.weightKg, set.reps) > best;
+}
 
 function SetRow({
   exerciseId,
@@ -560,7 +624,13 @@ function SetRow({
 
   function handleToggle() {
     Keyboard.dismiss();
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (completed) {
+      haptic.setUndone();
+    } else if (isLivePR(exerciseId, set)) {
+      haptic.setDonePR();
+    } else {
+      haptic.setDone();
+    }
     const hint = { ...previous, reps: previous?.reps ?? targetReps };
     toggleSetCompleted(exerciseId, set.id, {
       restSeconds: DEFAULT_REST_SECONDS,
@@ -584,7 +654,7 @@ function SetRow({
           onPress={() => removeSet(exerciseId, set.id)}
           className="bg-destructive ml-2 w-16 items-center justify-center rounded-xl"
         >
-          <SymbolView name="trash" size={20} tintColor="white" />
+          <SymbolView name="trash" size={20} tintColor={fixedColors.paper} />
         </Pressable>
       )}
     >
@@ -598,10 +668,13 @@ function SetRow({
             removeSet(exerciseId, set.id);
         }}
         className={`flex-row items-center gap-2 rounded-xl px-1 py-1 ${
-          completed ? 'bg-tint/15' : ''
+          completed ? 'bg-tint-soft' : ''
         }`}
       >
-        <Text className="text-secondary-label w-10 text-center text-base font-semibold">
+        <Text
+          className="text-label-secondary w-10 text-center"
+          style={textStyles.numericS}
+        >
           {setNumber}
         </Text>
         {columns.map(({ field, unit }) => (
@@ -632,13 +705,7 @@ function SetRow({
           onPress={handleToggle}
           className="h-11 w-11 items-center justify-center"
         >
-          <SymbolView
-            name={completed ? 'checkmark.circle.fill' : 'circle'}
-            size={30}
-            tintColor={
-              completed ? themeColor('accent') : PlatformColor('secondaryLabel')
-            }
-          />
+          <CheckDraw checked={completed} size={30} />
         </Pressable>
       </View>
     </Swipeable>
@@ -685,11 +752,12 @@ function SetInput({
           ? formatInputNumber(storedToDisplay(placeholder, unit))
           : '-'
       }
-      placeholderTextColor={PlatformColor('placeholderText')}
+      placeholderTextColor={themeColor('labelTertiary')}
       keyboardType={integer ? 'number-pad' : 'decimal-pad'}
       maxLength={7}
       selectTextOnFocus
-      className="bg-system-background text-label h-11 flex-1 rounded-xl text-center text-lg font-medium"
+      className="bg-bg text-label h-11 flex-1 rounded-xl text-center"
+      style={textStyles.numericM}
     />
   );
 }

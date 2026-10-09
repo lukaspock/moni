@@ -1,18 +1,24 @@
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
-import { themeColor } from '@/theme/colors';
+import { fixedColors, themeColor } from '@/theme/colors';
+import { textStyles } from '@/theme/typography';
 
 import {
   Card,
   GlassActionButton,
+  IconTile,
+  ListRow,
   ScreenTitle,
   SectionHeader,
 } from '@/components/ui';
+import { Reveal } from '@/components/motion';
 import {
   useDeleteRoutine,
+  useIsWorkoutActive,
   useRoutines,
   useStartWorkout,
   useWorkoutHistory,
@@ -30,7 +36,8 @@ export default function TrainingScreen() {
   const { routines, isLoading: routinesLoading } = useRoutines();
   const { workouts: history } = useWorkoutHistory(HISTORY_PREVIEW_COUNT + 1);
   const deleteRoutine = useDeleteRoutine();
-  const { startEmpty, startFromRoutine } = useStartWorkout();
+  const { startEmpty, startFromRoutine, resumeWorkout } = useStartWorkout();
+  const running = useIsWorkoutActive();
 
   function openRoutineMenu(routine: Routine) {
     Alert.alert(routine.name, undefined, [
@@ -65,116 +72,185 @@ export default function TrainingScreen() {
 
   const visibleHistory = history.slice(0, HISTORY_PREVIEW_COUNT);
 
+  // Next routine in rotation: the one after the most recent routine workout.
+  const lastRoutineName = history.find((w) => w.routineName)?.routineName;
+  const lastIndex = routines.findIndex((r) => r.name === lastRoutineName);
+  const nextRoutine: Routine | null =
+    routines.length === 0 ? null : routines[(lastIndex + 1) % routines.length];
+
+  const heroTitle = running
+    ? t('workout.training.heroRunning')
+    : nextRoutine
+      ? nextRoutine.name
+      : t('workout.training.heroEmpty');
+  const heroEyebrow = running
+    ? t('workout.training.heroRunningEyebrow')
+    : todaysWorkouts.length > 0
+      ? t('workout.training.doneToday')
+      : nextRoutine
+        ? t('workout.training.heroNext')
+        : t('workout.training.heroEyebrow');
+
   return (
-    <View className="bg-system-background flex-1">
+    <View className="bg-bg flex-1">
       <ScreenTitle title={t('training.title')} />
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-6 px-4 pb-32 pt-6"
         showsVerticalScrollIndicator={false}
       >
-        <Card>
-          <Text className="text-secondary-label text-center text-sm">
-            {todaysWorkouts.length > 0
-              ? t('workout.training.doneToday')
-              : t('workout.training.startHint')}
-          </Text>
-          <GlassActionButton
-            label={t('workout.training.startWorkout')}
-            symbol="figure.strengthtraining.traditional"
-            onPress={startEmpty}
-          />
-        </Card>
-
-        <View className="gap-2">
-          <SectionHeader title={t('workout.training.routines')} />
-          <Card className="gap-0 overflow-hidden p-0">
-            {!routinesLoading && routines.length === 0 && (
-              <Text className="text-secondary-label px-4 py-3 text-sm">
-                {t('workout.training.noRoutines')}
-              </Text>
-            )}
-            {routines.map((routine, index) => (
-              <View key={routine.id}>
-                {index > 0 && <View className="bg-separator h-px" />}
-                <View className="flex-row items-center">
-                  <Pressable
-                    className="flex-1 px-4 py-3"
-                    onPress={() => startFromRoutine(routine)}
-                  >
-                    <Text className="text-label text-base font-medium">
-                      {routine.name}
-                    </Text>
-                    <Text className="text-secondary-label text-xs">
-                      {t('workout.history.exercises', {
-                        count: routine.exercises.length,
-                      })}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityLabel={t('workout.routine.options')}
-                    hitSlop={8}
-                    className="px-4 py-3"
-                    onPress={() => openRoutineMenu(routine)}
-                  >
-                    <SymbolView
-                      name="ellipsis"
-                      size={18}
-                      tintColor="secondaryLabel"
-                    />
-                  </Pressable>
-                </View>
-              </View>
-            ))}
-            {(routines.length > 0 || !routinesLoading) && (
-              <View className="bg-separator h-px" />
-            )}
-            <Pressable
-              onPress={() => router.push('/routine-editor')}
-              className="flex-row items-center gap-2 px-4 py-3"
+        <Reveal index={0}>
+          <View
+            className="overflow-hidden"
+            style={{ borderRadius: 32, borderCurve: 'continuous' }}
+          >
+            <LinearGradient
+              colors={[fixedColors.ember, fixedColors.emberHot]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ padding: 24, gap: 16 }}
             >
-              <SymbolView
-                name="plus.circle.fill"
-                size={20}
-                tintColor={themeColor('accent')}
-              />
-              <Text className="text-tint text-base font-medium">
-                {t('workout.training.newRoutine')}
-              </Text>
-            </Pressable>
-          </Card>
-        </View>
-
-        {visibleHistory.length > 0 && (
-          <View className="gap-2">
-            <SectionHeader title={t('workout.training.history')} />
-            <Card className="gap-0 overflow-hidden p-0">
-              {visibleHistory.map((workout, index) => (
-                <View key={workout.id}>
-                  {index > 0 && <View className="bg-separator h-px" />}
-                  <WorkoutHistoryRow workout={workout} />
-                </View>
-              ))}
-              {history.length > HISTORY_PREVIEW_COUNT && (
-                <>
-                  <View className="bg-separator h-px" />
-                  <Pressable
-                    onPress={() => router.push('/(tabs)/training/history')}
-                    className="flex-row items-center justify-between px-4 py-3"
+              <View className="gap-1">
+                <Text
+                  maxFontSizeMultiplier={1.3}
+                  style={{
+                    ...textStyles.caption,
+                    color: fixedColors.ink,
+                    opacity: 0.75,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {heroEyebrow}
+                </Text>
+                <Text
+                  accessibilityRole="header"
+                  maxFontSizeMultiplier={1.3}
+                  style={{ ...textStyles.title, color: fixedColors.ink }}
+                >
+                  {heroTitle}
+                </Text>
+                {!running && nextRoutine && (
+                  <Text
+                    style={{
+                      ...textStyles.callout,
+                      color: fixedColors.ink,
+                      opacity: 0.75,
+                    }}
                   >
-                    <Text className="text-tint text-base">
-                      {t('workout.history.showAll')}
-                    </Text>
-                    <SymbolView
-                      name="chevron.right"
-                      size={14}
-                      tintColor="secondaryLabel"
-                    />
-                  </Pressable>
-                </>
+                    {t('workout.history.exercises', {
+                      count: nextRoutine.exercises.length,
+                    })}
+                  </Text>
+                )}
+              </View>
+              <GlassActionButton
+                label={
+                  running
+                    ? t('workout.training.resume')
+                    : t('workout.training.startWorkout')
+                }
+                symbol={
+                  running ? 'play.fill' : 'figure.strengthtraining.traditional'
+                }
+                onPress={
+                  running
+                    ? resumeWorkout
+                    : nextRoutine
+                      ? () => startFromRoutine(nextRoutine)
+                      : startEmpty
+                }
+              />
+              {!running && nextRoutine && (
+                <Text
+                  accessibilityRole="button"
+                  onPress={startEmpty}
+                  style={{
+                    ...textStyles.callout,
+                    color: fixedColors.ink,
+                    textAlign: 'center',
+                    textDecorationLine: 'underline',
+                  }}
+                >
+                  {t('workout.training.startEmpty')}
+                </Text>
               )}
+            </LinearGradient>
+          </View>
+        </Reveal>
+
+        <Reveal index={1}>
+          <View className="gap-2">
+            <SectionHeader title={t('workout.training.routines')} />
+            <Card className="gap-0 overflow-hidden p-0">
+              {!routinesLoading && routines.length === 0 && (
+                <Text className="text-label-secondary px-4 py-3 text-sm">
+                  {t('workout.training.noRoutines')}
+                </Text>
+              )}
+              {routines.map((routine) => (
+                <ListRow
+                  key={routine.id}
+                  title={routine.name}
+                  subtitle={t('workout.history.exercises', {
+                    count: routine.exercises.length,
+                  })}
+                  symbol="dumbbell.fill"
+                  iconTone="bonus"
+                  separator
+                  chevron={false}
+                  onPress={() => startFromRoutine(routine)}
+                  accessibilityLabel={`${routine.name}, ${t('workout.training.startFromRoutine')}`}
+                  trailing={
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('workout.routine.options')}
+                      hitSlop={8}
+                      onPress={() => openRoutineMenu(routine)}
+                      className="px-2 py-2"
+                    >
+                      <SymbolView
+                        name="ellipsis"
+                        size={18}
+                        tintColor={themeColor('labelSecondary')}
+                      />
+                    </Pressable>
+                  }
+                />
+              ))}
+              <ListRow
+                title={t('workout.training.newRoutine')}
+                leading={<IconTile symbol="plus" tone="accent" />}
+                chevron={false}
+                onPress={() => router.push('/routine-editor')}
+              />
             </Card>
           </View>
+        </Reveal>
+
+        {visibleHistory.length > 0 && (
+          <Reveal index={2}>
+            <View className="gap-2">
+              <SectionHeader title={t('workout.training.history')} />
+              <Card className="gap-0 overflow-hidden p-0">
+                {visibleHistory.map((workout, index) => (
+                  <WorkoutHistoryRow
+                    key={workout.id}
+                    workout={workout}
+                    separator={
+                      index < visibleHistory.length - 1 ||
+                      history.length > HISTORY_PREVIEW_COUNT
+                    }
+                  />
+                ))}
+                {history.length > HISTORY_PREVIEW_COUNT && (
+                  <ListRow
+                    title={t('workout.history.showAll')}
+                    onPress={() => router.push('/(tabs)/training/history')}
+                  />
+                )}
+              </Card>
+            </View>
+          </Reveal>
         )}
       </ScrollView>
     </View>

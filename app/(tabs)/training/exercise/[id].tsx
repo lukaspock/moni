@@ -43,21 +43,18 @@ export default function ExerciseProgressScreen() {
   );
 
   return (
-    <ScrollView
-      className="bg-system-background flex-1"
-      contentContainerClassName="gap-4 p-4"
-    >
+    <ScrollView className="bg-bg flex-1" contentContainerClassName="gap-4 p-4">
       {exercise && (
         <Text className="text-label text-lg font-semibold">
           {exerciseDisplayName(exercise, t)}
         </Text>
       )}
-      <Text className="text-secondary-label text-sm font-semibold uppercase">
+      <Text className="text-label-secondary text-sm font-semibold uppercase">
         {t('workout.progress.oneRepMax')}
       </Text>
 
       {!isLoading && points.length === 0 && (
-        <Text className="text-secondary-label">
+        <Text className="text-label-secondary">
           {t('workout.progress.empty')}
         </Text>
       )}
@@ -67,14 +64,14 @@ export default function ExerciseProgressScreen() {
         return (
           <View key={point.weekStart} className="gap-1">
             <View className="flex-row items-center justify-between">
-              <Text className="text-secondary-label text-xs">
+              <Text className="text-label-secondary text-xs">
                 {formatWeekStart(point.weekStart, i18n.language)}
               </Text>
               <Text className="text-label text-sm font-medium">
                 {formatWeight(point.estimated1RmKg, unitSystem, 0)}
               </Text>
             </View>
-            <View className="bg-secondary-system-background h-3 overflow-hidden rounded-full">
+            <View className="bg-surface h-3 overflow-hidden rounded-full">
               <View
                 className="bg-tint h-3 rounded-full"
                 style={{ width: `${widthPct}%` }}

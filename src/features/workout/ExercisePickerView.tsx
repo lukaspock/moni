@@ -127,7 +127,7 @@ export function ExercisePickerView({
               {exerciseDisplayName(item, t)}
             </Text>
             {item.muscleGroups.length > 0 && (
-              <Text className="text-secondary-label text-xs">
+              <Text className="text-label-secondary text-xs">
                 {item.muscleGroups.map(muscleLabel).join(', ')}
               </Text>
             )}
@@ -144,16 +144,13 @@ export function ExercisePickerView({
             />
           )}
         </Pressable>
-        {!last && <View className="bg-separator mx-4 h-px" />}
+        {!last && <View className="bg-line mx-4 h-px" />}
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior="padding"
-      className="bg-system-background flex-1"
-    >
+    <KeyboardAvoidingView behavior="padding" className="bg-bg flex-1">
       <ScrollView
         className="flex-1"
         contentInsetAdjustmentBehavior="automatic"
@@ -166,7 +163,7 @@ export function ExercisePickerView({
             {t('workout.exercisePicker.title')}
           </Text>
         )}
-        <View className="bg-secondary-system-background flex-row items-center gap-2 rounded-xl px-3 py-2.5">
+        <View className="bg-surface flex-row items-center gap-2 rounded-xl px-3 py-2.5">
           <SymbolView
             name="magnifyingglass"
             size={16}
@@ -221,7 +218,7 @@ export function ExercisePickerView({
         {!hasFilter && recents.length > 0 && (
           <View className="gap-2">
             <SectionHeader title={t('workout.exercisePicker.recent')} />
-            <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+            <View className="bg-surface overflow-hidden rounded-2xl">
               {recents.map((e, i) =>
                 renderRow(e, i === recents.length - 1, 'recent-'),
               )}
@@ -232,12 +229,12 @@ export function ExercisePickerView({
           <SectionHeader title={t('workout.exercisePicker.all')} />
         )}
         {list.length > 0 ? (
-          <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+          <View className="bg-surface overflow-hidden rounded-2xl">
             {list.map((e, i) => renderRow(e, i === list.length - 1))}
           </View>
         ) : (
           !isLoading && (
-            <Text className="text-secondary-label mt-6 text-center text-sm">
+            <Text className="text-label-secondary mt-6 text-center text-sm">
               {t(
                 hasFilter
                   ? 'workout.exercisePicker.noResults'
@@ -273,7 +270,7 @@ export function ExercisePickerView({
       </ScrollView>
 
       {mode === 'multi' && canConfirm && (
-        <View className="bg-system-background px-5 pb-6 pt-2">
+        <View className="bg-bg px-5 pb-6 pt-2">
           <GlassActionButton
             label={t('workout.exercisePicker.confirm', {
               count: selectedIds.length,
@@ -315,10 +312,10 @@ function Chip({
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full px-3 ${small ? 'py-1' : 'py-1.5'} ${selected ? 'bg-tint' : 'bg-secondary-system-background'}`}
+      className={`rounded-full px-3 ${small ? 'py-1' : 'py-1.5'} ${selected ? 'bg-tint' : 'bg-surface'}`}
     >
       <Text
-        className={`${small ? 'text-xs' : 'text-sm'} ${selected ? 'font-semibold text-white' : small ? 'text-secondary-label' : 'text-label'}`}
+        className={`${small ? 'text-xs' : 'text-sm'} ${selected ? 'text-on-tint font-semibold' : small ? 'text-label-secondary' : 'text-label'}`}
       >
         {label}
       </Text>
@@ -360,16 +357,16 @@ function CreateCustomExerciseForm({
   const [trackingType, setTrackingType] = useState<TrackingType>('weight_reps');
 
   return (
-    <View className="border-separator bg-secondary-system-background gap-3 border-t px-4 py-4">
+    <View className="border-line bg-surface gap-3 border-t px-4 py-4">
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder={t('workout.exercisePicker.customName')}
         placeholderTextColor="gray"
-        className="bg-system-background text-label rounded-lg px-3 py-2 text-base"
+        className="bg-bg text-label rounded-lg px-3 py-2 text-base"
       />
       <View>
-        <Text className="text-secondary-label mb-1 text-xs">
+        <Text className="text-label-secondary mb-1 text-xs">
           {t('workout.exercisePicker.customCategory')}
         </Text>
         <View className="flex-row gap-2">
@@ -378,9 +375,11 @@ function CreateCustomExerciseForm({
               <Pressable
                 key={c}
                 onPress={() => setCategory(c)}
-                className={`rounded-full px-3 py-1 ${category === c ? 'bg-tint' : 'bg-system-background'}`}
+                className={`rounded-full px-3 py-1 ${category === c ? 'bg-tint' : 'bg-bg'}`}
               >
-                <Text className={category === c ? 'text-white' : 'text-label'}>
+                <Text
+                  className={category === c ? 'text-on-tint' : 'text-label'}
+                >
                   {t(`workout.category.${c}`)}
                 </Text>
               </Pressable>
@@ -389,7 +388,7 @@ function CreateCustomExerciseForm({
         </View>
       </View>
       <View>
-        <Text className="text-secondary-label mb-1 text-xs">
+        <Text className="text-label-secondary mb-1 text-xs">
           {t('workout.exercisePicker.customTracking')}
         </Text>
         <View className="flex-row flex-wrap gap-2">
@@ -397,10 +396,10 @@ function CreateCustomExerciseForm({
             <Pressable
               key={tt}
               onPress={() => setTrackingType(tt)}
-              className={`rounded-full px-3 py-1 ${trackingType === tt ? 'bg-tint' : 'bg-system-background'}`}
+              className={`rounded-full px-3 py-1 ${trackingType === tt ? 'bg-tint' : 'bg-bg'}`}
             >
               <Text
-                className={trackingType === tt ? 'text-white' : 'text-label'}
+                className={trackingType === tt ? 'text-on-tint' : 'text-label'}
               >
                 {t(TRACKING_LABEL_KEYS[tt])}
               </Text>
@@ -418,9 +417,9 @@ function CreateCustomExerciseForm({
           });
           onCreated(exercise);
         }}
-        className={`items-center rounded-xl py-2.5 ${name.trim() ? 'bg-tint' : 'bg-secondary-system-background'}`}
+        className={`items-center rounded-xl py-2.5 ${name.trim() ? 'bg-tint' : 'bg-surface'}`}
       >
-        <Text className="font-semibold text-white">
+        <Text className="text-on-tint font-semibold">
           {t('workout.exercisePicker.createCustom')}
         </Text>
       </Pressable>

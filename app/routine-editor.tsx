@@ -34,7 +34,7 @@ export default function RoutineEditorScreen() {
   // instead of being synchronized in afterwards via an effect.
   if (id && isLoading) {
     return (
-      <View className="bg-system-background flex-1 items-center justify-center">
+      <View className="bg-bg flex-1 items-center justify-center">
         <ActivityIndicator />
       </View>
     );
@@ -116,7 +116,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   // can't throw the draft away.
   if (picking) {
     return (
-      <View className="bg-system-background flex-1">
+      <View className="bg-bg flex-1">
         <ModalTopBar
           title={t('workout.exercisePicker.title')}
           icon="chevron.left"
@@ -134,10 +134,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior="padding"
-      className="bg-system-background flex-1"
-    >
+    <KeyboardAvoidingView behavior="padding" className="bg-bg flex-1">
       <ModalTopBar
         title={t('workout.routine.title')}
         icon="xmark"
@@ -155,18 +152,18 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
           onChangeText={setName}
           placeholder={t('workout.routine.namePlaceholder')}
           placeholderTextColor="gray"
-          className="bg-secondary-system-background text-label rounded-2xl px-4 py-4 text-base"
+          className="bg-surface text-label rounded-2xl px-4 py-4 text-base"
         />
 
         <View className="gap-2">
           <SectionHeader title={t('workout.routine.exercises')} />
           {exercises.length === 0 && (
-            <Text className="text-secondary-label px-1 text-sm">
+            <Text className="text-label-secondary px-1 text-sm">
               {t('workout.routine.empty')}
             </Text>
           )}
 
-          <View className="bg-secondary-system-background overflow-hidden rounded-2xl">
+          <View className="bg-surface overflow-hidden rounded-2xl">
             {exercises.map((ex, index) => {
               const exercise = catalogById.get(ex.exerciseId);
               return (
@@ -230,7 +227,7 @@ function RoutineForm({ id, existing }: { id?: string; existing?: Routine }) {
                       />
                     </View>
                   </View>
-                  <View className="bg-separator mx-4 h-px" />
+                  <View className="bg-line mx-4 h-px" />
                 </Fragment>
               );
             })}
@@ -276,14 +273,14 @@ function NumberField({
 }) {
   return (
     <View className="flex-1">
-      <Text className="text-secondary-label mb-1 text-[11px]">{label}</Text>
+      <Text className="text-label-secondary mb-1 text-[11px]">{label}</Text>
       <TextInput
         value={value !== null ? String(value) : ''}
         onChangeText={(text) => onChange(parseTargetInput(text))}
         keyboardType="number-pad"
         maxLength={2}
         selectTextOnFocus
-        className="bg-system-background text-label rounded-xl px-3 py-2.5 text-center text-base"
+        className="bg-bg text-label rounded-xl px-3 py-2.5 text-center text-base"
       />
     </View>
   );
