@@ -18,7 +18,13 @@
     "newRoutine": "New routine",
     "history": "History",
     "startHint": "An empty session, or pick a routine below.",
-    "doneToday": "Already trained today"
+    "doneToday": "Already trained today",
+    "heroEyebrow": "Ready when you are",
+    "heroNext": "Up next",
+    "heroEmpty": "Empty session",
+    "heroRunning": "Your session is running",
+    "heroRunningEyebrow": "In progress",
+    "resume": "Resume"
   },
   "routine": {
     "close": "Close",
@@ -118,7 +124,13 @@
     "prNew": "{{weight}} estimated max (was {{previous}})",
     "prFirst": "{{weight}} estimated max (first mark)",
     "done": "Done",
-    "minutes": "{{minutes}} min"
+    "minutes": "{{minutes}} min",
+    "weekTraining": "Training this week: {{done}} of {{goal}}",
+    "bridgeProtein": "{{grams}} g protein",
+    "bridgeLogged": "Logged",
+    "bridgeLogLabel": "Log {{title}}",
+    "stamp": "New stamp",
+    "minuteUnit": "min"
   },
   "progress": {
     "title": "Progress",

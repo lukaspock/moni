@@ -60,7 +60,35 @@
     "weighInDay": "Weigh-in day",
     "mealReminders": "Meal reminders",
     "mealRemindersHint": "Three fixed prompts for breakfast, lunch and dinner.",
-    "permissionOff": "Notifications are turned off for møni. You can allow them in Settings."
+    "permissionOff": "Notifications are turned off for møni. You can allow them in Settings.",
+    "master": "Notifications from møni",
+    "masterHint": "At most one a day, never before 8 am, never after 9:30 pm. Off any time.",
+    "explainer": "møni only reaches out when it helps: a review that’s ready, a hint after training. If you don’t open them, you get fewer automatically.",
+    "sections": {
+      "general": "General",
+      "categories": "What you want to hear about",
+      "timing": "Timing",
+      "reminders": "Fixed reminders"
+    },
+    "categoryHint": {
+      "meals": "An evening hint if the day is still empty.",
+      "training": "Training-day morning and protein after a session.",
+      "reviews": "Weekly and monthly review when it’s ready.",
+      "rhythm": "A chance within reach, or an open door after a break.",
+      "weight": "A weekly nudge for your data point."
+    },
+    "quietOff": "Off",
+    "quietDays": {
+      "d3": "3 days",
+      "d7": "1 week",
+      "d14": "2 weeks"
+    },
+    "quietModeHint": "Pauses all notifications until the chosen day.",
+    "earliest": "Earliest",
+    "latest": "Latest",
+    "quietHoursHint": "You can only narrow the window: 8:00 to 21:30 is the limit.",
+    "openSettings": "Open Settings",
+    "footer": "Meal reminders are independent of this and off by default."
   },
   "quieter": {
     "title": "Should we be quieter?",

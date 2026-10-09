@@ -59,7 +59,12 @@
     "quickLogAs": "Schnell erfassen · {{meal}}",
     "loggedTimes": "{{count}}× erfasst · {{kcal}} kcal",
     "logNow": "Jetzt erfassen",
-    "quickLogError": "Das Speichern hat nicht geklappt. Nichts ist verloren, versuch es gleich nochmal."
+    "quickLogError": "Das Speichern hat nicht geklappt. Nichts ist verloren, versuch es gleich nochmal.",
+    "photoHint": "Teller fotografieren",
+    "manualHint": "Name und Werte selbst eintragen",
+    "scanHint": "Verpackung scannen",
+    "logged": "Erfasst",
+    "describeLabel": "Oder beschreiben"
   },
   "barcode": {
     "permissionBody": "Für den Barcode braucht møni die Kamera. Du kannst sie in den Einstellungen erlauben.",
@@ -78,12 +83,13 @@
     "scanLabelInstead": "Nährwerttabelle scannen",
     "scanAgain": "Erneut scannen",
     "modeBarcode": "Barcode",
-    "modeLabel": "Nährwerte"
+    "modeLabel": "Nährwerte",
+    "frameA11y": "Suchrahmen. Halte den Barcode in den Rahmen."
   },
   "review": {
     "title": "Überprüfen",
     "titlePlaceholder": "Name der Mahlzeit",
-    "lowConfidenceNote": "Diese Schätzung ist unsicher. Prüf die Mengen kurz.",
+    "lowConfidenceNote": "Das ist eine vorsichtige Schätzung. Schau kurz über die Mengen.",
     "mealCategory": "Mahlzeit-Kategorie",
     "portion": "Portion",
     "ingredients": "Zutaten",
@@ -101,7 +107,15 @@
     "limitReachedBody": "Die kostenlosen Analysen für heute sind aufgebraucht. Beschreiben, Barcode und Stammgerichte gehen immer weiter.",
     "errorCode": "Fehlercode: {{code}}",
     "getPremium": "Premium holen",
-    "saveWithKcal": "Speichern · {{kcal}} kcal"
+    "saveWithKcal": "Speichern · {{kcal}} kcal",
+    "portionMinus": "Portion verkleinern",
+    "portionPlus": "Portion vergrößern",
+    "editItem": "Zutat bearbeiten",
+    "deleteItem": "Zutat entfernen",
+    "itemMacros": "{{grams}} g · P {{p}} · K {{c}} · F {{f}}",
+    "macroA11y": "{{name}} {{value}} Gramm",
+    "kcalLabel": "kcal",
+    "nameLabel": "Name"
   },
   "paywall": {
     "title": "Kostenlose Analysen aufgebraucht",
@@ -136,5 +150,10 @@
       "title": "Die Analyse hat nicht geklappt",
       "body": "Die Nährwerttabelle konnte nicht ausgewertet werden. Nichts ist verloren, versuch es nochmal."
     }
+  },
+  "macroLetter": {
+    "protein": "P",
+    "carbs": "K",
+    "fat": "F"
   }
 }

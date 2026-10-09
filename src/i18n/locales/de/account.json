@@ -205,7 +205,13 @@
       "guardrailDeficit": "Dein gewünschtes Tempo lag über einem sicheren Defizit (max. 25 % unter dem Erhaltungsbedarf), deshalb haben wir es begrenzt.",
       "guardrailSurplus": "Dein gewünschtes Tempo lag über einem sicheren Überschuss (max. +500 kcal/Tag), deshalb haben wir es begrenzt.",
       "guardrailMinimum": "Dein Ziel hat das sichere Tagesminimum erreicht, deshalb haben wir es leicht angehoben.",
-      "cta": "Weiter"
+      "cta": "Weiter",
+      "levelLabel": "Dein Tagespegel",
+      "kcalPerDay": "kcal pro Tag",
+      "hold": "Halte gedrückt, um zu starten",
+      "holdHint": "Halte den Kreis, bis er sich füllt.",
+      "holdA11yHint": "Doppeltippen und halten, um deinen Plan zu starten",
+      "start": "Los geht’s"
     },
     "health": {
       "title": "Mit Apple Health verbinden",
@@ -220,7 +226,7 @@
     },
     "notifications": {
       "title": "Sanfte Erinnerungen?",
-      "subtitle": "Ein freundlicher Stupser zu den Mahlzeiten macht das Loggen zur Gewohnheit. Max. 3 am Tag, mit einem Tipp wieder aus.",
+      "subtitle": "Höchstens eine Mitteilung am Tag, jederzeit abschaltbar.",
       "previewApp": "møni",
       "previewNow": "jetzt",
       "cta": "Erinnerungen aktivieren",

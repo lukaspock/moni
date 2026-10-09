@@ -228,7 +228,11 @@
     "regained_one": "Found again: {{count}} stamp",
     "regained_other": "Found again: {{count}} stamps",
     "newToast": "New stamp: {{name}}",
-    "details": "Details"
+    "details": "Details",
+    "next": "Up next",
+    "close": "Close",
+    "hiddenCount_one": "{{count}} hidden stamp",
+    "hiddenCount_other": "{{count}} hidden stamps"
   },
   "category": {
     "training": "Training",

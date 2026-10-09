@@ -18,7 +18,13 @@
     "newRoutine": "Neue Routine",
     "history": "Verlauf",
     "startHint": "Leere Einheit oder wähle unten eine Routine.",
-    "doneToday": "Heute schon trainiert"
+    "doneToday": "Heute schon trainiert",
+    "heroEyebrow": "Bereit, wenn du es bist",
+    "heroNext": "Als Nächstes",
+    "heroEmpty": "Leere Einheit",
+    "heroRunning": "Deine Einheit läuft",
+    "heroRunningEyebrow": "Läuft gerade",
+    "resume": "Fortsetzen"
   },
   "routine": {
     "close": "Schließen",
@@ -118,7 +124,13 @@
     "prNew": "{{weight}} geschätztes Maximum (vorher {{previous}})",
     "prFirst": "{{weight}} geschätztes Maximum (erste Marke)",
     "done": "Fertig",
-    "minutes": "{{minutes}} Min."
+    "minutes": "{{minutes}} Min.",
+    "weekTraining": "Training diese Woche: {{done}} von {{goal}}",
+    "bridgeProtein": "{{grams}} g Protein",
+    "bridgeLogged": "Geloggt",
+    "bridgeLogLabel": "{{title}} loggen",
+    "stamp": "Neuer Stempel",
+    "minuteUnit": "Min."
   },
   "progress": {
     "title": "Fortschritt",

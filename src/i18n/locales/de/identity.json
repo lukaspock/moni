@@ -63,6 +63,11 @@
       "1": "Dein Tag liegt genau im Rahmen.",
       "2": "Ausgewogen. Mehr gibt es dazu nicht zu sagen."
     },
+    "night": {
+      "0": "Der Tag ist durch. Schlaf gut.",
+      "1": "Für heute reicht es. Morgen geht es weiter.",
+      "2": "Ruhige Nacht. Der nächste Tag fängt bei null an."
+    },
     "taktReached": {
       "0": "Diese Woche sitzt der Rhythmus.",
       "1": "Zwei Ringe sind zu. Dein Rhythmus steht diese Woche.",
@@ -93,6 +98,34 @@
       "1": "{{weekday}}, {{date}}.",
       "2": "{{weekday}}, {{date}}."
     }
+  },
+  "today": {
+    "meals": "Mahlzeiten",
+    "thisWeek": "Diese Woche",
+    "prevDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "backToToday": "Zurück zu heute",
+    "ringHint": "Tippen zeigt, wie sich der Pegel zusammensetzt",
+    "weightMissingTitle": "Ein Gewicht fehlt noch",
+    "weightMissingBody": "Trag es kurz ein, dann steht dein Tagespegel für heute.",
+    "restDayBody": "Auch das gehört dazu.",
+    "restDayCta": "Ruhetag genießen",
+    "restDayDone": "Ruhetag festgehalten.",
+    "minutes": "{{count}} min",
+    "addToMeal": "{{meal}} hinzufügen",
+    "startTitle": "Dein Start in drei Schritten",
+    "startMeal": "Erste Mahlzeit festhalten",
+    "startWeight": "Gewicht notieren (optional)",
+    "startTraining": "Erstes Training oder Apple Health verbinden",
+    "stepDone": "erledigt",
+    "stepOpen": "offen",
+    "newStamp": "Neuer Stempel",
+    "weekGlyph": "{{weekday}}: {{state}}",
+    "dayKept": "gehalten",
+    "dayOpen": "offen",
+    "dayPaused": "pausiert",
+    "dayFuture": "kommt noch",
+    "dayRest": "Ruhetag"
   },
   "dayKind": {
     "training": "Trainingstag",

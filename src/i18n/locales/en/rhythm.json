@@ -118,6 +118,23 @@
     "stageRow": "Stage",
     "rhythmRow": "Rhythm",
     "pauseRow": "Pause",
-    "achievementsRow": "Stamps"
+    "achievementsRow": "Stamps",
+    "memberSince": "Member since {{date}}",
+    "sections": {
+      "rhythm": "Rhythm",
+      "app": "App"
+    },
+    "graceValue": "{{count}} of 2",
+    "pauseLength": "Length",
+    "pauseEnd": "End pause",
+    "pauseNone": "No pause active",
+    "achievementsNext": "Up next: {{name}}",
+    "hapticsTitle": "Haptics",
+    "hapticsHint": "Light vibrations for actions.",
+    "notificationsRow": "Notifications",
+    "showRhythmValue": "Number in the rhythm counter",
+    "avatar": "Initials of {{name}}",
+    "stageProgressA11y": "{{percent}} percent to the next stage",
+    "rhythmValue": "Rhythm hidden"
   }
 }

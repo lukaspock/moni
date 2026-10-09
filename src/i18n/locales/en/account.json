@@ -205,7 +205,13 @@
       "guardrailDeficit": "Your requested pace was steeper than a safe deficit (max 25% below maintenance), so we capped it.",
       "guardrailSurplus": "Your requested pace was steeper than a safe surplus (max +500 kcal/day), so we capped it.",
       "guardrailMinimum": "Your target hit the safe daily minimum, so we raised it slightly.",
-      "cta": "Continue"
+      "cta": "Continue",
+      "levelLabel": "Your daily level",
+      "kcalPerDay": "kcal a day",
+      "hold": "Hold to begin",
+      "holdHint": "Hold the circle until it fills.",
+      "holdA11yHint": "Double tap and hold to start your plan",
+      "start": "Let’s go"
     },
     "health": {
       "title": "Connect Apple Health",
@@ -220,7 +226,7 @@
     },
     "notifications": {
       "title": "Gentle reminders?",
-      "subtitle": "A friendly nudge at mealtimes makes logging a habit. Max. 3 a day, off with one tap.",
+      "subtitle": "At most one a day, off any time.",
       "previewApp": "møni",
       "previewNow": "now",
       "cta": "Turn on reminders",

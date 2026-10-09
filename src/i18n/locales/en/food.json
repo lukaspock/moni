@@ -59,7 +59,12 @@
     "quickLogAs": "Quick log · {{meal}}",
     "loggedTimes": "Logged {{count}}× · {{kcal}} kcal",
     "logNow": "Log now",
-    "quickLogError": "Saving didn’t work. Nothing is lost; try again in a moment."
+    "quickLogError": "Saving didn’t work. Nothing is lost; try again in a moment.",
+    "photoHint": "Photograph your plate",
+    "manualHint": "Enter name and values yourself",
+    "scanHint": "Scan the packaging",
+    "logged": "Logged",
+    "describeLabel": "Or describe it"
   },
   "barcode": {
     "permissionBody": "møni needs the camera to scan a barcode. You can allow it in Settings.",
@@ -78,12 +83,13 @@
     "scanLabelInstead": "Scan nutrition label",
     "scanAgain": "Scan again",
     "modeBarcode": "Barcode",
-    "modeLabel": "Label"
+    "modeLabel": "Label",
+    "frameA11y": "Scan frame. Hold the barcode inside the frame."
   },
   "review": {
     "title": "Review",
     "titlePlaceholder": "Meal name",
-    "lowConfidenceNote": "This estimate is uncertain. Check the amounts.",
+    "lowConfidenceNote": "This is a cautious estimate. Take a quick look at the amounts.",
     "mealCategory": "Meal category",
     "portion": "Portion",
     "ingredients": "Ingredients",
@@ -101,7 +107,15 @@
     "limitReachedBody": "The free analyses for today are used up. Describing, barcode and regulars keep working.",
     "errorCode": "Error code: {{code}}",
     "getPremium": "Get Premium",
-    "saveWithKcal": "Save · {{kcal}} kcal"
+    "saveWithKcal": "Save · {{kcal}} kcal",
+    "portionMinus": "Smaller portion",
+    "portionPlus": "Larger portion",
+    "editItem": "Edit ingredient",
+    "deleteItem": "Remove ingredient",
+    "itemMacros": "{{grams}} g · P {{p}} · C {{c}} · F {{f}}",
+    "macroA11y": "{{name}} {{value}} grams",
+    "kcalLabel": "kcal",
+    "nameLabel": "Name"
   },
   "paywall": {
     "title": "Free analyses used up",
@@ -136,5 +150,10 @@
       "title": "The analysis didn’t work",
       "body": "The nutrition table couldn’t be read. Nothing is lost; try again."
     }
+  },
+  "macroLetter": {
+    "protein": "P",
+    "carbs": "C",
+    "fat": "F"
   }
 }

@@ -57,6 +57,11 @@
       "1": "Your day sits right in range.",
       "2": "Balanced. Nothing more to add."
     },
+    "night": {
+      "0": "The day is done. Sleep well.",
+      "1": "That is enough for today. Tomorrow carries on.",
+      "2": "Quiet night. The next day starts from zero."
+    },
     "taktReached": {
       "0": "Your rhythm holds this week.",
       "1": "Two rings are closed. Your rhythm is set for this week.",
@@ -87,6 +92,34 @@
       "1": "{{weekday}}, {{date}}.",
       "2": "{{weekday}}, {{date}}."
     }
+  },
+  "today": {
+    "meals": "Meals",
+    "thisWeek": "This week",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "backToToday": "Back to today",
+    "ringHint": "Tap to see how your level adds up",
+    "weightMissingTitle": "A weight is still missing",
+    "weightMissingBody": "Enter it quickly and your daily level for today is set.",
+    "restDayBody": "That is part of it too.",
+    "restDayCta": "Enjoy the rest day",
+    "restDayDone": "Rest day noted.",
+    "minutes": "{{count}} min",
+    "addToMeal": "Add {{meal}}",
+    "startTitle": "Your start in three steps",
+    "startMeal": "Log your first meal",
+    "startWeight": "Note your weight (optional)",
+    "startTraining": "First workout or connect Apple Health",
+    "stepDone": "done",
+    "stepOpen": "open",
+    "newStamp": "New stamp",
+    "weekGlyph": "{{weekday}}: {{state}}",
+    "dayKept": "kept",
+    "dayOpen": "open",
+    "dayPaused": "paused",
+    "dayFuture": "still to come",
+    "dayRest": "rest day"
   },
   "dayKind": {
     "training": "training day",

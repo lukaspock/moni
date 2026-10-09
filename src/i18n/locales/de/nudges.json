@@ -60,7 +60,35 @@
     "weighInDay": "Wiege-Tag",
     "mealReminders": "Essens-Erinnerungen",
     "mealRemindersHint": "Drei feste Hinweise zu Frühstück, Mittag und Abend.",
-    "permissionOff": "Mitteilungen sind für møni ausgeschaltet. Du kannst sie in den Einstellungen erlauben."
+    "permissionOff": "Mitteilungen sind für møni ausgeschaltet. Du kannst sie in den Einstellungen erlauben.",
+    "master": "Mitteilungen von møni",
+    "masterHint": "Höchstens eine Mitteilung am Tag, nie vor 8 Uhr, nie nach 21:30. Jederzeit abschaltbar.",
+    "explainer": "møni meldet sich nur, wenn es dir etwas bringt: ein Rückblick, der bereitliegt, ein Hinweis nach dem Training. Wenn du Mitteilungen nicht öffnest, werden es automatisch weniger.",
+    "sections": {
+      "general": "Allgemein",
+      "categories": "Wovon du hören magst",
+      "timing": "Zeiten",
+      "reminders": "Feste Erinnerungen"
+    },
+    "categoryHint": {
+      "meals": "Abends ein Hinweis, falls der Tag noch leer ist.",
+      "training": "Trainingstag-Morgen und Protein nach dem Training.",
+      "reviews": "Wochen- und Monatsrückblick, wenn er bereitliegt.",
+      "rhythm": "Eine Chance in Reichweite, oder eine offene Tür nach einer Pause.",
+      "weight": "Eine Erinnerung an den Messpunkt, einmal pro Woche."
+    },
+    "quietOff": "Aus",
+    "quietDays": {
+      "d3": "3 Tage",
+      "d7": "1 Woche",
+      "d14": "2 Wochen"
+    },
+    "quietModeHint": "Pausiert alle Mitteilungen bis zum gewählten Tag.",
+    "earliest": "Frühestens",
+    "latest": "Spätestens",
+    "quietHoursHint": "Du kannst das Fenster nur enger machen: 8:00 bis 21:30 ist die Grenze.",
+    "openSettings": "Einstellungen öffnen",
+    "footer": "Essens-Erinnerungen sind unabhängig davon und standardmäßig aus."
   },
   "quieter": {
     "title": "Sollen wir leiser sein?",

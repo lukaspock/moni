@@ -90,5 +90,101 @@
     "directionOver": "über",
     "weightLink": "In Wochen mit mehr Kalorien ist dein Gewichtstrend deutlicher gestiegen (auf Basis von {{weeks}} Wochen).",
     "weightNoLink": "Noch kein klarer Zusammenhang zwischen deiner Wochen-Kalorienzufuhr und dem Gewichtstrend ({{weeks}} Wochen Daten)."
+  },
+  "review": {
+    "entryTitle": "Dein Wochenrückblick ist da",
+    "entryBody": "Woche {{week}}, {{range}}",
+    "entryOpen": "Ansehen",
+    "close": "Schließen",
+    "cardOf": "Karte {{current}} von {{total}}",
+    "next": "Weiter",
+    "prev": "Zurück",
+    "week": "Woche {{week}}",
+    "thisWeek": "Diese Woche",
+    "archiveEmpty": "Noch keine früheren Wochen.",
+    "title": {
+      "full": "Volle Woche",
+      "strength": "Kraftwoche",
+      "recovery": "Erholungswoche",
+      "restart": "Neustart-Woche",
+      "quiet": "Ruhige Woche"
+    },
+    "titleLine": {
+      "full": "Alle Ringe geschlossen. Rund.",
+      "strength": "Viel bewegt, viel gelernt.",
+      "recovery": "Dein Körper hat durchgeatmet.",
+      "restart": "Der Wiedereinstieg zählt.",
+      "quiet": "Auch eine ruhige Woche ist eine Woche."
+    },
+    "days": {
+      "title": "Deine Woche",
+      "food_one": "{{count}} Tag mit Einträgen",
+      "food_other": "{{count}} Tage mit Einträgen",
+      "training_one": "{{count}} Trainingstag",
+      "training_other": "{{count}} Trainingstage",
+      "meals": "Ø {{value}} Einträge pro Tag"
+    },
+    "highlight": {
+      "title": {
+        "pr": "Neue Bestmarke",
+        "longestWorkout": "Längste Einheit",
+        "bestProteinDay": "Bester Protein-Tag",
+        "earliestEntry": "Früher Start"
+      },
+      "pr": "{{exercise}}: +{{value}} {{unit}} beim geschätzten Maximum",
+      "longestWorkout": "{{minutes}} Minuten am {{day}}",
+      "bestProteinDay": "{{grams}} g Protein am {{day}}",
+      "earliestEntry": "Dein erster Eintrag kam am {{day}} um {{hour}} Uhr"
+    },
+    "connection": {
+      "title": "Die Verbindung",
+      "training": "Trainingstage ({{count}})",
+      "rest": "Ruhetage ({{count}})",
+      "protein": "Ø {{grams}} g Protein",
+      "line": "Training und Essen arbeiten zusammen."
+    },
+    "body": {
+      "title": "Dein Körper",
+      "entries": "Aus {{count}} Wägungen",
+      "line": "Ein ruhiger Trend sagt mehr als ein einzelner Tag."
+    },
+    "rhythm": {
+      "title": "Dein Rhythmus",
+      "grace": "Eine Gnade-Woche hat deinen Rhythmus geschützt.",
+      "hidden": "Deine Stufe wächst mit jeder Woche im Rhythmus."
+    },
+    "outlook": {
+      "title": "Ausblick",
+      "goalsTitle": "Wochenziel",
+      "food": "Essen: {{count}} Tage",
+      "training": "Training: {{count}} Tage",
+      "protein": "Protein: {{count}} Tage",
+      "done": "Erledigt."
+    },
+    "share": {
+      "title": "Teilen",
+      "preview": "Vorschau",
+      "showName": "Name zeigen",
+      "showDetails": "Details zeigen",
+      "detailsHint": "Details: Protein-Schnitt und Trendänderung. Kalorien, Gewicht und Fotos sind nie dabei.",
+      "cta": "Teilen",
+      "tagline": "Mit møni geteilt",
+      "stat": {
+        "trainingDays": "{{value}} Trainingstage",
+        "foodDays": "{{value}} Tage mit Einträgen",
+        "proteinDays": "{{value}} Protein-Tage",
+        "avgProteinG": "Ø {{value}} g Protein",
+        "trendDelta": "Trend {{value}} {{unit}}",
+        "rhythmWeeks": "{{value}} Wochen im Rhythmus"
+      },
+      "ofName": "{{name}}: {{title}}"
+    },
+    "quiet": {
+      "paused": "Diese Woche war Pause. Willkommen zurück, wenn du so weit bist.",
+      "noData": "In dieser Woche gibt es noch nichts zu erzählen."
+    }
+  },
+  "hero": {
+    "empty": "Wenn du dein Gewicht einträgst, zeigt møni hier deinen Trend."
   }
 }

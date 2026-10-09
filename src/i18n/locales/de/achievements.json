@@ -228,7 +228,11 @@
     "regained_one": "Wiedergefunden: {{count}} Stempel",
     "regained_other": "Wiedergefunden: {{count}} Stempel",
     "newToast": "Neuer Stempel: {{name}}",
-    "details": "Details"
+    "details": "Details",
+    "next": "Als Nächstes",
+    "close": "Schließen",
+    "hiddenCount_one": "{{count}} verborgener Stempel",
+    "hiddenCount_other": "{{count}} verborgene Stempel"
   },
   "category": {
     "training": "Training",

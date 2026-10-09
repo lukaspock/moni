@@ -90,5 +90,101 @@
     "directionOver": "over",
     "weightLink": "In weeks you ate more, your weight trend went up more clearly (based on {{weeks}} weeks).",
     "weightNoLink": "No clear link between your weekly intake and weight trend yet ({{weeks}} weeks of data)."
+  },
+  "review": {
+    "entryTitle": "Your weekly review is ready",
+    "entryBody": "Week {{week}}, {{range}}",
+    "entryOpen": "View",
+    "close": "Close",
+    "cardOf": "Card {{current}} of {{total}}",
+    "next": "Next",
+    "prev": "Back",
+    "week": "Week {{week}}",
+    "thisWeek": "This week",
+    "archiveEmpty": "No earlier weeks yet.",
+    "title": {
+      "full": "Full week",
+      "strength": "Strength week",
+      "recovery": "Recovery week",
+      "restart": "Restart week",
+      "quiet": "Quiet week"
+    },
+    "titleLine": {
+      "full": "Every ring closed. Round.",
+      "strength": "Plenty moved, plenty learned.",
+      "recovery": "Your body took a breath.",
+      "restart": "Getting back in counts.",
+      "quiet": "A quiet week is still a week."
+    },
+    "days": {
+      "title": "Your week",
+      "food_one": "{{count}} day with entries",
+      "food_other": "{{count}} days with entries",
+      "training_one": "{{count}} training day",
+      "training_other": "{{count}} training days",
+      "meals": "Ø {{value}} entries per day"
+    },
+    "highlight": {
+      "title": {
+        "pr": "New personal best",
+        "longestWorkout": "Longest session",
+        "bestProteinDay": "Best protein day",
+        "earliestEntry": "Early start"
+      },
+      "pr": "{{exercise}}: +{{value}} {{unit}} on your estimated max",
+      "longestWorkout": "{{minutes}} minutes on {{day}}",
+      "bestProteinDay": "{{grams}} g protein on {{day}}",
+      "earliestEntry": "Your first entry came on {{day}} at {{hour}}:00"
+    },
+    "connection": {
+      "title": "The connection",
+      "training": "Training days ({{count}})",
+      "rest": "Rest days ({{count}})",
+      "protein": "Ø {{grams}} g protein",
+      "line": "Training and food work together."
+    },
+    "body": {
+      "title": "Your body",
+      "entries": "From {{count}} weigh-ins",
+      "line": "A calm trend says more than a single day."
+    },
+    "rhythm": {
+      "title": "Your rhythm",
+      "grace": "A grace week protected your rhythm.",
+      "hidden": "Your stage grows with every week in rhythm."
+    },
+    "outlook": {
+      "title": "Outlook",
+      "goalsTitle": "Weekly goal",
+      "food": "Food: {{count}} days",
+      "training": "Training: {{count}} days",
+      "protein": "Protein: {{count}} days",
+      "done": "Done."
+    },
+    "share": {
+      "title": "Share",
+      "preview": "Preview",
+      "showName": "Show name",
+      "showDetails": "Show details",
+      "detailsHint": "Details: protein average and trend change. Calories, weight and photos are never included.",
+      "cta": "Share",
+      "tagline": "Shared with møni",
+      "stat": {
+        "trainingDays": "{{value}} training days",
+        "foodDays": "{{value}} days with entries",
+        "proteinDays": "{{value}} protein days",
+        "avgProteinG": "Ø {{value}} g protein",
+        "trendDelta": "Trend {{value}} {{unit}}",
+        "rhythmWeeks": "{{value}} weeks in rhythm"
+      },
+      "ofName": "{{name}}: {{title}}"
+    },
+    "quiet": {
+      "paused": "This week was a pause. Welcome back whenever you are ready.",
+      "noData": "There is nothing to tell about this week yet."
+    }
+  },
+  "hero": {
+    "empty": "Log your weight and møni shows your trend here."
   }
 }
