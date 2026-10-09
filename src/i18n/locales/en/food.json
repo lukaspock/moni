@@ -5,20 +5,20 @@
     "tomorrow": "Tomorrow",
     "completeProfileTitle": "Complete your profile",
     "completeProfileBody": "Finish onboarding so møni can calculate your daily calorie and macro targets.",
-    "kcalLeft": "kcal left",
-    "kcalOver": "kcal over",
+    "kcalLeft": "kcal room left",
+    "kcalOver": "kcal above level",
     "eatenOfLimit": "{{eaten}} / {{limit}} kcal",
-    "includesBonus": "incl. {{kcal}} kcal workout bonus",
-    "overview": "Overview",
-    "nutrition": "Nutrition",
-    "addMeal": "Add meal",
+    "includesBonus": "incl. {{kcal}} kcal swell from training",
+    "overview": "Today",
+    "nutrition": "Plate",
+    "addMeal": "Log a meal",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",
-    "trainingCardTitle": "Today's training",
-    "trainingDone": "Workout completed",
-    "trainingPlannedFreeform": "Planned training",
-    "startWorkout": "Start workout",
+    "trainingCardTitle": "Training today",
+    "trainingDone": "Session saved",
+    "trainingPlannedFreeform": "Planned session",
+    "startWorkout": "Start session",
     "restDay": "Rest day",
     "kcalUnit": "kcal",
     "untitledMeal": "Meal",
@@ -39,34 +39,34 @@
     "describePlaceholder": "e.g. 2 eggs, toast with butter, cappuccino",
     "analyze": "Analyze",
     "barcode": "Barcode",
-    "favoritesRecent": "Favorites / Recent",
-    "favorites": "Favorites",
+    "favoritesRecent": "Regulars / Recent",
+    "favorites": "Regulars",
     "recent": "Recent",
     "yesterday": "yesterday",
-    "noFavoritesYet": "No favorites or recent meals yet.",
-    "manual": "Manual entry",
+    "noFavoritesYet": "Your regulars show up here once you star a meal.",
+    "manual": "Enter it yourself",
     "voice": "Voice",
     "comingSoon": "Coming soon",
     "cancel": "Cancel",
     "takePhoto": "Take Photo",
     "chooseFromLibrary": "Choose from Library",
-    "permissionDeniedTitle": "Permission needed",
-    "permissionDeniedBody": "møni needs access to your camera or photo library to log a meal by photo.",
-    "analyzeErrorTitle": "Couldn't analyze that",
-    "analyzeErrorBody": "Something went wrong while analyzing your meal. You can try again or enter it manually.",
-    "enterManually": "Enter manually",
+    "permissionDeniedTitle": "Access needed",
+    "permissionDeniedBody": "møni needs the camera or your photos for this. You can allow access in Settings.",
+    "analyzeErrorTitle": "The analysis didn’t work",
+    "analyzeErrorBody": "Your input is still here: try again or enter it yourself.",
+    "enterManually": "Enter it yourself",
     "label": "Nutrition label",
     "quickLogAs": "Quick log · {{meal}}",
     "loggedTimes": "Logged {{count}}× · {{kcal}} kcal",
     "logNow": "Log now",
-    "quickLogError": "The meal could not be saved. Please try again."
+    "quickLogError": "Saving didn’t work. Nothing is lost; try again in a moment."
   },
   "barcode": {
-    "permissionBody": "møni needs camera access to scan a barcode.",
+    "permissionBody": "møni needs the camera to scan a barcode. You can allow it in Settings.",
     "grantAccess": "Grant access",
     "notFoundTitle": "Product not found",
-    "notFoundBody": "This barcode isn't in the Open Food Facts database yet.",
-    "looking": "Looking up product…",
+    "notFoundBody": "We don’t know this product yet. Scan the nutrition label or enter it yourself.",
+    "looking": "Looking up the product …",
     "hint": "Point the camera at a barcode",
     "per100g": "{{kcal}} kcal · P {{protein}}g · C {{carbs}}g · F {{fat}}g per 100g",
     "quantity": "Quantity",
@@ -83,34 +83,34 @@
   "review": {
     "title": "Review",
     "titlePlaceholder": "Meal name",
-    "lowConfidenceNote": "This estimate has low confidence — please double-check the amounts.",
+    "lowConfidenceNote": "This estimate is uncertain. Check the amounts.",
     "mealCategory": "Meal category",
     "portion": "Portion",
     "ingredients": "Ingredients",
     "addItem": "Add",
     "noItems": "No ingredients yet.",
     "totals": "Total",
-    "saveAsFavorite": "Save as favorite",
+    "saveAsFavorite": "Save as a regular",
     "save": "Save",
-    "analyzing": "Analyzing your meal…",
+    "analyzing": "Looking at your meal …",
     "noItemsTitle": "Nothing to save",
     "noItemsBody": "Add at least one ingredient before saving.",
-    "saveErrorTitle": "Couldn't save",
+    "saveErrorTitle": "Saving didn’t work",
     "ingredientNamePlaceholder": "Ingredient",
     "grams": "g",
-    "limitReachedBody": "You have used all free AI analyses for today. Log your food manually, by barcode or from your favorites, or get Premium.",
+    "limitReachedBody": "The free analyses for today are used up. Describing, barcode and regulars keep working.",
     "errorCode": "Error code: {{code}}",
     "getPremium": "Get Premium",
     "saveWithKcal": "Save · {{kcal}} kcal"
   },
   "paywall": {
-    "title": "Daily limit reached",
-    "body": "You've used all your free AI analyses for today. Upgrade to møni Premium for unlimited AI food analysis, or log food manually, via barcode, or from your favorites.",
+    "title": "Free analyses used up",
+    "body": "The free analyses for today are used up. møni Premium analyses without a cap; describing, barcode and regulars keep working.",
     "close": "Close"
   },
   "label": {
     "unnamed": "Product",
-    "reading": "Reading the table…",
+    "reading": "Reading the table …",
     "hint": "Photograph the nutrition table on the package",
     "capture": "Take photo",
     "retake": "Retake photo"
@@ -118,7 +118,7 @@
   "problem": {
     "notFound": {
       "title": "Product not found",
-      "body": "This barcode is not in Open Food Facts. Photograph the nutrition table and møni will read it for you."
+      "body": "We don’t know this product yet. Photograph the nutrition table and møni will read it for you."
     },
     "incomplete": {
       "title": "No nutrition data",
@@ -126,15 +126,15 @@
     },
     "offline": {
       "title": "No connection",
-      "body": "Product lookup is not reachable right now. Try again or enter the values manually."
+      "body": "Product lookup isn’t reachable right now. Try again or enter the values yourself."
     },
     "labelUnreadable": {
       "title": "Could not read the table",
-      "body": "No nutrition values were recognized. Hold the camera straight, close and well lit. This attempt does not count toward your limit."
+      "body": "No nutrition values were recognised. Hold the camera straight, close and well lit. This attempt doesn’t count toward your free analyses."
     },
     "labelError": {
-      "title": "Analysis failed",
-      "body": "The nutrition table could not be analyzed. Please try again."
+      "title": "The analysis didn’t work",
+      "body": "The nutrition table couldn’t be read. Nothing is lost; try again."
     }
   }
 }

@@ -9,9 +9,9 @@
     "increase": "Mehr"
   },
   "greeting": {
-    "morning": "Guten Morgen, {{name}}",
-    "afternoon": "Hi {{name}}",
-    "evening": "Guten Abend, {{name}}"
+    "morning": "Guten Morgen, {{name}}.",
+    "afternoon": "Schönen Nachmittag, {{name}}.",
+    "evening": "Guten Abend, {{name}}."
   },
   "onboarding": {
     "progressLabel": "Fortschritt der Einrichtung",
@@ -20,19 +20,19 @@
       "title": "Deine Kalorien, im Takt mit deinem Training",
       "subtitle": "Ein paar kurze Fragen, dann bauen wir dir einen Plan, der zu dir passt. Dauert etwa zwei Minuten.",
       "value1Title": "Foto, fertig",
-      "value1Body": "Mahlzeiten per Foto, Text oder Barcode loggen – die KI rechnet für dich.",
+      "value1Body": "Mahlzeiten per Foto, Text oder Barcode eintragen. møni rechnet den Rest.",
       "value2Title": "Mehr Training, mehr Essen",
-      "value2Body": "Dein Tageslimit wächst mit jedem Workout.",
+      "value2Body": "Dein Tagespegel steigt mit jedem Training.",
       "value3Title": "Passt sich dir an",
       "value3Body": "Dein Plan lernt aus deinem echten Fortschritt.",
-      "cta": "Los geht's",
+      "cta": "Los",
       "haveAccount": "Ich habe schon ein Konto"
     },
     "name": {
       "title": "Das Wichtigste zuerst – wie dürfen wir dich nennen?",
       "subtitle": "Dein Vorname reicht völlig. So fühlt sich møni ein bisschen mehr nach dir an.",
       "placeholder": "Dein Vorname",
-      "greeting": "Schön, dich kennenzulernen, {{name}}! 👋"
+      "greeting": "Schön, dich kennenzulernen, {{name}}."
     },
     "motivation": {
       "title": "Was treibt dich an, {{name}}?",
@@ -40,8 +40,8 @@
       "subtitle": "Wähl das, was dir am wichtigsten ist – wir behalten es im Blick.",
       "health": "Gesünder fühlen",
       "healthDescription": "In deine langfristige Gesundheit investieren",
-      "look": "Besser aussehen",
-      "lookDescription": "Dich in deiner Haut wohlfühlen",
+      "look": "Wohlfühlen",
+      "lookDescription": "Dich in deinem Körper zu Hause fühlen",
       "performance": "Mehr Leistung",
       "performanceDescription": "Stärker, schneller, fitter",
       "energy": "Mehr Energie",
@@ -63,7 +63,7 @@
     },
     "body": {
       "title": "Größe & Gewicht",
-      "subtitle": "Dein Ausgangspunkt. Bleibt privat – versprochen.",
+      "subtitle": "Daraus rechnen wir deinen Grundumsatz. Mehr nicht.",
       "unitMetric": "Metrisch",
       "unitImperial": "Imperial",
       "heightLabel": "Größe",
@@ -112,9 +112,9 @@
       "paceGentle": "Entspannt",
       "paceBalanced": "Ausgewogen · empfohlen",
       "paceAggressive": "Ehrgeizig",
-      "paceGentleHint": "Leicht durchzuhalten. Langsam und stetig gewinnt.",
-      "paceBalancedHint": "Der Sweet Spot zwischen Fortschritt und Durchhaltevermögen.",
-      "paceAggressiveHint": "Schwer durchzuhalten, und du riskierst Muskelverlust. Wir empfehlen ein etwas ruhigeres Tempo.",
+      "paceGentleHint": "Gut machbar. Langsam und stetig trägt am weitesten.",
+      "paceBalancedHint": "Ein gutes Maß zwischen Fortschritt und Alltag.",
+      "paceAggressiveHint": "Anspruchsvoll, und es kann Muskelmasse kosten. Wir empfehlen ein etwas ruhigeres Tempo.",
       "dailyTarget": "Dein Tagesziel",
       "kcalPerDay": "kcal / Tag",
       "deficit": "{{value}} kcal unter deinem Erhaltungsbedarf",
@@ -134,8 +134,8 @@
     },
     "schedule": {
       "title": "Trainingstage",
-      "subtitle": "Wie oft trainierst du pro Woche und an welchen Tagen? An diesen Tagen steigt dein Limit.",
-      "workoutsPerWeekLabel": "Workouts pro Woche",
+      "subtitle": "Wie oft trainierst du pro Woche und an welchen Tagen? An diesen Tagen steigt dein Pegel.",
+      "workoutsPerWeekLabel": "Einheiten pro Woche",
       "weekdaysLabel": "An welchen Tagen?",
       "weekday": {
         "0": "So",
@@ -177,16 +177,16 @@
       "step2": "Alltagsaktivität einrechnen",
       "step3": "Trainingstage einplanen",
       "step4": "Makros ausbalancieren",
-      "done": "Dein Plan ist fertig!"
+      "done": "Dein Plan ist fertig."
     },
     "result": {
-      "title": "{{name}}, dein Plan steht 🎉",
-      "titleNoName": "Dein Plan steht 🎉",
-      "subtitle": "Dein Limit passt sich automatisch an: höher an Trainingstagen, basierend auf deinem tatsächlichen Verbrauch.",
+      "title": "{{name}}, dein Plan steht.",
+      "titleNoName": "Dein Plan steht.",
+      "subtitle": "Dein Tagespegel ist deine Kalorienmenge für heute. Training hebt ihn, an Ruhetagen sinkt er.",
       "motivation": {
         "health": "Gemacht, damit du dich Tag für Tag gesünder fühlst.",
         "look": "Gemacht, damit du dich in deiner Haut richtig wohlfühlst.",
-        "performance": "Gemacht, um deine Leistung zu befeuern.",
+        "performance": "Gemacht, damit deine Leistung wächst.",
         "energy": "Gemacht, damit deine Energie den ganzen Tag hält.",
         "confidence": "Gemacht, damit du deinem Körper wieder vertraust."
       },
@@ -200,8 +200,8 @@
       "protein": "Protein",
       "carbs": "Kohlenhydrate",
       "fat": "Fett",
-      "workoutBonus": "+{{value}} kcal durch Training",
-      "explanation": "An Ruhetagen ist dein Limit dein angepasster Erhaltungsbedarf. An Trainingstagen rechnen wir einen Teil deines Verbrauchs wieder dazu – vor allem als Kohlenhydrate, da Protein und Fett stabil bleiben.",
+      "workoutBonus": "+{{value}} kcal Flut vom Training",
+      "explanation": "An Ruhetagen ist dein Pegel dein angepasster Erhaltungsbedarf. An Trainingstagen rechnen wir einen Teil deines Verbrauchs wieder dazu, vor allem als Kohlenhydrate, da Protein und Fett stabil bleiben.",
       "guardrailDeficit": "Dein gewünschtes Tempo lag über einem sicheren Defizit (max. 25 % unter dem Erhaltungsbedarf), deshalb haben wir es begrenzt.",
       "guardrailSurplus": "Dein gewünschtes Tempo lag über einem sicheren Überschuss (max. +500 kcal/Tag), deshalb haben wir es begrenzt.",
       "guardrailMinimum": "Dein Ziel hat das sichere Tagesminimum erreicht, deshalb haben wir es leicht angehoben.",
@@ -296,8 +296,8 @@
       "remindersDenied": "Mitteilungen sind für møni ausgeschaltet. Du kannst sie in der iOS-Einstellungen-App erlauben."
     },
     "todayTargets": "Heutiges Ziel",
-    "restDayLimit": "Limit Ruhetag",
-    "trainingDayLimit": "Limit Trainingstag (geschätzt)",
+    "restDayLimit": "Pegel Ruhetag",
+    "trainingDayLimit": "Pegel Trainingstag (geschätzt)",
     "sex": "Geschlecht",
     "birthDate": "Geburtsdatum",
     "height": "Größe",
@@ -308,12 +308,12 @@
     "activityLevel": "Alltagsaktivität",
     "goal": "Ziel",
     "goalRate": "Tempo",
-    "workoutsPerWeek": "Workouts / Woche",
+    "workoutsPerWeek": "Einheiten / Woche",
     "trainingDays": "Trainingstage",
     "unitSystem": "Einheiten",
     "language": "Sprache",
     "eatBackFactor": "Eat-back-Faktor",
-    "eatBackFactorDescription": "Wie viel deines Trainingsverbrauchs zu deinem Limit dazugerechnet wird.",
+    "eatBackFactorDescription": "Wie viel deines Trainingsverbrauchs zu deinem Pegel dazugerechnet wird.",
     "signOut": "Abmelden",
     "signOutConfirmTitle": "Abmelden?",
     "signOutConfirmMessage": "Du kannst dich jederzeit wieder anmelden.",

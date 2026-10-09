@@ -1,0 +1,123 @@
+{
+  "title": "Rhythm",
+  "counter_one": "{{count}} week in rhythm",
+  "counter_other": "{{count}} weeks in rhythm",
+  "begin": "Rhythm begins",
+  "best_one": "Longest rhythm so far: {{count}} week",
+  "best_other": "Longest rhythm so far: {{count}} weeks",
+  "lifetime_one": "{{count}} week in rhythm in total",
+  "lifetime_other": "{{count}} weeks in rhythm in total",
+  "explainer": "A week counts when at least two of three rings are closed. Weeks in a row make your rhythm.",
+  "hideSetting": "Rhythm display",
+  "hideSettingHint": "Rings and strips stay, the number goes away.",
+  "thisWeek": {
+    "inRhythm": "In rhythm",
+    "inReach": "Rhythm within reach",
+    "open": "Still open"
+  },
+  "lastWeek": {
+    "rhythm": "Last week in rhythm",
+    "grace_one": "Grace week used, your rhythm stays at {{count}} week",
+    "grace_other": "Grace week used, your rhythm stays at {{count}} weeks",
+    "broken_one": "A fresh start. Your best rhythm: {{count}} week",
+    "broken_other": "A fresh start. Your best rhythm: {{count}} weeks",
+    "paused": "Last week paused",
+    "none": "No completed week yet"
+  },
+  "rings": {
+    "title": "Weekly trio",
+    "food": "Food",
+    "training": "Training",
+    "protein": "Protein",
+    "foodHint": "Days with at least two entries",
+    "trainingHint": "Days with a finished session",
+    "proteinHint": "Days you reached your protein goal well",
+    "progress": "{{done}} of {{goal}}",
+    "closed": "Closed",
+    "extra": "+{{count}}",
+    "a11y": "{{name}}: {{done}} of {{goal}} days"
+  },
+  "goalOffer": {
+    "lowerTitle": "Does your plan still fit your everyday life?",
+    "lowerBody": "You can lower the weekly training goal by 1.",
+    "lowerCta": "Lower goal",
+    "raiseTitle": "Training is going well.",
+    "raiseBody": "You have been above your goal for weeks. Raise the weekly goal by 1?",
+    "raiseCta": "Raise goal",
+    "keep": "Keep it"
+  },
+  "nextWeekQuestion_one": "Next week: {{count}} session?",
+  "nextWeekQuestion_other": "Next week: {{count}} sessions?",
+  "grace": {
+    "title": "Grace",
+    "available_one": "{{count}} grace week available",
+    "available_other": "{{count}} grace weeks available",
+    "explainer": "A grace week protects your rhythm when a week goes differently. You get one after every four weeks in rhythm, up to two."
+  },
+  "pause": {
+    "title": "Pause",
+    "intro": "Away, ill, or just taking a break? Your rhythm waits.",
+    "start": "Start pause",
+    "from": "From",
+    "to": "To",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "active": "Rhythm paused. It picks up where you left off.",
+    "activeUntil": "Paused until {{date}}",
+    "end": "End pause",
+    "saved": "Pause saved.",
+    "retroactive": "You can go back up to 7 days.",
+    "maxLength": "A pause lasts up to 21 days.",
+    "yearLimit": "Need more time off? Set your goal to relaxed."
+  },
+  "stage": {
+    "title": "Stage",
+    "name": {
+      "warmup": "Warm-up",
+      "inTune": "In Tune",
+      "inStep": "In Step",
+      "inSync": "In Sync",
+      "metronome": "Metronome",
+      "original": "The Original"
+    },
+    "desc": {
+      "warmup": "You’re on your way.",
+      "inTune": "The first habits are in place.",
+      "inStep": "Two months of reliability.",
+      "inSync": "Training and food run together.",
+      "metronome": "Half a year of rhythm.",
+      "original": "A year of møni."
+    },
+    "toNext_one": "{{count}} more week to {{next}}",
+    "toNext_other": "{{count}} more weeks to {{next}}",
+    "top": "Highest stage reached",
+    "up": {
+      "title": "New stage: {{name}}",
+      "body_one": "{{count}} week in rhythm in total.",
+      "body_other": "{{count}} weeks in rhythm in total."
+    }
+  },
+  "tideTable": {
+    "title": "Tide table",
+    "subtitle": "Your week at a glance",
+    "range": "{{from}} to {{to}}",
+    "levelVsEaten": "Level and eaten",
+    "average": "Ø {{eaten}} of {{level}} kcal",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "trend": "Trend: {{value}} {{unit}}",
+    "trendFlat": "Your trend holds steady.",
+    "noGrade": "No grade, just patterns.",
+    "share": "Share",
+    "archive": "Earlier weeks",
+    "incomplete": "This week isn’t over. The table fills in day by day.",
+    "newBadge": "New"
+  },
+  "profile": {
+    "title": "My møni",
+    "stageRow": "Stage",
+    "rhythmRow": "Rhythm",
+    "pauseRow": "Pause",
+    "achievementsRow": "Stamps"
+  }
+}

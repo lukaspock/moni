@@ -4,19 +4,27 @@ import { initReactI18next } from 'react-i18next';
 
 import de from './locales/de.json';
 import deAccount from './locales/de/account.json';
+import deAchievements from './locales/de/achievements.json';
 import deExercise from './locales/de/exercise.json';
 import deFood from './locales/de/food.json';
 import deInsights from './locales/de/insights.json';
 import deHealth from './locales/de/health.json';
+import deIdentity from './locales/de/identity.json';
 import deNotifications from './locales/de/notifications.json';
+import deNudges from './locales/de/nudges.json';
+import deRhythm from './locales/de/rhythm.json';
 import deWorkout from './locales/de/workout.json';
 import en from './locales/en.json';
 import enAccount from './locales/en/account.json';
+import enAchievements from './locales/en/achievements.json';
 import enExercise from './locales/en/exercise.json';
 import enFood from './locales/en/food.json';
 import enInsights from './locales/en/insights.json';
 import enHealth from './locales/en/health.json';
+import enIdentity from './locales/en/identity.json';
 import enNotifications from './locales/en/notifications.json';
+import enNudges from './locales/en/nudges.json';
+import enRhythm from './locales/en/rhythm.json';
 import enWorkout from './locales/en/workout.json';
 
 /**
@@ -28,22 +36,30 @@ import enWorkout from './locales/en/workout.json';
 export const deTranslation = {
   ...de,
   account: deAccount,
+  achievements: deAchievements,
   exercise: deExercise,
   food: deFood,
   insights: deInsights,
   health: deHealth,
+  identity: deIdentity,
   notifications: deNotifications,
+  nudges: deNudges,
+  rhythm: deRhythm,
   workout: deWorkout,
 };
 
 const enTranslation = {
   ...en,
   account: enAccount,
+  achievements: enAchievements,
   exercise: enExercise,
   food: enFood,
   insights: enInsights,
   health: enHealth,
+  identity: enIdentity,
   notifications: enNotifications,
+  nudges: enNudges,
+  rhythm: enRhythm,
   workout: enWorkout,
 };
 

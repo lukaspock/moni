@@ -1,7 +1,10 @@
 {
   "title": "Insights",
   "placeholder": "Deine Trends und Auswertungen erscheinen hier.",
-  "units": { "kg": "kg", "lb": "lb" },
+  "units": {
+    "kg": "kg",
+    "lb": "lb"
+  },
   "weight": {
     "title": "Gewicht",
     "trendLabel": "Trendgewicht",
@@ -10,13 +13,17 @@
     "weeklyRate": "{{value}} {{unit}} / Woche",
     "weeklyRateLabel": "Wöchentliche Veränderung",
     "noRate": "Trage dein Gewicht über mindestens eine Woche ein, um die wöchentliche Veränderung zu sehen.",
-    "range": { "4w": "4W", "12w": "12W", "all": "Alle" },
+    "range": {
+      "4w": "4W",
+      "12w": "12W",
+      "all": "Alle"
+    },
     "rangeLabel": "Zeitraum",
     "legendTrend": "Trend",
-    "legendEntries": "Messungen",
+    "legendEntries": "Messpunkte",
     "legendGoal": "Ziel",
     "emptyTitle": "Noch kein Gewicht eingetragen",
-    "emptyBody": "Trage dein Gewicht ein paar Mal pro Woche ein. Der Trend glättet tägliche Schwankungen.",
+    "emptyBody": "Zwei-, dreimal pro Woche reicht, møni glättet den Rest.",
     "logCta": "Gewicht eintragen",
     "allEntries": "Alle Einträge"
   },
@@ -42,15 +49,18 @@
     "edit": "Bearbeiten"
   },
   "kcal": {
-    "title": "Kalorien vs. Ziel",
-    "range": { "7": "7 Tage", "30": "30 Tage" },
+    "title": "Gegessen und Pegel",
+    "range": {
+      "7": "7 Tage",
+      "30": "30 Tage"
+    },
     "average": "Ø {{eaten}} von {{target}} kcal",
-    "daysOnTarget": "{{count}} von {{total}} erfassten Tagen innerhalb von 10 % deines Limits",
-    "under": "Im Schnitt {{value}} kcal unter deinem Limit",
-    "over": "Im Schnitt {{value}} kcal über deinem Limit",
-    "emptyTitle": "In diesem Zeitraum keine Mahlzeiten erfasst",
-    "emptyBody": "Erfasse deine Mahlzeiten, dann siehst du, wie du gegenüber deinem Tageslimit liegst.",
-    "barsLabel": "Gegessen im Vergleich zum Tageslimit, letzte 7 Tage"
+    "daysOnTarget": "{{count}} von {{total}} erfassten Tagen nahe an deinem Pegel (±10 %)",
+    "under": "Im Schnitt {{value}} kcal unter deinem Pegel",
+    "over": "Im Schnitt {{value}} kcal über deinem Pegel",
+    "emptyTitle": "In diesem Zeitraum nichts eingetragen",
+    "emptyBody": "Trag Mahlzeiten ein, dann siehst du, wie du zu deinem Tagespegel liegst.",
+    "barsLabel": "Gegessen im Vergleich zum Tagespegel, letzte 7 Tage"
   },
   "training": {
     "title": "Konstanz",
@@ -58,24 +68,24 @@
     "thisWeek": "diese Woche",
     "total": "{{count}} Trainingstage in den letzten 4 Wochen",
     "loggingStreak": "{{count}} Tage in Folge erfasst",
-    "noStreak": "Erfasse heute eine Mahlzeit, um eine Serie zu starten.",
-    "emptyTitle": "Noch keine Workouts",
-    "emptyBody": "Schließe ein Workout ab, dann erscheint hier deine Trainingshäufigkeit."
+    "noStreak": "Ein Eintrag heute, und die Serie beginnt.",
+    "emptyTitle": "Noch keine Einheiten",
+    "emptyBody": "Sobald eine Einheit gespeichert ist, siehst du hier, wie oft du trainierst."
   },
   "strength": {
     "title": "Kraftentwicklung",
-    "caption": "Geschätztes 1RM, letzte 12 Wochen",
+    "caption": "Geschätztes Maximum, letzte 12 Wochen",
     "change": "{{from}} → {{to}} {{unit}}",
-    "emptyTitle": "Noch zu wenige Kraftdaten",
-    "emptyBody": "Nach Krafttraining in mindestens zwei verschiedenen Wochen erscheint hier dein 1RM-Trend.",
+    "emptyTitle": "Noch zu wenig Kraftdaten",
+    "emptyBody": "Nach Krafttraining in mindestens zwei verschiedenen Wochen erscheint hier dein Trend.",
     "exerciseFallback": "Übung"
   },
   "correlations": {
     "title": "Das fällt auf",
-    "notEnough": "Noch zu wenige Daten. Erfasse noch ein paar Wochen Mahlzeiten und Workouts.",
+    "notEnough": "Zu wenig Daten für ein Muster. Mit ein paar Wochen Einträgen wird es lesbar.",
     "protein": "An Trainingstagen isst du etwa {{training}} g Protein, an Ruhetagen {{rest}} g.",
     "proteinLower": "An Ruhetagen sinkt dein Protein ({{rest}} g statt {{training}} g an Trainingstagen). Auch die Erholung braucht es.",
-    "kcalTraining": "An Trainingstagen liegst du im Schnitt {{value}} kcal {{direction}} deinem Limit.",
+    "kcalTraining": "An Trainingstagen liegst du im Schnitt {{value}} kcal {{direction}} deinem Pegel.",
     "directionUnder": "unter",
     "directionOver": "über",
     "weightLink": "In Wochen mit mehr Kalorien ist dein Gewichtstrend deutlicher gestiegen (auf Basis von {{weeks}} Wochen).",

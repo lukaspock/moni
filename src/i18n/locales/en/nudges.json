@@ -1,0 +1,77 @@
+{
+  "eveningNote": {
+    "title": "Everything logged?",
+    "body": "One tap and the day is noted."
+  },
+  "trainingMorning": {
+    "title": "Training day",
+    "body": "Your level today: {{kcal}} kcal. It rises once you’ve moved."
+  },
+  "proteinBridge": {
+    "title": "Session saved",
+    "body": "A good window for 30 to 40 g protein. Your regulars are one tap away."
+  },
+  "sundayReview": {
+    "title": "Your tide table is in",
+    "body": "See how the week went. No grade, just patterns."
+  },
+  "weighIn": {
+    "title": "A data point?",
+    "body": "The trend counts, not the single number. One weigh-in is enough."
+  },
+  "taktChance": {
+    "title": "Your rhythm is within reach",
+    "body": "One session puts you in rhythm this week."
+  },
+  "doorOpen": {
+    "early": {
+      "title": "All good?",
+      "body": "If you like: one entry is enough to get back in."
+    },
+    "mid": {
+      "title": "We’re here when you are",
+      "body": "One entry, nothing more is needed."
+    },
+    "late": {
+      "title": "Drop by for a second?",
+      "body": "Your history is still here. One entry is enough to get back in."
+    }
+  },
+  "monthReview": {
+    "title": "Your {{month}} has a character",
+    "body": "Take a look at what the month looked like."
+  },
+  "actions": {
+    "notToday": "Not again today",
+    "lessOfThis": "Less of this"
+  },
+  "categories": {
+    "meals": "Meals",
+    "training": "Training",
+    "reviews": "Reviews",
+    "rhythm": "Rhythm",
+    "weight": "Weight"
+  },
+  "settings": {
+    "title": "Notifications",
+    "quietMode": "Quiet mode",
+    "quietUntil": "Quiet until {{date}}",
+    "quietHours": "Quiet hours",
+    "weighInDay": "Weigh-in day",
+    "mealReminders": "Meal reminders",
+    "mealRemindersHint": "Three fixed prompts for breakfast, lunch and dinner.",
+    "permissionOff": "Notifications are turned off for møni. You can allow them in Settings."
+  },
+  "quieter": {
+    "title": "Should we be quieter?",
+    "less": "Fewer",
+    "reviewsOnly": "Reviews only",
+    "off": "Off"
+  },
+  "primer": {
+    "title": "A heads-up for your review?",
+    "body": "You get a notification when your review is ready. At most one a day, off any time.",
+    "cta": "Sure",
+    "decline": "Not now"
+  }
+}

@@ -1,7 +1,10 @@
 {
   "title": "Insights",
   "placeholder": "Your trends and analysis will appear here.",
-  "units": { "kg": "kg", "lb": "lb" },
+  "units": {
+    "kg": "kg",
+    "lb": "lb"
+  },
   "weight": {
     "title": "Weight",
     "trendLabel": "Trend weight",
@@ -10,13 +13,17 @@
     "weeklyRate": "{{value}} {{unit}} / week",
     "weeklyRateLabel": "Weekly rate",
     "noRate": "Log your weight over at least a week to see your weekly rate.",
-    "range": { "4w": "4W", "12w": "12W", "all": "All" },
+    "range": {
+      "4w": "4W",
+      "12w": "12W",
+      "all": "All"
+    },
     "rangeLabel": "Time range",
     "legendTrend": "Trend",
-    "legendEntries": "Weigh-ins",
+    "legendEntries": "Data points",
     "legendGoal": "Goal",
     "emptyTitle": "No weight logged yet",
-    "emptyBody": "Log your weight a few times a week. Your trend smooths out daily ups and downs.",
+    "emptyBody": "Two or three times a week is plenty; møni smooths the rest.",
     "logCta": "Log weight",
     "allEntries": "All entries"
   },
@@ -42,15 +49,18 @@
     "edit": "Edit"
   },
   "kcal": {
-    "title": "Calories vs. goal",
-    "range": { "7": "7 days", "30": "30 days" },
+    "title": "Eaten and level",
+    "range": {
+      "7": "7 days",
+      "30": "30 days"
+    },
     "average": "Ø {{eaten}} of {{target}} kcal",
-    "daysOnTarget": "{{count}} of {{total}} logged days within 10 % of your limit",
-    "under": "On average {{value}} kcal under your limit",
-    "over": "On average {{value}} kcal over your limit",
-    "emptyTitle": "No meals logged in this period",
-    "emptyBody": "Log your meals and you will see how you do against your daily limit.",
-    "barsLabel": "Eaten versus daily limit, last 7 days"
+    "daysOnTarget": "{{count}} of {{total}} logged days close to your level (±10 %)",
+    "under": "On average {{value}} kcal under your level",
+    "over": "On average {{value}} kcal above your level",
+    "emptyTitle": "Nothing logged in this period",
+    "emptyBody": "Log meals and you’ll see how you sit against your daily level.",
+    "barsLabel": "Eaten versus daily level, last 7 days"
   },
   "training": {
     "title": "Consistency",
@@ -58,24 +68,24 @@
     "thisWeek": "this week",
     "total": "{{count}} training days in the last 4 weeks",
     "loggingStreak": "{{count}}-day logging streak",
-    "noStreak": "Log a meal today to start a streak.",
-    "emptyTitle": "No workouts yet",
-    "emptyBody": "Finish a workout and your training frequency shows up here."
+    "noStreak": "One entry today and the run begins.",
+    "emptyTitle": "No sessions yet",
+    "emptyBody": "Once a session is saved, you’ll see how often you train here."
   },
   "strength": {
     "title": "Strength progress",
-    "caption": "Estimated 1RM, last 12 weeks",
+    "caption": "Estimated max, last 12 weeks",
     "change": "{{from}} → {{to}} {{unit}}",
     "emptyTitle": "Not enough strength data yet",
-    "emptyBody": "After strength workouts in at least two different weeks, your estimated 1RM trend appears here.",
+    "emptyBody": "After strength sessions in at least two different weeks, your trend appears here.",
     "exerciseFallback": "Exercise"
   },
   "correlations": {
     "title": "What stands out",
-    "notEnough": "Not enough data yet. Log meals and workouts for a couple more weeks.",
+    "notEnough": "Not enough data for a pattern yet. A few weeks of entries make it readable.",
     "protein": "You eat about {{training}} g protein on training days and {{rest}} g on rest days.",
     "proteinLower": "Protein dips on rest days ({{rest}} g vs. {{training}} g on training days). Recovery needs it too.",
-    "kcalTraining": "On training days you land {{value}} kcal {{direction}} your limit on average.",
+    "kcalTraining": "On training days you land {{value}} kcal {{direction}} your level on average.",
     "directionUnder": "under",
     "directionOver": "over",
     "weightLink": "In weeks you ate more, your weight trend went up more clearly (based on {{weeks}} weeks).",
