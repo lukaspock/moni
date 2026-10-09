@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Serie</title>
+  <path d="M20 100H140" opacity=".35"/>
+  <circle cx="28" cy="88" r="7" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <circle cx="46" cy="82" r="7" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <circle cx="64" cy="76" r="7" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <circle cx="82" cy="68" r="7" style="fill:var(--moni-accent,#1D6B47);stroke:var(--moni-accent,#1D6B47)"/>
+  <circle cx="100" cy="58" r="7" style="fill:var(--moni-accent,#1D6B47);stroke:var(--moni-accent,#1D6B47)"/>
+  <circle cx="118" cy="46" r="7" style="fill:var(--moni-accent,#1D6B47);stroke:var(--moni-accent,#1D6B47)"/>
+<clipPath id="m1"><circle cx="136" cy="30" r="11"/></clipPath><g clip-path="url(#m1)"><g transform="rotate(-32.0 136 30)"><path d="M122.16 -1.94L149.84 -1.94L149.84 29.11C148.69 29.58 147.53 30.04 146.38 30.37C145.23 30.7 144.07 30.89 142.92 30.89C141.77 30.89 140.61 30.7 139.46 30.37C138.31 30.04 137.15 29.58 136 29.11C134.85 28.65 133.69 28.19 132.54 27.86C131.39 27.53 130.23 27.34 129.08 27.34C127.93 27.34 126.77 27.53 125.62 27.86C124.47 28.19 123.31 28.65 122.16 29.11Z" fill="var(--moni-accent,#1D6B47)" stroke="none"/><path d="M122.16 30.89C123.31 30.42 124.47 29.96 125.62 29.63C126.77 29.3 127.93 29.11 129.08 29.11C130.23 29.11 131.39 29.3 132.54 29.63C133.69 29.96 134.85 30.42 136 30.89C137.15 31.35 138.31 31.81 139.46 32.14C140.61 32.47 141.77 32.66 142.92 32.66C144.07 32.66 145.23 32.47 146.38 32.14C147.53 31.81 148.69 31.35 149.84 30.89L149.84 61.94L122.16 61.94Z" fill="var(--moni-bonus,#C2410C)" stroke="none"/></g></g>
+</svg>

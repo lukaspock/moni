@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Fehler</title>
+  <path d="M104 36A38 38 0 0 0 42 62" style="stroke:var(--moni-danger,#C62F3A)" stroke-width="7"/>
+  <path d="M120 70A38 38 0 0 1 80 98" style="stroke:var(--moni-danger,#C62F3A)" stroke-width="7"/>
+  <path d="M52 82A38 38 0 0 0 66 94" style="stroke:var(--moni-danger,#C62F3A)" stroke-width="7"/>
+  <path d="M80 44V68" stroke-width="6"/>
+  <circle cx="80" cy="82" r="3.5" fill="currentColor" stroke="none"/>
+<clipPath id="m1"><circle cx="124" cy="44" r="7"/></clipPath><g clip-path="url(#m1)"><g transform="rotate(-32.0 124 44)"><path d="M115.19 23.68L132.81 23.68L132.81 43.44C132.07 43.73 131.34 44.02 130.6 44.23C129.87 44.44 129.14 44.56 128.4 44.56C127.67 44.56 126.94 44.44 126.2 44.23C125.47 44.02 124.73 43.73 124 43.44C123.27 43.14 122.53 42.85 121.8 42.64C121.06 42.43 120.33 42.31 119.6 42.31C118.86 42.31 118.13 42.43 117.4 42.64C116.66 42.85 115.93 43.14 115.19 43.44Z" fill="var(--moni-accent,#1D6B47)" stroke="none"/><path d="M115.19 44.56C115.93 44.27 116.66 43.98 117.4 43.77C118.13 43.56 118.86 43.44 119.6 43.44C120.33 43.44 121.06 43.56 121.8 43.77C122.53 43.98 123.27 44.27 124 44.56C124.73 44.86 125.47 45.15 126.2 45.36C126.94 45.57 127.67 45.69 128.4 45.69C129.14 45.69 129.87 45.57 130.6 45.36C131.34 45.15 132.07 44.86 132.81 44.56L132.81 64.32L115.19 64.32Z" fill="var(--moni-bonus,#C2410C)" stroke="none"/></g></g>
+</svg>
