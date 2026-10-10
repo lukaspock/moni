@@ -1,0 +1,249 @@
+{
+  "firstWorkout": {
+    "name": "First Rep",
+    "desc": "Finish your first session.",
+    "celebrate": "The first stroke in the ø. Everything else builds on it."
+  },
+  "workouts10": {
+    "name": "Double Digits",
+    "desc": "Finish 10 sessions.",
+    "celebrate": "Ten times you set out. That is no whim any more."
+  },
+  "workouts50": {
+    "name": "Regular",
+    "desc": "Finish 50 sessions.",
+    "celebrate": "Fifty sessions. The barbell knows you by name."
+  },
+  "workouts100": {
+    "name": "Centurion",
+    "desc": "Finish 100 sessions.",
+    "celebrate": "A hundred times you showed up. Nobody takes that from you."
+  },
+  "firstPr": {
+    "name": "New Best",
+    "desc": "Beat your estimated max from an earlier week on any exercise.",
+    "celebrate": "Stronger than last week. That is what progress looks like."
+  },
+  "volume10t": {
+    "name": "Ten Tonnes",
+    "desc": "Move 10,000 kg in total.",
+    "celebrate": "Ten tonnes moved. That is about two elephants."
+  },
+  "allRounder": {
+    "name": "All-Rounder",
+    "desc": "Do one strength and one cardio or sport session in the same week.",
+    "celebrate": "Strength and endurance in one week. Variety suits you."
+  },
+  "firstMeal": {
+    "name": "First Bite",
+    "desc": "Log your first meal.",
+    "celebrate": "The first meal is in. From here your day has a face."
+  },
+  "threeMeals": {
+    "name": "Three Meals",
+    "desc": "Log breakfast, lunch and dinner on one day.",
+    "celebrate": "All three main meals in view. A whole day."
+  },
+  "meals100": {
+    "name": "A Hundred Plates",
+    "desc": "Log 100 meals.",
+    "celebrate": "A hundred meals noted. You know your plate."
+  },
+  "meals500": {
+    "name": "Five Hundred",
+    "desc": "Log 500 meals.",
+    "celebrate": "Five hundred times you looked. That is knowledge about yourself."
+  },
+  "wellFuelled": {
+    "name": "Well Fuelled",
+    "desc": "On a training day with at least three entries, land between 90 and 115 % of your level.",
+    "celebrate": "Training and plate in tune. That is how you get stronger, not just tired."
+  },
+  "proteinWeek": {
+    "name": "Protein Week",
+    "desc": "Close the protein ring for a week.",
+    "celebrate": "A full week of enough protein. Your muscles say thanks."
+  },
+  "proteinStreak4": {
+    "name": "Four Protein Weeks",
+    "desc": "Close the protein ring four weeks in a row.",
+    "celebrate": "Four weeks of protein reliability. That is a foundation."
+  },
+  "bridgeDay": {
+    "name": "The Bridge",
+    "desc": "Log at least 25 g of protein within three hours after a session.",
+    "celebrate": "Training, then plate. The exact link møni was made for."
+  },
+  "rhythm4": {
+    "name": "Four in Rhythm",
+    "desc": "Keep your rhythm for four weeks in a row.",
+    "celebrate": "Four weeks in a row. Chance turned into habit."
+  },
+  "rhythm12": {
+    "name": "A Quarter",
+    "desc": "Keep your rhythm for twelve weeks in a row.",
+    "celebrate": "Twelve weeks in rhythm. A whole quarter of reliability."
+  },
+  "rhythm26": {
+    "name": "Half a Year",
+    "desc": "Keep your rhythm for 26 weeks in a row.",
+    "celebrate": "Half a year. You are not just along for the ride, you are in it."
+  },
+  "fullWeek": {
+    "name": "Full Week",
+    "desc": "Close all rings in one week.",
+    "celebrate": "Food, training, protein: all in one week. Round."
+  },
+  "fullWeek4": {
+    "name": "Four Full Weeks",
+    "desc": "Close all rings in four weeks.",
+    "celebrate": "Four round weeks. The ø is complete."
+  },
+  "comeback": {
+    "name": "Back in Rhythm",
+    "desc": "Complete a week in rhythm after at least two weeks without.",
+    "celebrate": "You are back. That counts for more than any streak."
+  },
+  "goodPause": {
+    "name": "Good Pause",
+    "desc": "Return within three days after a pause of five days or more.",
+    "celebrate": "Took a break, came back. That is how rhythm works."
+  },
+  "weekendKeeper": {
+    "name": "Weekend Keeper",
+    "desc": "Keep both Saturday and Sunday for four weekends in a row.",
+    "celebrate": "Four weekends in rhythm. That is the hardest stretch."
+  },
+  "fullMonth": {
+    "name": "Whole Month",
+    "desc": "Keep your rhythm in every week of a calendar month.",
+    "celebrate": "A whole month in rhythm. Your month pattern is closed."
+  },
+  "firstWeigh": {
+    "name": "First Weigh-in",
+    "desc": "Log your first weight.",
+    "celebrate": "The starting point is set. What counts now is the course, not the day."
+  },
+  "trendReady": {
+    "name": "Trend Unlocked",
+    "desc": "Log 8 weights within 4 weeks.",
+    "celebrate": "Enough data points for a real trend. From now on møni calculates with you."
+  },
+  "adaptiveOn": {
+    "name": "Your Body Talks",
+    "desc": "møni adjusts your level to your real burn for the first time.",
+    "celebrate": "møni has adjusted your level to your real burn."
+  },
+  "bodyGoal2kg": {
+    "name": "Two Kilos Closer",
+    "desc": "Your trend weight is 2 kg closer to your goal.",
+    "celebrate": "Two kilos in the right direction. Calm and steady."
+  },
+  "strongAsYou": {
+    "name": "Bodyweight Lift",
+    "desc": "Reach an estimated max of at least your body weight on a basic lift.",
+    "celebrate": "You move your own body weight. Respect."
+  },
+  "goalReached": {
+    "name": "Arrived",
+    "desc": "Your trend weight is within 0.3 kg of your goal weight.",
+    "celebrate": "You are there. Time to breathe and plan what comes next."
+  },
+  "firstPhoto": {
+    "name": "First Snap",
+    "desc": "Log a meal by photo.",
+    "celebrate": "Photo taken, plate recognised. It is always this quick now."
+  },
+  "firstVoice": {
+    "name": "Talkative",
+    "desc": "Log a meal by voice.",
+    "celebrate": "Talking instead of typing. Handy, isn’t it?"
+  },
+  "firstLabel": {
+    "name": "Fine Print",
+    "desc": "Scan a nutrition label by photo.",
+    "celebrate": "You read labels. Not many do."
+  },
+  "scanner25": {
+    "name": "Scanner",
+    "desc": "Log 25 meals by barcode.",
+    "celebrate": "Twenty-five scans. You are faster than the checkout."
+  },
+  "firstFavorite": {
+    "name": "First Regular",
+    "desc": "Save your first regular.",
+    "celebrate": "Your first regular is saved. Next time it takes one tap."
+  },
+  "ownExercise": {
+    "name": "Own Move",
+    "desc": "Create your own exercise.",
+    "celebrate": "An exercise that exists only for you."
+  },
+  "healthLinked": {
+    "name": "Connected",
+    "desc": "Connect Apple Health and import a session from it.",
+    "celebrate": "Your training from Health has arrived in your day."
+  },
+  "patternFound": {
+    "name": "Pattern Found",
+    "desc": "Unlock the first pattern hint in Insights.",
+    "celebrate": "Enough days for a pattern. møni sees how food and training work together."
+  },
+  "reviews4": {
+    "name": "Review Reader",
+    "desc": "View four weekly reviews to the end.",
+    "celebrate": "Four times you looked back. Reflecting keeps you going."
+  },
+  "sharedFirst": {
+    "name": "Passed It On",
+    "desc": "Share your first card.",
+    "celebrate": "You shared something nice. Thank you."
+  },
+  "oneYear": {
+    "name": "One Year",
+    "desc": "Use møni for a year and keep at least 8 days in the last 30.",
+    "celebrate": "A year. Your ø has a history."
+  },
+  "hidden": {
+    "name": "Hidden stamp",
+    "desc": "Shown once unlocked."
+  },
+  "shelf": {
+    "title": "Stamps",
+    "count": "{{unlocked}} of {{total}}",
+    "unlockedOn": "Unlocked on {{date}}",
+    "locked": "Still open",
+    "progress": "{{current}} of {{target}}",
+    "empty": "Your first stamps arrive on their own.",
+    "regained_one": "Found again: {{count}} stamp",
+    "regained_other": "Found again: {{count}} stamps",
+    "newToast": "New stamp: {{name}}",
+    "details": "Details",
+    "next": "Up next",
+    "close": "Close",
+    "hiddenCount_one": "{{count}} hidden stamp",
+    "hiddenCount_other": "{{count}} hidden stamps"
+  },
+  "category": {
+    "training": "Training",
+    "nutrition": "Food",
+    "consistency": "Rhythm",
+    "body": "Body",
+    "explorer": "Explorer"
+  },
+  "rarity": {
+    "common": "Common",
+    "rare": "Rare",
+    "special": "Special"
+  },
+  "plusTen": {
+    "name": "Plus Ten",
+    "desc": "Raise the estimated max of an exercise by 10 % from where you started.",
+    "celebrate": "Ten percent more than at the start. That is real work."
+  },
+  "firstRhythm": {
+    "name": "First Rhythm",
+    "desc": "Complete your first week in rhythm.",
+    "celebrate": "The first week in rhythm. It begins."
+  }
+}

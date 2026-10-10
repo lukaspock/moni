@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { Card } from '@/components/ui';
+import { Card, ListRow } from '@/components/ui';
 import { WorkoutHistoryRow } from '@/features/workout/WorkoutHistoryRow';
 import { useWorkoutHistory } from '@/features/workout';
 
@@ -16,35 +16,31 @@ export default function TrainingHistoryScreen() {
 
   return (
     <ScrollView
-      className="bg-system-background flex-1"
+      className="bg-bg flex-1"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-4 px-4 pb-12 pt-4"
     >
       {workouts.length === 0 && !isLoading ? (
-        <Text className="text-secondary-label mt-8 text-center">
+        <Text className="text-label-secondary mt-8 text-center">
           {t('workout.history.empty')}
         </Text>
       ) : (
         <Card className="gap-0 overflow-hidden p-0">
           {workouts.map((workout, index) => (
-            <View key={workout.id}>
-              {index > 0 && <View className="bg-separator h-px" />}
-              <WorkoutHistoryRow workout={workout} />
-            </View>
+            <WorkoutHistoryRow
+              key={workout.id}
+              workout={workout}
+              separator={index < workouts.length - 1 || hasMore}
+            />
           ))}
           {hasMore && (
-            <>
-              <View className="bg-separator h-px" />
-              <Pressable
-                disabled={isLoading}
-                onPress={() => setLimit((l) => l + PAGE_SIZE)}
-                className="px-4 py-3"
-              >
-                <Text className="text-tint text-center text-base">
-                  {t('workout.history.loadMore')}
-                </Text>
-              </Pressable>
-            </>
+            <ListRow
+              title={t('workout.history.loadMore')}
+              chevron={false}
+              onPress={() => {
+                if (!isLoading) setLimit((l) => l + PAGE_SIZE);
+              }}
+            />
           )}
         </Card>
       )}

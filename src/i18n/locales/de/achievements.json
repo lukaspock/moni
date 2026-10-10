@@ -1,0 +1,249 @@
+{
+  "firstWorkout": {
+    "name": "Erster Satz",
+    "desc": "Schließe deine erste Einheit ab.",
+    "celebrate": "Der erste Strich im ø. Alles Weitere baut darauf auf."
+  },
+  "workouts10": {
+    "name": "Zweistellig",
+    "desc": "Schließe 10 Einheiten ab.",
+    "celebrate": "Zehn Mal hast du dich auf den Weg gemacht. Das ist keine Laune mehr."
+  },
+  "workouts50": {
+    "name": "Stammgast",
+    "desc": "Schließe 50 Einheiten ab.",
+    "celebrate": "Fünfzig Einheiten. Die Hantel kennt dich beim Namen."
+  },
+  "workouts100": {
+    "name": "Hundertschaft",
+    "desc": "Schließe 100 Einheiten ab.",
+    "celebrate": "Hundert Mal angetreten. Das macht dir niemand mehr nach."
+  },
+  "firstPr": {
+    "name": "Neue Bestmarke",
+    "desc": "Übertriff bei einer Übung dein geschätztes Maximum aus einer früheren Woche.",
+    "celebrate": "Stärker als letzte Woche. Genau so sieht Fortschritt aus."
+  },
+  "volume10t": {
+    "name": "Zehn Tonnen",
+    "desc": "Bewege insgesamt 10.000 kg im Training.",
+    "celebrate": "Zehn Tonnen bewegt. Das sind etwa zwei Elefanten."
+  },
+  "allRounder": {
+    "name": "Allrounder",
+    "desc": "Mache in einer Woche eine Kraft- und eine Cardio- oder Sporteinheit.",
+    "celebrate": "Kraft und Ausdauer in einer Woche. Abwechslung steht dir."
+  },
+  "firstMeal": {
+    "name": "Erster Bissen",
+    "desc": "Trag deine erste Mahlzeit ein.",
+    "celebrate": "Die erste Mahlzeit steht. Ab jetzt hat dein Tag ein Gesicht."
+  },
+  "threeMeals": {
+    "name": "Drei Mahlzeiten",
+    "desc": "Trag an einem Tag Frühstück, Mittagessen und Abendessen ein.",
+    "celebrate": "Alle drei Hauptmahlzeiten im Bild. Ein ganzer Tag."
+  },
+  "meals100": {
+    "name": "Hundert Teller",
+    "desc": "Trag 100 Mahlzeiten ein.",
+    "celebrate": "Hundert Mahlzeiten festgehalten. Du kennst deinen Teller."
+  },
+  "meals500": {
+    "name": "Fünfhundert",
+    "desc": "Trag 500 Mahlzeiten ein.",
+    "celebrate": "Fünfhundert Mal hingeschaut. Das ist Wissen über dich selbst."
+  },
+  "wellFuelled": {
+    "name": "Gut getankt",
+    "desc": "Iss an einem Trainingstag mit mindestens drei Einträgen zwischen 90 und 115 % deines Pegels.",
+    "celebrate": "Training und Teller im Einklang. So wirst du stärker, nicht nur müde."
+  },
+  "proteinWeek": {
+    "name": "Eiweißwoche",
+    "desc": "Schließe den Protein-Ring einer Woche.",
+    "celebrate": "Eine Woche lang genug Protein. Deine Muskeln sagen danke."
+  },
+  "proteinStreak4": {
+    "name": "Vier Eiweißwochen",
+    "desc": "Schließe den Protein-Ring in vier Wochen hintereinander.",
+    "celebrate": "Vier Wochen Eiweiß-Verlässlichkeit. Das ist Fundament."
+  },
+  "bridgeDay": {
+    "name": "Die Brücke",
+    "desc": "Trag innerhalb von drei Stunden nach einer Einheit mindestens 25 g Protein ein.",
+    "celebrate": "Training, dann Teller. Genau die Verbindung, für die møni gemacht ist."
+  },
+  "rhythm4": {
+    "name": "Vier im Rhythmus",
+    "desc": "Halte deinen Rhythmus vier Wochen in Folge.",
+    "celebrate": "Vier Wochen in Folge. Aus Zufall wurde Gewohnheit."
+  },
+  "rhythm12": {
+    "name": "Ein Quartal",
+    "desc": "Halte deinen Rhythmus zwölf Wochen in Folge.",
+    "celebrate": "Zwölf Wochen im Rhythmus. Ein ganzes Quartal Verlässlichkeit."
+  },
+  "rhythm26": {
+    "name": "Halbjahr",
+    "desc": "Halte deinen Rhythmus 26 Wochen in Folge.",
+    "celebrate": "Ein halbes Jahr. Du bist nicht mehr dabei, du bist drin."
+  },
+  "fullWeek": {
+    "name": "Volle Woche",
+    "desc": "Schließe in einer Woche alle Ringe.",
+    "celebrate": "Essen, Training, Protein: alles in einer Woche. Rund."
+  },
+  "fullWeek4": {
+    "name": "Vier volle Wochen",
+    "desc": "Schließe in vier Wochen alle Ringe.",
+    "celebrate": "Vier runde Wochen. Das ø ist komplett."
+  },
+  "comeback": {
+    "name": "Zurück im Rhythmus",
+    "desc": "Schließe eine Woche im Rhythmus nach mindestens zwei Wochen ohne.",
+    "celebrate": "Du bist wieder da. Das zählt mehr als jede Serie."
+  },
+  "goodPause": {
+    "name": "Gute Pause",
+    "desc": "Komm nach einer Pause von mindestens fünf Tagen innerhalb von drei Tagen zurück.",
+    "celebrate": "Pause gemacht, zurückgekommen. So geht Rhythmus."
+  },
+  "weekendKeeper": {
+    "name": "Wochenend-Halter",
+    "desc": "Halte an vier Wochenenden hintereinander Samstag und Sonntag.",
+    "celebrate": "Vier Wochenenden im Rhythmus. Das ist die schwierigste Strecke."
+  },
+  "fullMonth": {
+    "name": "Ganzer Monat",
+    "desc": "Halte in jeder Woche eines Kalendermonats den Rhythmus.",
+    "celebrate": "Ein ganzer Monat im Rhythmus. Dein Monatsmuster ist geschlossen."
+  },
+  "firstWeigh": {
+    "name": "Erste Waage",
+    "desc": "Trag dein erstes Gewicht ein.",
+    "celebrate": "Der Startpunkt ist gesetzt. Jetzt zählt der Verlauf, nicht der Tag."
+  },
+  "trendReady": {
+    "name": "Trend steht",
+    "desc": "Trag 8 Gewichte innerhalb von 4 Wochen ein.",
+    "celebrate": "Genug Messpunkte für einen echten Trend. Ab jetzt rechnet møni mit dir."
+  },
+  "adaptiveOn": {
+    "name": "Dein Körper redet mit",
+    "desc": "møni passt deinen Pegel zum ersten Mal an deinen echten Verbrauch an.",
+    "celebrate": "møni hat deinen Pegel an deinen echten Verbrauch angepasst."
+  },
+  "bodyGoal2kg": {
+    "name": "Zwei Kilo Richtung Ziel",
+    "desc": "Dein Trendgewicht liegt 2 kg näher an deinem Ziel.",
+    "celebrate": "Zwei Kilo in die richtige Richtung. Ruhig und stetig."
+  },
+  "strongAsYou": {
+    "name": "Eigengewicht gestemmt",
+    "desc": "Erreiche bei einer Grundübung ein geschätztes Maximum von mindestens deinem Körpergewicht.",
+    "celebrate": "Du bewegst dein eigenes Körpergewicht. Respekt."
+  },
+  "goalReached": {
+    "name": "Angekommen",
+    "desc": "Dein Trendgewicht liegt innerhalb von 0,3 kg deines Zielgewichts.",
+    "celebrate": "Du bist da. Zeit, durchzuatmen und das Nächste zu planen."
+  },
+  "firstPhoto": {
+    "name": "Erster Schnappschuss",
+    "desc": "Trag eine Mahlzeit per Foto ein.",
+    "celebrate": "Foto gemacht, Teller erkannt. Das geht jetzt immer so schnell."
+  },
+  "firstVoice": {
+    "name": "Gesprächig",
+    "desc": "Trag eine Mahlzeit per Sprache ein.",
+    "celebrate": "Sprechen statt tippen. Praktisch, oder?"
+  },
+  "firstLabel": {
+    "name": "Kleingedrucktes",
+    "desc": "Lies eine Nährwerttabelle per Foto ein.",
+    "celebrate": "Du liest Etiketten. Das tun nicht viele."
+  },
+  "scanner25": {
+    "name": "Scanner",
+    "desc": "Trag 25 Mahlzeiten per Barcode ein.",
+    "celebrate": "Fünfundzwanzig Scans. Du bist schneller als die Kasse."
+  },
+  "firstFavorite": {
+    "name": "Stammgericht",
+    "desc": "Merke dir dein erstes Stammgericht.",
+    "celebrate": "Dein erstes Stammgericht ist gespeichert. Nächstes Mal ein Tap."
+  },
+  "ownExercise": {
+    "name": "Eigene Übung",
+    "desc": "Erstelle eine eigene Übung.",
+    "celebrate": "Eine Übung, die es nur bei dir gibt."
+  },
+  "healthLinked": {
+    "name": "Verbunden",
+    "desc": "Verbinde Apple Health und übernimm eine Einheit daraus.",
+    "celebrate": "Dein Training aus Health ist im Tag angekommen."
+  },
+  "patternFound": {
+    "name": "Muster erkannt",
+    "desc": "Schalte den ersten Muster-Hinweis in Insights frei.",
+    "celebrate": "Genug Tage für ein Muster. møni sieht, wie Essen und Training zusammenspielen."
+  },
+  "reviews4": {
+    "name": "Rückblick-Leser",
+    "desc": "Sieh dir vier Wochenrückblicke bis zum Ende an.",
+    "celebrate": "Vier Mal zurückgeschaut. Wer reflektiert, bleibt dran."
+  },
+  "sharedFirst": {
+    "name": "Weitergegeben",
+    "desc": "Teile deine erste Karte.",
+    "celebrate": "Du hast etwas Schönes geteilt. Danke."
+  },
+  "oneYear": {
+    "name": "Ein Jahr møni",
+    "desc": "Nutze møni ein Jahr lang und halte in den letzten 30 Tagen mindestens 8 Tage.",
+    "celebrate": "Ein Jahr. Dein ø hat Geschichte."
+  },
+  "hidden": {
+    "name": "Verborgener Stempel",
+    "desc": "Wird bei Freischaltung sichtbar."
+  },
+  "shelf": {
+    "title": "Stempel",
+    "count": "{{unlocked}} von {{total}}",
+    "unlockedOn": "Freigeschaltet am {{date}}",
+    "locked": "Noch offen",
+    "progress": "{{current}} von {{target}}",
+    "empty": "Deine ersten Stempel kommen von selbst.",
+    "regained_one": "Wiedergefunden: {{count}} Stempel",
+    "regained_other": "Wiedergefunden: {{count}} Stempel",
+    "newToast": "Neuer Stempel: {{name}}",
+    "details": "Details",
+    "next": "Als Nächstes",
+    "close": "Schließen",
+    "hiddenCount_one": "{{count}} verborgener Stempel",
+    "hiddenCount_other": "{{count}} verborgene Stempel"
+  },
+  "category": {
+    "training": "Training",
+    "nutrition": "Essen",
+    "consistency": "Rhythmus",
+    "body": "Körper",
+    "explorer": "Entdecker"
+  },
+  "rarity": {
+    "common": "Häufig",
+    "rare": "Selten",
+    "special": "Besonders"
+  },
+  "plusTen": {
+    "name": "Plus zehn",
+    "desc": "Steigere das geschätzte Maximum einer Übung um 10 % gegenüber dem Start.",
+    "celebrate": "Zehn Prozent mehr als am Anfang. Das ist echte Arbeit."
+  },
+  "firstRhythm": {
+    "name": "Erster Rhythmus",
+    "desc": "Schließe deine erste Woche im Rhythmus ab.",
+    "celebrate": "Die erste Woche im Rhythmus. Es beginnt."
+  }
+}

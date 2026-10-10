@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Noch keine Daten</title>
+  <path d="M28 98H132"/>
+  <rect x="38" y="66" width="18" height="32" rx="6" style="fill:var(--moni-soft,#E4EBE3)" stroke-dasharray="2 7"/>
+  <rect x="71" y="48" width="18" height="50" rx="6" style="fill:var(--moni-soft,#E4EBE3)" stroke-dasharray="2 7"/>
+  <rect x="104" y="30" width="18" height="68" rx="6" style="fill:var(--moni-soft,#E4EBE3)" stroke-dasharray="2 7"/>
+<clipPath id="m1"><circle cx="113" cy="16" r="8"/></clipPath><g clip-path="url(#m1)"><g transform="rotate(-32.0 113 16)"><path d="M102.94 -7.23L123.06 -7.23L123.06 15.35C122.23 15.69 121.39 16.03 120.55 16.27C119.71 16.51 118.87 16.65 118.03 16.65C117.19 16.65 116.35 16.51 115.52 16.27C114.68 16.03 113.84 15.69 113 15.35C112.16 15.02 111.32 14.68 110.48 14.44C109.65 14.2 108.81 14.06 107.97 14.06C107.13 14.06 106.29 14.2 105.45 14.44C104.61 14.68 103.77 15.02 102.94 15.35Z" fill="var(--moni-accent,#1D6B47)" stroke="none"/><path d="M102.94 16.65C103.77 16.31 104.61 15.97 105.45 15.73C106.29 15.49 107.13 15.35 107.97 15.35C108.81 15.35 109.65 15.49 110.48 15.73C111.32 15.97 112.16 16.31 113 16.65C113.84 16.98 114.68 17.32 115.52 17.56C116.35 17.8 117.19 17.94 118.03 17.94C118.87 17.94 119.71 17.8 120.55 17.56C121.39 17.32 122.23 16.98 123.06 16.65L123.06 39.23L102.94 39.23Z" fill="var(--moni-bonus,#C2410C)" stroke="none"/></g></g>
+</svg>

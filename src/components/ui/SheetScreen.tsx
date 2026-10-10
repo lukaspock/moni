@@ -1,27 +1,46 @@
 import type { ReactNode } from 'react';
-import { ScrollView, Text } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+
+import { textStyles } from '@/theme/typography';
+
+export interface SheetScreenProps {
+  title: string;
+  /** Optional centered line under the title. */
+  subtitle?: string;
+  children: ReactNode;
+}
 
 /**
- * Body of every popup/sheet: centered title, scrollable content, 20 px padding —
- * identical to the log-food sheet. Register the route with `SHEET_OPTIONS`
- * (formSheet + grabber, headerShown false) so all popups look the same.
+ * Body of every popup/sheet (Doc 02 §5.11): S0 background, centered Title-style
+ * heading (+ optional subtitle), scrollable content, 20 pt padding/gap. Register
+ * the route with `SHEET_OPTIONS`. Primary action belongs at the bottom.
  */
-export function SheetScreen({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+export function SheetScreen({ title, subtitle, children }: SheetScreenProps) {
   return (
     <ScrollView
-      className="bg-system-background flex-1"
-      contentContainerClassName="gap-5 p-5 pt-6"
+      className="bg-bg flex-1"
+      contentContainerClassName="gap-5 p-5 pt-5"
       keyboardShouldPersistTaps="handled"
     >
-      <Text className="text-label text-center text-lg font-semibold">
-        {title}
-      </Text>
+      <View className="gap-1">
+        <Text
+          accessibilityRole="header"
+          maxFontSizeMultiplier={1.3}
+          className="text-label text-center"
+          style={[textStyles.title, { fontSize: 22, lineHeight: 26 }]}
+        >
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text
+            maxFontSizeMultiplier={1.4}
+            className="text-label-secondary text-center"
+            style={textStyles.callout}
+          >
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
       {children}
     </ScrollView>
   );

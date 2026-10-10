@@ -73,7 +73,7 @@ export function useProfile(): {
 }
 
 /** Most recent `weight_logs` entry at or before `date`, or null if none yet. */
-function useLatestWeightKg(userId: string | null, date: string) {
+export function useLatestWeightKg(userId: string | null, date: string) {
   return useQuery({
     queryKey: ['latestWeight', userId, date],
     queryFn: async (): Promise<number | null> => {

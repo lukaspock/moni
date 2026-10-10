@@ -44,6 +44,8 @@ export function useStartWorkout(): {
         trackingType: byId.get(re.exerciseId)?.trackingType ?? 'weight_reps',
         targetSets: re.targetSets,
         targetReps: re.targetReps,
+        targetRepsMin: re.targetRepsMin ?? null,
+        supersetGroup: re.supersetGroup ?? null,
       })),
     });
     openActiveWorkout();

@@ -59,7 +59,7 @@ export default function BirthDateScreen() {
           format={(v) =>
             t('account.onboarding.birthDate.age', { value: Math.round(v) })
           }
-          className="text-tint text-4xl font-bold"
+          className="text-tint font-display-black text-[40px] leading-[44px]"
         />
       </View>
       <Host matchContents style={{ alignSelf: 'center' }}>

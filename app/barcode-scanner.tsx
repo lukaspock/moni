@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,7 +11,6 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Crypto from 'expo-crypto';
-import * as Haptics from 'expo-haptics';
 import { Host, Picker, Text as SwiftUIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
@@ -32,9 +30,11 @@ import {
   type AnalysisFailure,
   type DraftFoodItem,
 } from '@/features/food';
+import { TideLoader } from '@/components/motion';
 import { Card, GlassActionButton, SectionHeader } from '@/components/ui';
+import { haptic } from '@/lib/haptics';
 import { toISODate } from '@/lib/date';
-import { themeColor } from '@/theme/colors';
+import { themeColor, useThemeHex } from '@/theme/colors';
 
 type ScanMode = 'barcode' | 'label';
 
@@ -61,7 +61,11 @@ export default function BarcodeScannerScreen() {
     params.mode === 'label' ? 'label' : 'barcode',
   );
   const [product, setProduct] = useState<ScanProduct | null>(null);
-  const [problem, setProblem] = useState<Problem | null>(null);
+  const [problem, setProblemState] = useState<Problem | null>(null);
+  const setProblem = (next: Problem | null) => {
+    if (next) haptic.scanMiss();
+    setProblemState(next);
+  };
   const [gramsText, setGramsText] = useState('100');
   const [added, setAdded] = useState<DraftFoodItem[]>([]);
   const [isWorking, setIsWorking] = useState(false);
@@ -130,7 +134,7 @@ export default function BarcodeScannerScreen() {
   const scanActive = mode === 'barcode' && !product && !problem && !isWorking;
 
   const showProduct = (next: ScanProduct) => {
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    haptic.scanHit();
     setGramsText(String(Math.round(next.servingGrams ?? 100)));
     setProduct(next);
   };
@@ -231,7 +235,7 @@ export default function BarcodeScannerScreen() {
 
   const resetScan = () => {
     setProduct(null);
-    setProblem(null);
+    setProblemState(null);
     setErrorCode(null);
     lastScan.current = null;
   };
@@ -258,7 +262,7 @@ export default function BarcodeScannerScreen() {
     const item = buildItem();
     if (!item) return;
     setAdded((prev) => [...prev, item]);
-    void Haptics.selectionAsync();
+    haptic.select();
     resetScan();
   };
 
@@ -323,7 +327,7 @@ export default function BarcodeScannerScreen() {
           className="bg-tint absolute right-4 top-14 h-10 flex-row items-center gap-2 rounded-full px-4"
           accessibilityRole="button"
         >
-          <Text className="text-sm font-semibold text-white">
+          <Text className="text-on-tint text-sm font-semibold">
             {t('food.barcode.itemsAdded', {
               count: added.length,
               kcal: Math.round(addedTotals.kcal),
@@ -336,21 +340,30 @@ export default function BarcodeScannerScreen() {
       {!product && !problem && (
         <>
           {mode === 'barcode' && (
-            <View
-              pointerEvents="none"
-              className="absolute left-10 right-10 top-1/3 h-36 rounded-3xl border-2 border-white/70"
+            <ScanFrame
+              label={t('food.barcode.frameA11y')}
+              active={!isWorking}
             />
           )}
           <View className="absolute inset-x-0 bottom-0 items-center gap-4 px-6 pb-10">
-            <Text className="rounded-full bg-black/50 px-4 py-2 text-center text-sm text-white">
-              {isWorking
-                ? mode === 'label'
-                  ? t('food.label.reading')
-                  : t('food.barcode.looking')
-                : mode === 'label'
+            {isWorking ? (
+              <View className="items-center rounded-3xl bg-black/60 px-6 py-4">
+                <TideLoader
+                  size={72}
+                  phase={
+                    mode === 'label'
+                      ? t('identity.ai.label')
+                      : t('identity.ai.barcode')
+                  }
+                />
+              </View>
+            ) : (
+              <Text className="rounded-full bg-black/50 px-4 py-2 text-center text-sm text-white">
+                {mode === 'label'
                   ? t('food.label.hint')
                   : t('food.barcode.hint')}
-            </Text>
+              </Text>
+            )}
             {mode === 'label' && (
               <Pressable
                 onPress={() => void captureLabel()}
@@ -360,11 +373,7 @@ export default function BarcodeScannerScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t('food.label.capture')}
               >
-                {isWorking ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <View className="h-14 w-14 rounded-full bg-white" />
-                )}
+                <View className="h-14 w-14 rounded-full bg-white" />
               </Pressable>
             )}
             <View className="w-full max-w-[320px] rounded-xl bg-black/40 p-1">
@@ -536,6 +545,54 @@ export default function BarcodeScannerScreen() {
             </Pressable>
           </ScrollView>
         </KeyboardAvoidingView>
+      )}
+    </View>
+  );
+}
+
+const CORNER = 28;
+const CORNER_W = 4;
+
+/** Viewfinder frame with accent corner marks (decorative; the hint text carries the meaning). */
+function ScanFrame({ label, active }: { label: string; active: boolean }) {
+  const accent = useThemeHex('accent');
+  const corner = (pos: object, edges: object) => (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          width: CORNER,
+          height: CORNER,
+          borderColor: accent,
+          opacity: active ? 1 : 0.5,
+        },
+        pos,
+        edges,
+      ]}
+    />
+  );
+  return (
+    <View
+      pointerEvents="none"
+      accessible
+      accessibilityLabel={label}
+      className="absolute left-10 right-10 top-1/3 h-36"
+    >
+      {corner(
+        { top: 0, left: 0, borderTopLeftRadius: 16 },
+        { borderTopWidth: CORNER_W, borderLeftWidth: CORNER_W },
+      )}
+      {corner(
+        { top: 0, right: 0, borderTopRightRadius: 16 },
+        { borderTopWidth: CORNER_W, borderRightWidth: CORNER_W },
+      )}
+      {corner(
+        { bottom: 0, left: 0, borderBottomLeftRadius: 16 },
+        { borderBottomWidth: CORNER_W, borderLeftWidth: CORNER_W },
+      )}
+      {corner(
+        { bottom: 0, right: 0, borderBottomRightRadius: 16 },
+        { borderBottomWidth: CORNER_W, borderRightWidth: CORNER_W },
       )}
     </View>
   );

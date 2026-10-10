@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Apple Health</title>
+  <circle cx="80" cy="60" r="46" style="stroke:var(--moni-accent,#1D6B47)" stroke-width="4" stroke-dasharray="3 9"/>
+  <path d="M80 96C44 72 44 38 64 38C73 38 78 44 80 50C82 44 87 38 96 38C116 38 116 72 80 96Z" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <path d="M58 64H72L77 54L85 74L90 64H102" style="stroke:var(--moni-accent,#1D6B47)" stroke-width="4"/>
+
+</svg>

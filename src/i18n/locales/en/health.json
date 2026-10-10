@@ -16,7 +16,7 @@
     },
     "enabled": "Sync with Apple Health",
     "writeNutrition": "Write nutrition to Health",
-    "writeNutritionHint": "Saves calories, protein, carbs and fat of your meals to Health. Edits and deletions are applied too.",
+    "writeNutritionHint": "Saves calories, protein, carbs and fat of your meals, plus the water you drink, to Health. Edits and deletions are applied too.",
     "syncNow": "Sync now",
     "syncing": "Syncing …",
     "lastSynced": "Last synced: {{time}}",

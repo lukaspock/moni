@@ -64,6 +64,8 @@ async function fetchRoutinesFromServer(userId: string): Promise<Routine[]> {
       orderIndex: row.order_index,
       targetSets: row.target_sets,
       targetReps: row.target_reps,
+      targetRepsMin: row.target_reps_min,
+      supersetGroup: row.superset_group,
     });
     exercisesByRoutine.set(row.routine_id, list);
   }
@@ -132,6 +134,10 @@ export interface RoutineExerciseInput {
   exerciseId: string;
   targetSets: number | null;
   targetReps: number | null;
+  /** Lower end of the rep range (optional; null/absent = no range). */
+  targetRepsMin?: number | null;
+  /** Superset/circuit group (optional; null/absent = standalone). */
+  supersetGroup?: number | null;
 }
 
 /** Creates or updates a routine's name + full exercise list (order comes from array order). */
@@ -187,6 +193,14 @@ export function useSaveRoutine() {
         order_index: index,
         target_sets: ex.targetSets,
         target_reps: ex.targetReps,
+        // Only sent when set: rows without a range/group stay valid even on a
+        // database that hasn't got the columns yet (fresh rows -> null default).
+        ...(ex.targetRepsMin != null
+          ? { target_reps_min: ex.targetRepsMin }
+          : {}),
+        ...(ex.supersetGroup != null
+          ? { superset_group: ex.supersetGroup }
+          : {}),
       });
     });
 

@@ -2,6 +2,8 @@ import { GlassView } from 'expo-glass-effect';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 
+import { useThemeHex } from '@/theme/colors';
+
 export interface FloatingActionButtonProps {
   onPress: () => void;
   accessibilityLabel: string;
@@ -10,7 +12,7 @@ export interface FloatingActionButtonProps {
 }
 
 /**
- * Large floating "+" button using native Liquid Glass (`GlassView` from
+ * Large floating accent-tinted "+" button using native Liquid Glass (`GlassView` from
  * `expo-glass-effect`, PLAN §2 / §7.2) — never `expo-blur` or opacity fakes.
  */
 export function FloatingActionButton({
@@ -19,6 +21,8 @@ export function FloatingActionButton({
   size = 60,
   style,
 }: FloatingActionButtonProps) {
+  const tint = useThemeHex('accent');
+  const onTint = useThemeHex('onAccent');
   return (
     <Pressable
       onPress={onPress}
@@ -28,6 +32,7 @@ export function FloatingActionButton({
     >
       <GlassView
         glassEffectStyle="regular"
+        tintColor={tint}
         isInteractive
         style={{
           width: size,
@@ -41,7 +46,7 @@ export function FloatingActionButton({
           name="plus"
           size={size * 0.42}
           weight="semibold"
-          tintColor="white"
+          tintColor={onTint}
         />
       </GlassView>
     </Pressable>

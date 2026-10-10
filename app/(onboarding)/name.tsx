@@ -48,7 +48,7 @@ export default function NameScreen() {
         enablesReturnKeyAutomatically
         submitBehavior="blurAndSubmit"
         onSubmitEditing={() => trimmed && submit()}
-        className="border-separator text-label h-16 rounded-2xl border-2 px-5 text-2xl font-semibold"
+        className="border-line text-label h-16 rounded-2xl border-2 px-5 text-2xl font-semibold"
       />
       {trimmed ? (
         <Animated.View

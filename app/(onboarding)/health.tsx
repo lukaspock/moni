@@ -1,10 +1,11 @@
-import * as Haptics from 'expo-haptics';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { Illustration } from '@/components/brand';
+import { Reveal } from '@/components/motion';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import type { SFSymbol } from '@/features/auth/components/OptionCard';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
@@ -13,6 +14,7 @@ import {
   useHealthSettings,
 } from '@/features/health';
 import { themeColor } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
 
 function Benefit({
   symbol,
@@ -56,9 +58,7 @@ export default function HealthPrimerScreen() {
       const result = await requestHealthAuthorization();
       if (result === 'granted') {
         setEnabled(true);
-        void Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        );
+        haptic.onboardResult();
       }
     } catch (error) {
       console.warn('[onboarding] health authorization failed', error);
@@ -78,18 +78,11 @@ export default function HealthPrimerScreen() {
       secondaryLabel={t('account.onboarding.health.later')}
       onSecondary={() => goNext()}
     >
-      <Animated.View
-        entering={ZoomIn.duration(280)}
-        className="items-center py-4"
-      >
-        <View className="bg-secondary-system-background h-24 w-24 items-center justify-center rounded-3xl">
-          <SymbolView
-            name="heart.text.square.fill"
-            size={56}
-            type="multicolor"
-          />
+      <Reveal>
+        <View className="items-center py-2">
+          <Illustration name="healthPrimer" size={200} />
         </View>
-      </Animated.View>
+      </Reveal>
       <View className="gap-4">
         <Benefit
           index={0}
@@ -107,7 +100,7 @@ export default function HealthPrimerScreen() {
           text={t('account.onboarding.health.benefit3')}
         />
       </View>
-      <Text className="text-secondary-label pt-2 text-sm">
+      <Text className="text-label-secondary pt-2 text-sm">
         {t('account.onboarding.health.privacy')}
       </Text>
     </OnboardingScreen>

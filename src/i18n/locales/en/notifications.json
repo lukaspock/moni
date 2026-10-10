@@ -1,16 +1,16 @@
 {
   "meal": {
     "breakfast": {
-      "title": "Good morning! ☀️",
-      "body": "Had breakfast yet? A quick photo is all it takes — møni does the math."
+      "title": "Easy start",
+      "body": "A photo of breakfast is enough. møni does the rest."
     },
     "lunch": {
-      "title": "Lunch break? 🍽️",
-      "body": "Snap your lunch so your day stays on track."
+      "title": "Lunch break?",
+      "body": "Take a second to note what’s on the plate."
     },
     "dinner": {
-      "title": "How was your day?",
-      "body": "Log your dinner and see how close you got to your goal today."
+      "title": "How was the day?",
+      "body": "Log dinner and your level is set."
     }
   }
 }

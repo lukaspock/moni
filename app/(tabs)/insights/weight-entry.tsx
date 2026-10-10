@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { DatePicker, Host } from '@expo/ui/swift-ui';
 
 import {
@@ -19,6 +18,7 @@ import {
   useWeightInput,
 } from '@/features/insights';
 import { toISODate } from '@/lib/date';
+import { haptic } from '@/lib/haptics';
 
 /** Sheet for adding (no `id`) or editing (`id`) a weight entry. Several entries per day are allowed. */
 export default function WeightEntrySheet() {
@@ -59,7 +59,7 @@ export default function WeightEntrySheet() {
       setError(t('insights.entry.error'));
       return;
     }
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    haptic.weightLogged();
     router.back();
   }
 

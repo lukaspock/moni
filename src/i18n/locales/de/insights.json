@@ -1,7 +1,10 @@
 {
   "title": "Insights",
   "placeholder": "Deine Trends und Auswertungen erscheinen hier.",
-  "units": { "kg": "kg", "lb": "lb" },
+  "units": {
+    "kg": "kg",
+    "lb": "lb"
+  },
   "weight": {
     "title": "Gewicht",
     "trendLabel": "Trendgewicht",
@@ -10,13 +13,17 @@
     "weeklyRate": "{{value}} {{unit}} / Woche",
     "weeklyRateLabel": "Wöchentliche Veränderung",
     "noRate": "Trage dein Gewicht über mindestens eine Woche ein, um die wöchentliche Veränderung zu sehen.",
-    "range": { "4w": "4W", "12w": "12W", "all": "Alle" },
+    "range": {
+      "4w": "4W",
+      "12w": "12W",
+      "all": "Alle"
+    },
     "rangeLabel": "Zeitraum",
     "legendTrend": "Trend",
-    "legendEntries": "Messungen",
+    "legendEntries": "Messpunkte",
     "legendGoal": "Ziel",
     "emptyTitle": "Noch kein Gewicht eingetragen",
-    "emptyBody": "Trage dein Gewicht ein paar Mal pro Woche ein. Der Trend glättet tägliche Schwankungen.",
+    "emptyBody": "Zwei-, dreimal pro Woche reicht, møni glättet den Rest.",
     "logCta": "Gewicht eintragen",
     "allEntries": "Alle Einträge"
   },
@@ -42,15 +49,18 @@
     "edit": "Bearbeiten"
   },
   "kcal": {
-    "title": "Kalorien vs. Ziel",
-    "range": { "7": "7 Tage", "30": "30 Tage" },
+    "title": "Gegessen und Pegel",
+    "range": {
+      "7": "7 Tage",
+      "30": "30 Tage"
+    },
     "average": "Ø {{eaten}} von {{target}} kcal",
-    "daysOnTarget": "{{count}} von {{total}} erfassten Tagen innerhalb von 10 % deines Limits",
-    "under": "Im Schnitt {{value}} kcal unter deinem Limit",
-    "over": "Im Schnitt {{value}} kcal über deinem Limit",
-    "emptyTitle": "In diesem Zeitraum keine Mahlzeiten erfasst",
-    "emptyBody": "Erfasse deine Mahlzeiten, dann siehst du, wie du gegenüber deinem Tageslimit liegst.",
-    "barsLabel": "Gegessen im Vergleich zum Tageslimit, letzte 7 Tage"
+    "daysOnTarget": "{{count}} von {{total}} erfassten Tagen nahe an deinem Pegel (±10 %)",
+    "under": "Im Schnitt {{value}} kcal unter deinem Pegel",
+    "over": "Im Schnitt {{value}} kcal über deinem Pegel",
+    "emptyTitle": "In diesem Zeitraum nichts eingetragen",
+    "emptyBody": "Trag Mahlzeiten ein, dann siehst du, wie du zu deinem Tagespegel liegst.",
+    "barsLabel": "Gegessen im Vergleich zum Tagespegel, letzte 7 Tage"
   },
   "training": {
     "title": "Konstanz",
@@ -58,27 +68,123 @@
     "thisWeek": "diese Woche",
     "total": "{{count}} Trainingstage in den letzten 4 Wochen",
     "loggingStreak": "{{count}} Tage in Folge erfasst",
-    "noStreak": "Erfasse heute eine Mahlzeit, um eine Serie zu starten.",
-    "emptyTitle": "Noch keine Workouts",
-    "emptyBody": "Schließe ein Workout ab, dann erscheint hier deine Trainingshäufigkeit."
+    "noStreak": "Ein Eintrag heute, und die Serie beginnt.",
+    "emptyTitle": "Noch keine Einheiten",
+    "emptyBody": "Sobald eine Einheit gespeichert ist, siehst du hier, wie oft du trainierst."
   },
   "strength": {
     "title": "Kraftentwicklung",
-    "caption": "Geschätztes 1RM, letzte 12 Wochen",
+    "caption": "Geschätztes Maximum, letzte 12 Wochen",
     "change": "{{from}} → {{to}} {{unit}}",
-    "emptyTitle": "Noch zu wenige Kraftdaten",
-    "emptyBody": "Nach Krafttraining in mindestens zwei verschiedenen Wochen erscheint hier dein 1RM-Trend.",
+    "emptyTitle": "Noch zu wenig Kraftdaten",
+    "emptyBody": "Nach Krafttraining in mindestens zwei verschiedenen Wochen erscheint hier dein Trend.",
     "exerciseFallback": "Übung"
   },
   "correlations": {
     "title": "Das fällt auf",
-    "notEnough": "Noch zu wenige Daten. Erfasse noch ein paar Wochen Mahlzeiten und Workouts.",
+    "notEnough": "Zu wenig Daten für ein Muster. Mit ein paar Wochen Einträgen wird es lesbar.",
     "protein": "An Trainingstagen isst du etwa {{training}} g Protein, an Ruhetagen {{rest}} g.",
     "proteinLower": "An Ruhetagen sinkt dein Protein ({{rest}} g statt {{training}} g an Trainingstagen). Auch die Erholung braucht es.",
-    "kcalTraining": "An Trainingstagen liegst du im Schnitt {{value}} kcal {{direction}} deinem Limit.",
+    "kcalTraining": "An Trainingstagen liegst du im Schnitt {{value}} kcal {{direction}} deinem Pegel.",
     "directionUnder": "unter",
     "directionOver": "über",
     "weightLink": "In Wochen mit mehr Kalorien ist dein Gewichtstrend deutlicher gestiegen (auf Basis von {{weeks}} Wochen).",
     "weightNoLink": "Noch kein klarer Zusammenhang zwischen deiner Wochen-Kalorienzufuhr und dem Gewichtstrend ({{weeks}} Wochen Daten)."
+  },
+  "review": {
+    "entryTitle": "Dein Wochenrückblick ist da",
+    "entryBody": "Woche {{week}}, {{range}}",
+    "entryOpen": "Ansehen",
+    "close": "Schließen",
+    "cardOf": "Karte {{current}} von {{total}}",
+    "next": "Weiter",
+    "prev": "Zurück",
+    "week": "Woche {{week}}",
+    "thisWeek": "Diese Woche",
+    "archiveEmpty": "Noch keine früheren Wochen.",
+    "title": {
+      "full": "Volle Woche",
+      "strength": "Kraftwoche",
+      "recovery": "Erholungswoche",
+      "restart": "Neustart-Woche",
+      "quiet": "Ruhige Woche"
+    },
+    "titleLine": {
+      "full": "Alle Ringe geschlossen. Rund.",
+      "strength": "Viel bewegt, viel gelernt.",
+      "recovery": "Dein Körper hat durchgeatmet.",
+      "restart": "Der Wiedereinstieg zählt.",
+      "quiet": "Auch eine ruhige Woche ist eine Woche."
+    },
+    "days": {
+      "title": "Deine Woche",
+      "food_one": "{{count}} Tag mit Einträgen",
+      "food_other": "{{count}} Tage mit Einträgen",
+      "training_one": "{{count}} Trainingstag",
+      "training_other": "{{count}} Trainingstage",
+      "meals": "Ø {{value}} Einträge pro Tag"
+    },
+    "highlight": {
+      "title": {
+        "pr": "Neue Bestmarke",
+        "longestWorkout": "Längste Einheit",
+        "bestProteinDay": "Bester Protein-Tag",
+        "earliestEntry": "Früher Start"
+      },
+      "pr": "{{exercise}}: +{{value}} {{unit}} beim geschätzten Maximum",
+      "longestWorkout": "{{minutes}} Minuten am {{day}}",
+      "bestProteinDay": "{{grams}} g Protein am {{day}}",
+      "earliestEntry": "Dein erster Eintrag kam am {{day}} um {{hour}} Uhr"
+    },
+    "connection": {
+      "title": "Die Verbindung",
+      "training": "Trainingstage ({{count}})",
+      "rest": "Ruhetage ({{count}})",
+      "protein": "Ø {{grams}} g Protein",
+      "line": "Training und Essen arbeiten zusammen."
+    },
+    "body": {
+      "title": "Dein Körper",
+      "entries": "Aus {{count}} Wägungen",
+      "line": "Ein ruhiger Trend sagt mehr als ein einzelner Tag."
+    },
+    "rhythm": {
+      "title": "Dein Rhythmus",
+      "grace": "Eine Gnade-Woche hat deinen Rhythmus geschützt.",
+      "hidden": "Deine Stufe wächst mit jeder Woche im Rhythmus."
+    },
+    "outlook": {
+      "title": "Ausblick",
+      "goalsTitle": "Wochenziel",
+      "food": "Essen: {{count}} Tage",
+      "training": "Training: {{count}} Tage",
+      "protein": "Protein: {{count}} Tage",
+      "done": "Erledigt."
+    },
+    "share": {
+      "title": "Teilen",
+      "preview": "Vorschau",
+      "showName": "Name zeigen",
+      "showDetails": "Details zeigen",
+      "detailsHint": "Details: Protein-Schnitt und Trendänderung. Kalorien, Gewicht und Fotos sind nie dabei.",
+      "cta": "Teilen",
+      "tagline": "Mit møni geteilt",
+      "stat": {
+        "trainingDays": "{{value}} Trainingstage",
+        "foodDays": "{{value}} Tage mit Einträgen",
+        "proteinDays": "{{value}} Protein-Tage",
+        "avgProteinG": "Ø {{value}} g Protein",
+        "trendDelta": "Trend {{value}} {{unit}}",
+        "rhythmWeeks": "{{value}} Wochen im Rhythmus"
+      },
+      "ofName": "{{name}}: {{title}}"
+    },
+    "quiet": {
+      "paused": "Diese Woche war Pause. Willkommen zurück, wenn du so weit bist.",
+      "noData": "In dieser Woche gibt es noch nichts zu erzählen."
+    }
+  },
+  "hero": {
+    "empty": "Wenn du dein Gewicht einträgst, zeigt møni hier deinen Trend."
   }
 }

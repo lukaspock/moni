@@ -1,8 +1,7 @@
-import * as Haptics from 'expo-haptics';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -11,8 +10,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TideLoader } from '@/components/motion';
 import { useOnboardingStore } from '@/features/auth';
-import { CountUpText } from '@/features/auth/components/CountUpText';
+import { haptic } from '@/lib/haptics';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 import { themeColor } from '@/theme/colors';
 
@@ -42,16 +42,14 @@ export default function CalculatingScreen() {
       timers.push(
         setTimeout(() => {
           setDone(i);
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          haptic.onboardStep();
         }, i * stepMs),
       );
     }
     timers.push(
       setTimeout(
         () => {
-          void Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success,
-          );
+          haptic.onboardResult();
         },
         STEP_COUNT * stepMs + 150,
       ),
@@ -69,35 +67,23 @@ export default function CalculatingScreen() {
     t('account.onboarding.calculating.step4'),
   ];
   const finished = done >= STEP_COUNT;
+  const phase = finished ? undefined : steps[Math.min(done, STEP_COUNT - 1)];
 
   return (
     <View
-      className="bg-system-background flex-1 justify-center gap-10 px-8"
+      className="bg-bg flex-1 justify-center gap-10 px-8"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
-      <View className="items-center gap-4">
-        <View className="bg-secondary-system-background h-28 w-28 items-center justify-center rounded-full">
-          {finished ? (
-            <Animated.View entering={ZoomIn.duration(250)}>
-              <SymbolView
-                name="checkmark.circle.fill"
-                size={64}
-                tintColor={themeColor('accent')}
-              />
-            </Animated.View>
-          ) : (
-            <CountUpText
-              value={100}
-              startFrom={0}
-              duration={STEP_COUNT * stepMs}
-              format={(v) => `${Math.round(v)}%`}
-              className="text-tint text-3xl font-bold"
-            />
-          )}
-        </View>
+      <View className="items-center gap-5">
+        <TideLoader
+          size={160}
+          phase={phase}
+          state={finished ? 'done' : 'loading'}
+        />
         <Animated.Text
+          accessibilityRole="header"
           entering={FadeIn.duration(250)}
-          className="text-label text-center text-2xl font-bold"
+          className="text-label text-center font-display-black text-[28px] leading-[32px] tracking-tight"
         >
           {finished
             ? t('account.onboarding.calculating.done')
@@ -126,14 +112,14 @@ export default function CalculatingScreen() {
                       tintColor={themeColor('accent')}
                     />
                   </Animated.View>
-                ) : isActive ? (
-                  <ActivityIndicator />
                 ) : (
-                  <View className="border-separator h-5 w-5 rounded-full border-2" />
+                  <View
+                    className={`h-5 w-5 rounded-full border-2 ${isActive ? 'border-tint' : 'border-line'}`}
+                  />
                 )}
               </View>
               <Text
-                className={`text-base ${isDone || isActive ? 'text-label font-semibold' : 'text-secondary-label'}`}
+                className={`text-base ${isDone || isActive ? 'text-label font-semibold' : 'text-label-secondary'}`}
               >
                 {label}
               </Text>

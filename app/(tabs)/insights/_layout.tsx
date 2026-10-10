@@ -14,6 +14,10 @@ export default function InsightsStackLayout() {
         options={{ title: t('insights.history.title') }}
       />
       <Stack.Screen name="weight-entry" options={SHEET_OPTIONS} />
+      <Stack.Screen
+        name="week"
+        options={{ presentation: 'fullScreenModal', headerShown: false }}
+      />
     </Stack>
   );
 }

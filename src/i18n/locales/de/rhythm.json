@@ -1,0 +1,140 @@
+{
+  "title": "Rhythmus",
+  "counter_one": "{{count}} Woche im Rhythmus",
+  "counter_other": "{{count}} Wochen im Rhythmus",
+  "begin": "Rhythmus beginnt",
+  "best_one": "Bisher längster Rhythmus: {{count}} Woche",
+  "best_other": "Bisher längster Rhythmus: {{count}} Wochen",
+  "lifetime_one": "{{count}} Woche im Rhythmus insgesamt",
+  "lifetime_other": "{{count}} Wochen im Rhythmus insgesamt",
+  "explainer": "Eine Woche zählt, wenn mindestens zwei von drei Ringen geschlossen sind. Aufeinanderfolgende Wochen ergeben deinen Rhythmus.",
+  "hideSetting": "Rhythmus-Anzeige",
+  "hideSettingHint": "Ringe und Streifen bleiben, die Zahl verschwindet.",
+  "thisWeek": {
+    "inRhythm": "Im Rhythmus",
+    "inReach": "Rhythmus in Reichweite",
+    "open": "Noch offen"
+  },
+  "lastWeek": {
+    "rhythm": "Letzte Woche im Rhythmus",
+    "grace_one": "Gnade-Woche eingesetzt, dein Rhythmus bleibt bei {{count}} Woche",
+    "grace_other": "Gnade-Woche eingesetzt, dein Rhythmus bleibt bei {{count}} Wochen",
+    "broken_one": "Neuer Anlauf. Dein bester Rhythmus: {{count}} Woche",
+    "broken_other": "Neuer Anlauf. Dein bester Rhythmus: {{count}} Wochen",
+    "paused": "Letzte Woche pausiert",
+    "none": "Noch keine abgeschlossene Woche"
+  },
+  "rings": {
+    "title": "Wochen-Dreiklang",
+    "food": "Essen",
+    "training": "Training",
+    "protein": "Protein",
+    "foodHint": "Tage mit mindestens zwei Einträgen",
+    "trainingHint": "Tage mit einer abgeschlossenen Einheit",
+    "proteinHint": "Tage, an denen du dein Proteinziel gut erreicht hast",
+    "progress": "{{done}} von {{goal}}",
+    "closed": "Geschlossen",
+    "extra": "+{{count}}",
+    "a11y": "{{name}}: {{done}} von {{goal}} Tagen"
+  },
+  "goalOffer": {
+    "lowerTitle": "Passt dein Plan noch zu deinem Alltag?",
+    "lowerBody": "Du kannst das Wochenziel für Training um 1 senken.",
+    "lowerCta": "Ziel senken",
+    "raiseTitle": "Das Training läuft rund.",
+    "raiseBody": "Seit Wochen liegst du über deinem Ziel. Wochenziel um 1 erhöhen?",
+    "raiseCta": "Ziel erhöhen",
+    "keep": "So lassen"
+  },
+  "nextWeekQuestion_one": "Nächste Woche: {{count}} Einheit?",
+  "nextWeekQuestion_other": "Nächste Woche: {{count}} Einheiten?",
+  "grace": {
+    "title": "Gnade",
+    "available_one": "{{count}} Gnade-Woche verfügbar",
+    "available_other": "{{count}} Gnade-Wochen verfügbar",
+    "explainer": "Eine Gnade-Woche schützt deinen Rhythmus, wenn eine Woche anders läuft. Nach jeweils vier Wochen im Rhythmus kommt eine dazu, bis zu zwei."
+  },
+  "pause": {
+    "title": "Pause",
+    "intro": "Urlaub, krank oder einfach Pause? Dein Rhythmus wartet.",
+    "start": "Pause starten",
+    "from": "Von",
+    "to": "Bis",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "active": "Rhythmus pausiert. Er geht dort weiter, wo du aufgehört hast.",
+    "activeUntil": "Pause bis {{date}}",
+    "end": "Pause beenden",
+    "saved": "Pause eingetragen.",
+    "retroactive": "Rückwirkend sind bis zu 7 Tage möglich.",
+    "maxLength": "Eine Pause dauert bis zu 21 Tage.",
+    "yearLimit": "Mehr Pause? Setz dein Ziel auf „locker“."
+  },
+  "stage": {
+    "title": "Stufe",
+    "name": {
+      "warmup": "Anlauf",
+      "inTune": "Einklang",
+      "inStep": "Gleichschritt",
+      "inSync": "Eingespielt",
+      "metronome": "Metronom",
+      "original": "Original"
+    },
+    "desc": {
+      "warmup": "Du bist unterwegs.",
+      "inTune": "Die ersten Gewohnheiten sitzen.",
+      "inStep": "Zwei Monate Verlässlichkeit.",
+      "inSync": "Training und Essen laufen zusammen.",
+      "metronome": "Ein halbes Jahr Rhythmus.",
+      "original": "Ein Jahr møni."
+    },
+    "toNext_one": "Noch {{count}} Woche bis {{next}}",
+    "toNext_other": "Noch {{count}} Wochen bis {{next}}",
+    "top": "Höchste Stufe erreicht",
+    "up": {
+      "title": "Neue Stufe: {{name}}",
+      "body_one": "{{count}} Woche im Rhythmus insgesamt.",
+      "body_other": "{{count}} Wochen im Rhythmus insgesamt."
+    }
+  },
+  "tideTable": {
+    "title": "Gezeitentafel",
+    "subtitle": "Deine Woche im Überblick",
+    "range": "{{from}} bis {{to}}",
+    "levelVsEaten": "Pegel und Gegessen",
+    "average": "Ø {{eaten}} von {{level}} kcal",
+    "sessions_one": "{{count}} Einheit",
+    "sessions_other": "{{count}} Einheiten",
+    "trend": "Trend: {{value}} {{unit}}",
+    "trendFlat": "Dein Trend bleibt stabil.",
+    "noGrade": "Keine Note, nur Muster.",
+    "share": "Teilen",
+    "archive": "Frühere Wochen",
+    "incomplete": "Diese Woche ist noch nicht vorbei. Die Tafel füllt sich Tag für Tag.",
+    "newBadge": "Neu"
+  },
+  "profile": {
+    "title": "Mein møni",
+    "stageRow": "Stufe",
+    "rhythmRow": "Rhythmus",
+    "pauseRow": "Pause",
+    "achievementsRow": "Stempel",
+    "memberSince": "Dabei seit {{date}}",
+    "sections": {
+      "rhythm": "Rhythmus",
+      "app": "App"
+    },
+    "graceValue": "{{count}} von 2",
+    "pauseLength": "Dauer",
+    "pauseEnd": "Pause beenden",
+    "pauseNone": "Keine Pause aktiv",
+    "achievementsNext": "Als Nächstes: {{name}}",
+    "hapticsTitle": "Haptik",
+    "hapticsHint": "Leichte Vibrationen bei Aktionen.",
+    "notificationsRow": "Mitteilungen",
+    "showRhythmValue": "Zahl im Rhythmus-Zähler",
+    "avatar": "Initialen von {{name}}",
+    "stageProgressA11y": "{{percent}} Prozent bis zur nächsten Stufe",
+    "rhythmValue": "Rhythmus ausgeblendet"
+  }
+}

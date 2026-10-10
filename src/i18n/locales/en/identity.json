@@ -1,0 +1,357 @@
+{
+  "tagline": "Your day has tides.",
+  "term": {
+    "level": "Daily level",
+    "levelShort": "Level",
+    "baseLevel": "Base level",
+    "swell": "Swell",
+    "restDay": "Rest day",
+    "trainingDay": "Training day",
+    "springTide": "Spring tide",
+    "highWaterMark": "High-water mark",
+    "plate": "Plate",
+    "regulars": "Regulars",
+    "trendLine": "Trend line",
+    "dataPoints": "Data points",
+    "session": "Session"
+  },
+  "levelIntro": "Your daily level is your calorie amount for today. Training lifts it; on rest days it eases.",
+  "greeting": {
+    "morning": { "withName": "Morning, {{name}}.", "noName": "Good morning." },
+    "midday": { "withName": "Hello, {{name}}.", "noName": "Hello." },
+    "afternoon": {
+      "withName": "Good afternoon, {{name}}.",
+      "noName": "Good afternoon."
+    },
+    "evening": { "withName": "Evening, {{name}}.", "noName": "Good evening." },
+    "night": {
+      "withName": "Still up, {{name}}? The day is nearly done.",
+      "noName": "Still up? The day is nearly done."
+    }
+  },
+  "levelToday": "Your level today: {{kcal}} kcal.",
+  "trainingDayMorning": "Training day. The swell arrives once you’ve moved.",
+  "daySentence": {
+    "bridgeToFood": {
+      "0": "Session saved. Now is a good moment for protein.",
+      "1": "Training done, the plate is next. 30 to 40 g of protein fits well now.",
+      "2": "After training: put something with protein on the plate."
+    },
+    "trainingGrewLimit": {
+      "0": "Your level rose by {{kcal}} kcal.",
+      "1": "Training lifts your level by {{kcal}} kcal.",
+      "2": "{{kcal}} kcal more room, thanks to training."
+    },
+    "trainingDay": {
+      "0": "Training day. Your level: {{kcal}} kcal.",
+      "1": "Training is on today. Level so far: {{kcal}} kcal.",
+      "2": "Training day, and your level rises with every session. Right now {{kcal}} kcal."
+    },
+    "restDay": {
+      "0": "Rest day. Recovery is part of the plan.",
+      "1": "A break from training today. Your body is still working.",
+      "2": "Rest day. Recovery counts as training too."
+    },
+    "balanced": {
+      "0": "Round. That was a balanced day.",
+      "1": "Your day sits right in range.",
+      "2": "Balanced. Nothing more to add."
+    },
+    "night": {
+      "0": "The day is done. Sleep well.",
+      "1": "That is enough for today. Tomorrow carries on.",
+      "2": "Quiet night. The next day starts from zero."
+    },
+    "taktReached": {
+      "0": "Your rhythm holds this week.",
+      "1": "Two rings are closed. Your rhythm is set for this week.",
+      "2": "Rhythm secured for this week."
+    },
+    "monday": {
+      "0": "New week, new rings. There is nothing to catch up on.",
+      "1": "Monday. The week starts at zero, with no baggage.",
+      "2": "New week. Everything that came before still counts."
+    },
+    "friday": {
+      "0": "Friday. The week is almost round.",
+      "1": "Friday. See which ring is still open.",
+      "2": "Friday. One entry or one session, and the week stands."
+    },
+    "sunday": {
+      "0": "Sunday. The week is ready to look back on.",
+      "1": "Sunday. Fill in what’s missing, no rush.",
+      "2": "Last day of the week. Your review is waiting this evening."
+    },
+    "welcomeBack": {
+      "0": "Good to have you back.",
+      "1": "Welcome back. One entry and you’re in.",
+      "2": "There you are. Start small."
+    },
+    "default": {
+      "0": "{{weekday}}, {{date}}.",
+      "1": "{{weekday}}, {{date}}.",
+      "2": "{{weekday}}, {{date}}."
+    }
+  },
+  "today": {
+    "quickTitle": "Quick add",
+    "quickSaved": "{{name}} logged",
+    "quickPhoto": "Photograph a meal",
+    "undo": "Undo",
+    "undone": "Entry removed",
+    "meals": "Meals",
+    "thisWeek": "This week",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "backToToday": "Back to today",
+    "ringHint": "Tap to see how your level adds up",
+    "weightMissingTitle": "A weight is still missing",
+    "weightMissingBody": "Enter it quickly and your daily level for today is set.",
+    "restDayBody": "That is part of it too.",
+    "restDayCta": "Enjoy the rest day",
+    "restDayDone": "Rest day noted.",
+    "minutes": "{{count}} min",
+    "addToMeal": "Add {{meal}}",
+    "startTitle": "Your start in three steps",
+    "startMeal": "Log your first meal",
+    "startWeight": "Note your weight (optional)",
+    "startTraining": "First workout or connect Apple Health",
+    "stepDone": "done",
+    "stepOpen": "open",
+    "newStamp": "New stamp",
+    "weekGlyph": "{{weekday}}: {{state}}",
+    "dayKept": "kept",
+    "dayOpen": "open",
+    "dayPaused": "paused",
+    "dayFuture": "still to come",
+    "dayRest": "rest day"
+  },
+  "dayKind": {
+    "training": "training day",
+    "rest": "rest day"
+  },
+  "ring": {
+    "unit": "kcal",
+    "roomLeft": "{{kcal}} kcal of room left",
+    "nearLevel": "Nearly at level. {{kcal}} kcal to go.",
+    "onLevel": "Right on level.",
+    "above": "{{kcal}} kcal above your level",
+    "springTide": "Spring tide today: {{kcal}} kcal above level. It happens.",
+    "bonusLine": "incl. {{kcal}} kcal swell from training",
+    "explainer": "Your daily level is how much you can eat today to stay on course. Training lifts it.",
+    "why": "{{base}} + {{bonus}} kcal swell = {{total}} kcal",
+    "whyNoBonus": "{{base}} kcal base level, no training yet",
+    "eatenOfLevel": "{{eaten}} of {{level}} kcal",
+    "a11y": "{{eaten}} of {{level}} kilocalories eaten"
+  },
+  "nextStep": {
+    "logWeight": {
+      "title": "Note your weight",
+      "body": "One data point keeps your trend current.",
+      "cta": "Log weight"
+    },
+    "proteinBridge": {
+      "title": "Training, then plate",
+      "body": "A good window for 30 to 40 g of protein.",
+      "cta": "Pick a regular"
+    },
+    "startWorkout": {
+      "title": "Today is a training day",
+      "body": "Your level rises with the session.",
+      "cta": "Start session"
+    },
+    "logMeal": {
+      "breakfast": {
+        "title": "Note down breakfast",
+        "body": "A photo is enough.",
+        "cta": "Log breakfast"
+      },
+      "lunch": {
+        "title": "Note down lunch",
+        "body": "Photo, text or barcode.",
+        "cta": "Log lunch"
+      },
+      "dinner": {
+        "title": "Note down dinner",
+        "body": "Then your day is set.",
+        "cta": "Log dinner"
+      },
+      "snack": {
+        "title": "Note down a snack",
+        "body": "Small meals count too.",
+        "cta": "Log snack"
+      }
+    },
+    "closeDay": {
+      "title": "Close the day",
+      "body": "A short look at today.",
+      "cta": "Close the day"
+    },
+    "weeklyReview": {
+      "title": "Your review is in",
+      "body": "See how the week went.",
+      "cta": "View review"
+    }
+  },
+  "closeDay": {
+    "title": "Close the day",
+    "summary": "{{eaten}} of {{level}} kcal, {{protein}} g protein",
+    "trainingDone": "Session done",
+    "trainingNone": "No training today",
+    "tomorrowTraining": "Tomorrow: training day, level {{kcal}} kcal",
+    "tomorrowRest": "Tomorrow: rest day, level {{kcal}} kcal",
+    "notAllLogged": "Not everything logged yet?",
+    "cta": "Close the day",
+    "done": "Day noted."
+  },
+  "checkIn": {
+    "prompt": "Today: {{kind}}. Level {{kcal}} kcal, protein {{protein}} g. How do you feel?",
+    "tired": "Tired",
+    "okay": "Okay",
+    "strong": "Strong",
+    "tiredHint": "A short session is enough today.",
+    "optInTitle": "A quick morning check?",
+    "optInBody": "One line in the morning, nothing you have to do.",
+    "optInCta": "Sure",
+    "optInDecline": "No thanks"
+  },
+  "welcomeBack": {
+    "short": {
+      "title": "Good to have you back.",
+      "body": "Log what you know.",
+      "protected": "Your rhythm is protected.",
+      "primary": "Log the last meal",
+      "secondary": "Just look around"
+    },
+    "medium": {
+      "title": "Welcome back.",
+      "body_one": "This is what stays: {{count}} week in rhythm, stage {{stage}}.",
+      "body_other": "This is what stays: {{count}} weeks in rhythm, stage {{stage}}.",
+      "pausePrompt": "Were you away or ill?",
+      "pauseCta": "Mark as pause",
+      "primary": "Start today",
+      "secondary": "Add a pause"
+    },
+    "long": {
+      "title": "Let’s catch up for a moment.",
+      "body": "Weight, goal and plan can be refreshed in a minute.",
+      "primary": "Log weight",
+      "secondary": "Check goal"
+    }
+  },
+  "care": {
+    "title": "A moment to pause",
+    "body": "You have been eating clearly less than your plan suggests for a few days. It’s okay to notice that. If it doesn’t feel right, talk to someone you trust.",
+    "helpCta": "Find support",
+    "dismiss": "Understood"
+  },
+  "ai": {
+    "photoStart": "Looking at your plate …",
+    "ingredients": "Picking out ingredients …",
+    "portions": "Estimating portions …",
+    "calculating": "Working out calories and macros …",
+    "text": "Reading your description …",
+    "barcode": "Looking up the product …",
+    "label": "Reading the nutrition label …",
+    "patience": "Taking a little longer than usual.",
+    "done": "Done. Check that the portions look right.",
+    "estimate": "This is an estimate; you can adjust the grams."
+  },
+  "error": {
+    "generic": "That didn’t work. Nothing is lost; try again in a moment.",
+    "aiFailed": "The analysis didn’t work. Your photo is still here: try again or enter it yourself.",
+    "offline": "No connection. Your entry will be saved once you’re back online.",
+    "saveFailed": "Saving didn’t work. Nothing is lost; try again in a moment.",
+    "barcodeNotFound": "We don’t know this product yet. Scan the nutrition label or enter it yourself.",
+    "camera": "møni needs the camera for photos. You can allow it in Settings.",
+    "weightUnusual": "That looks unusual. Take another look at the number.",
+    "signInFailed": "Sign-in didn’t work. Check your email and password."
+  },
+  "empty": {
+    "today": "Nothing on the plate yet. Photo, text or barcode: take your pick.",
+    "routines": "No routines yet. Start a session and your first one follows.",
+    "insights": "Not enough data for a trend yet. About a week in, it becomes readable.",
+    "weight": "No weight logged yet. Two or three times a week is plenty; møni smooths the rest.",
+    "regulars": "Your regulars show up here once you star a meal.",
+    "tideTable": "This week isn’t over. The table fills in day by day.",
+    "firstRunTitle": "Your first day",
+    "firstRunBody": "Log the first meal and your day gets a face."
+  },
+  "workout": {
+    "title": "Session saved",
+    "withBonus": "{{kcal}} kcal used; your level rises by {{bonus}} kcal.",
+    "proteinWindow": "A good window for 30 to 40 g protein. Your regulars are below.",
+    "short": "A short one, saved all the same.",
+    "volume_one": "{{count}} set · {{volume}} kg moved",
+    "volume_other": "{{count}} sets · {{volume}} kg moved"
+  },
+  "button": {
+    "logMeal": "Log a meal",
+    "startSession": "Start session",
+    "finishSession": "Finish session",
+    "save": "Save",
+    "saveRegular": "Save as a regular",
+    "sameAsYesterday": "Same as yesterday",
+    "retry": "Try again",
+    "later": "Later",
+    "haveAccount": "I already have an account",
+    "begin": "Begin",
+    "done": "Done",
+    "close": "Close",
+    "continue": "Continue",
+    "share": "Share",
+    "openSettings": "Open Settings"
+  },
+  "adjust": {
+    "up": "Your burn is higher than estimated. Your level rises by {{kcal}} kcal.",
+    "down": "Your weight is responding slower than expected. Your level drops by {{kcal}} kcal.",
+    "floor": "This is the floor. møni doesn’t go below it.",
+    "title": "Level adjusted"
+  },
+  "milestone": {
+    "streak7": "A full week, every day logged. This is what rhythm looks like.",
+    "logged30": "30 days logged. Now your trend actually says something.",
+    "highWaterMark": "New high-water mark: {{exercise}} {{value}}.",
+    "firstWeighIn": "First data point. From here on there’s a trend."
+  },
+  "water": {
+    "title": "Water",
+    "amountOfGoal": "{{amount}} of {{goal}}",
+    "remaining": "{{amount}} to go",
+    "reached": "Daily goal reached",
+    "hint": "Tap logs a glass, long-press picks the size.",
+    "a11yLevel": "Water: {{amount}} of {{goal}}",
+    "a11yHint": "Tap logs {{amount}}. Long-press shows more sizes.",
+    "add": "Log {{amount}}",
+    "added": "{{amount}} of water logged",
+    "presetsTitle": "How much?",
+    "preset": {
+      "glass": "Glass",
+      "smallBottle": "Small bottle",
+      "bottle": "Bottle"
+    },
+    "unit": {
+      "ml": "{{value}} ml",
+      "l": "{{value}} l",
+      "flOz": "{{value}} fl oz"
+    }
+  },
+  "fits": {
+    "title": "Still fits",
+    "subtitle": {
+      "protein": "You are {{grams}} g of protein short. These fit into {{kcal}} kcal.",
+      "carbs": "You are {{grams}} g of carbs short. These fit into {{kcal}} kcal.",
+      "fat": "You are {{grams}} g of fat short. These fit into {{kcal}} kcal.",
+      "none": "Macros are covered. {{kcal}} kcal left."
+    },
+    "macro": {
+      "protein": "protein",
+      "carbs": "carbs",
+      "fat": "fat"
+    },
+    "detail": "{{kcal}} kcal · {{grams}} g {{macro}}",
+    "detailKcal": "{{kcal}} kcal",
+    "after": "{{kcal}} kcal left after",
+    "log": "Log {{name}}"
+  }
+}

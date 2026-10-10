@@ -74,6 +74,7 @@ export async function requestHealthAuthorization(): Promise<HealthAuthorizationR
         'HKQuantityTypeIdentifierDietaryProtein',
         'HKQuantityTypeIdentifierDietaryCarbohydrates',
         'HKQuantityTypeIdentifierDietaryFatTotal',
+        'HKQuantityTypeIdentifierDietaryWater',
       ],
     });
     return ok ? 'granted' : 'denied';
@@ -211,6 +212,12 @@ export {
   exportWorkoutToHealth,
   exportFoodLogToHealth,
   deleteFoodLogFromHealth,
+  exportWaterLogToHealth,
+  deleteWaterLogFromHealth,
 } from './export';
-export type { ExportWorkoutInput, ExportFoodLogInput } from './export';
+export type {
+  ExportWorkoutInput,
+  ExportFoodLogInput,
+  ExportWaterLogInput,
+} from './export';
 export type { HealthSyncResult } from './sync';

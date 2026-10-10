@@ -1,13 +1,20 @@
+import i18next from 'i18next';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Host, Picker, Text as SwiftUIText } from '@expo/ui/swift-ui';
-import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 
-import { ScreenTitle } from '@/components/ui';
+import { Illustration } from '@/components/brand';
+import { Reveal } from '@/components/motion';
+import {
+  Card,
+  Chip,
+  ListRow,
+  Pill,
+  ScreenTitle,
+  SectionHeader,
+} from '@/components/ui';
 
 import {
   compareTrainingDays,
@@ -17,6 +24,9 @@ import {
   kgToLb,
   roundTo,
   shiftIsoDate,
+  weekStartFor,
+  weekdayOfIso,
+  isoWeekNumber,
   weeklyRateKg,
   weightVsKcalCorrelation,
   workoutDaysPerWeek,
@@ -34,47 +44,26 @@ import {
   useWeightInput,
   useWeightTrend,
 } from '@/features/insights';
-import {
-  EmptyState,
-  InsightCard,
-  InsightRow,
-} from '@/features/insights/components';
+import { EmptyState, InsightRow } from '@/features/insights/components';
 import { useProfile } from '@/features/targets';
 import { exerciseDisplayName, useExerciseCatalog } from '@/features/workout';
 import { toISODate } from '@/lib/date';
-import { themeColor, useThemeHex } from '@/theme/colors';
+import { fixedColors, themeColor } from '@/theme/colors';
+import { textStyles } from '@/theme/typography';
 
 const RANGES: WeightRange[] = ['4w', '12w', 'all'];
 const MIN_CORRELATION_DAYS = 14;
 
-function formatSigned(value: number, decimals = 1): string {
-  const r = roundTo(value, decimals);
-  return r > 0 ? `+${r}` : String(r);
+/** Locale-aware number ("94,5" in DE), max `decimals` fraction digits. */
+function formatNumber(value: number, decimals = 1): string {
+  return new Intl.NumberFormat(i18next.language, {
+    maximumFractionDigits: decimals,
+  }).format(roundTo(value, decimals));
 }
 
-function Legend({
-  color,
-  label,
-  dashed,
-}: {
-  color: string;
-  label: string;
-  dashed?: boolean;
-}) {
-  return (
-    <View className="flex-row items-center gap-1.5">
-      <View
-        style={{
-          width: 14,
-          height: 0,
-          borderTopWidth: 2,
-          borderStyle: dashed ? 'dashed' : 'solid',
-          borderColor: color,
-        }}
-      />
-      <Text className="text-secondary-label text-xs">{label}</Text>
-    </View>
-  );
+function formatSigned(value: number, decimals = 1): string {
+  const r = roundTo(value, decimals);
+  return r > 0 ? `+${formatNumber(r, decimals)}` : formatNumber(r, decimals);
 }
 
 function Segmented({
@@ -87,24 +76,36 @@ function Segmented({
   onChange: (value: string) => void;
 }) {
   return (
-    <Host matchContents style={{ width: '100%' }}>
-      <Picker
-        selection={value}
-        onSelectionChange={(v) => onChange(String(v))}
-        modifiers={[pickerStyle('segmented')]}
-      >
-        {options.map((o) => (
-          <SwiftUIText key={o.value} modifiers={[tag(o.value)]}>
-            {o.label}
-          </SwiftUIText>
-        ))}
-      </Picker>
-    </Host>
+    <View className="flex-row flex-wrap gap-2">
+      {options.map((o) => (
+        <Chip
+          key={o.value}
+          label={o.label}
+          selected={o.value === value}
+          onPress={() => onChange(o.value)}
+        />
+      ))}
+    </View>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View className="gap-2">
+      <SectionHeader title={title} />
+      <Card>{children}</Card>
+    </View>
   );
 }
 
 export default function InsightsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const today = toISODate();
   const { profile } = useProfile();
   const { raw, trend, entries, isLoading: weightLoading } = useWeightTrend();
@@ -115,10 +116,8 @@ export default function InsightsScreen() {
   const [range, setRange] = useState<WeightRange>('12w');
   const [kcalRange, setKcalRange] = useState<'7' | '30'>('7');
 
-  const accentHex = useThemeHex('accent');
-  const dangerHex = useThemeHex('danger');
   const unit = t(unitLabelKey);
-  const fmt = (kg: number) => String(toDisplay(kg));
+  const fmt = (kg: number) => formatNumber(toDisplay(kg));
 
   // --- weight ---
   const rangeRaw = useMemo(
@@ -243,77 +242,204 @@ export default function InsightsScreen() {
     });
   }
 
-  const card = (index: number, node: React.ReactNode) => (
-    <Animated.View entering={FadeInDown.delay(index * 60).duration(300)}>
-      {node}
-    </Animated.View>
+  // --- weekly review entry (Sunday: this week, otherwise last week) + archive ---
+  const thisWeek = weekStartFor(today);
+  const reviewWeek =
+    weekdayOfIso(today) === 0 ? thisWeek : shiftIsoDate(thisWeek, -7);
+  const archiveWeeks = [1, 2, 3, 4].map((n) =>
+    shiftIsoDate(reviewWeek, -7 * n),
   );
+  const rangeLabel = (weekStart: string) => {
+    const fmt = (iso: string) =>
+      new Date(`${iso}T12:00:00`).toLocaleDateString(i18n.language, {
+        day: 'numeric',
+        month: 'short',
+      });
+    return t('rhythm.tideTable.range', {
+      from: fmt(weekStart),
+      to: fmt(shiftIsoDate(weekStart, 6)),
+    });
+  };
+  const openWeek = (weekStart: string) =>
+    router.push({ pathname: '/insights/week', params: { weekStart } });
 
   return (
-    <View className="bg-system-background flex-1">
+    <View className="bg-bg flex-1">
       <ScreenTitle title={t('insights.title')} />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-4 px-4 pb-10 pt-6"
+        contentContainerClassName="gap-5 px-4 pb-10 pt-4"
       >
-        {/* Weight trend */}
-        {card(
-          0,
-          <InsightCard
-            title={t('insights.weight.title')}
-            accessory={
-              <Pressable
-                onPress={() => router.push('/insights/weight-entry')}
-                accessibilityRole="button"
-                accessibilityLabel={t('insights.weight.logCta')}
-                hitSlop={8}
-                className="flex-row items-center gap-1"
-              >
-                <SymbolView
-                  name="plus.circle.fill"
-                  size={20}
-                  tintColor={themeColor('accent')}
-                />
-                <Text className="text-tint text-sm font-medium">
-                  {t('insights.weight.logCta')}
-                </Text>
-              </Pressable>
-            }
+        {/* Weekly review entry */}
+        <Reveal index={0}>
+          <Card
+            variant="tinted"
+            onPress={() => openWeek(reviewWeek)}
+            accessibilityLabel={`${t('insights.review.entryTitle')}, ${rangeLabel(reviewWeek)}`}
           >
-            {weightLoading || entries.length === 0 ? (
-              weightLoading ? null : (
-                <EmptyState
-                  icon="scalemass"
-                  title={t('insights.weight.emptyTitle')}
-                  body={t('insights.weight.emptyBody')}
-                />
-              )
-            ) : (
-              <>
-                <View className="flex-row items-end justify-between">
-                  <View>
-                    <Text className="text-secondary-label text-xs uppercase">
-                      {t('insights.weight.trendLabel')}
-                    </Text>
-                    <Text className="text-label text-3xl font-bold">
-                      {fmt(trendNow ?? latestEntry!.weightKg)}{' '}
-                      <Text className="text-lg font-medium">{unit}</Text>
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-secondary-label text-xs uppercase">
-                      {t('insights.weight.weeklyRateLabel')}
-                    </Text>
-                    <Text className="text-label text-base font-semibold">
-                      {rateDisplay === null
-                        ? '–'
-                        : t('insights.weight.weeklyRate', {
-                            value: formatSigned(rateDisplay, 2),
-                            unit,
-                          })}
-                    </Text>
-                  </View>
+            <View className="flex-row items-center gap-3">
+              <View className="flex-1 gap-0.5">
+                <Text className="text-label" style={textStyles.headline}>
+                  {t('insights.review.entryTitle')}
+                </Text>
+                <Text
+                  className="text-label-secondary"
+                  style={textStyles.caption}
+                >
+                  {t('insights.review.entryBody', {
+                    week: isoWeekNumber(reviewWeek),
+                    range: rangeLabel(reviewWeek),
+                  })}
+                </Text>
+              </View>
+              <Pill label={t('rhythm.tideTable.newBadge')} tone="accent" />
+              <SymbolView
+                name="chevron.right"
+                size={13}
+                weight="bold"
+                tintColor={themeColor('labelTertiary')}
+              />
+            </View>
+          </Card>
+        </Reveal>
+
+        {/* Weight: the hero */}
+        <Reveal index={1}>
+          <View className="gap-3">
+            <Card variant="hero">
+              <View className="flex-row items-center justify-between">
+                <Text
+                  style={[
+                    textStyles.overline,
+                    { color: fixedColors.heroLabel2 },
+                  ]}
+                >
+                  {t('insights.weight.title')}
+                </Text>
+                <Pressable
+                  onPress={() => router.push('/insights/weight-entry')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('insights.weight.logCta')}
+                  hitSlop={8}
+                  className="flex-row items-center gap-1"
+                >
+                  <SymbolView
+                    name="plus.circle.fill"
+                    size={20}
+                    tintColor={fixedColors.lime}
+                  />
+                  <Text
+                    style={[
+                      textStyles.callout,
+                      { color: fixedColors.lime, fontWeight: '600' },
+                    ]}
+                  >
+                    {t('insights.weight.logCta')}
+                  </Text>
+                </Pressable>
+              </View>
+              {weightLoading ? null : entries.length === 0 ? (
+                <View className="items-center gap-3 py-4">
+                  <Illustration
+                    name="noData"
+                    size={150}
+                    color={fixedColors.heroLabel2}
+                  />
+                  <Text
+                    style={[
+                      textStyles.headline,
+                      { color: fixedColors.heroLabel },
+                    ]}
+                  >
+                    {t('insights.weight.emptyTitle')}
+                  </Text>
+                  <Text
+                    className="text-center"
+                    style={[
+                      textStyles.callout,
+                      { color: fixedColors.heroLabel2 },
+                    ]}
+                  >
+                    {t('insights.weight.emptyBody')}
+                  </Text>
                 </View>
+              ) : (
+                <>
+                  <View className="flex-row items-end justify-between">
+                    <View>
+                      <Text
+                        style={[
+                          textStyles.caption,
+                          { color: fixedColors.heroLabel2 },
+                        ]}
+                      >
+                        {t('insights.weight.trendLabel')}
+                      </Text>
+                      <Text
+                        maxFontSizeMultiplier={1.15}
+                        style={[
+                          textStyles.numericL,
+                          { color: fixedColors.heroLabel },
+                        ]}
+                      >
+                        {fmt(trendNow ?? latestEntry!.weightKg)}{' '}
+                        <Text style={textStyles.numericS}>{unit}</Text>
+                      </Text>
+                    </View>
+                    <View className="items-end">
+                      <Text
+                        style={[
+                          textStyles.caption,
+                          { color: fixedColors.heroLabel2 },
+                        ]}
+                      >
+                        {t('insights.weight.weeklyRateLabel')}
+                      </Text>
+                      <Text
+                        style={[
+                          textStyles.numericS,
+                          { color: fixedColors.lime },
+                        ]}
+                      >
+                        {rateDisplay === null
+                          ? '–'
+                          : t('insights.weight.weeklyRate', {
+                              value: formatSigned(rateDisplay, 2),
+                              unit,
+                            })}
+                      </Text>
+                    </View>
+                  </View>
+                  <WeightTrendChart
+                    variant="hero"
+                    raw={rangeRaw}
+                    trend={rangeTrend}
+                    targetKg={targetKg}
+                    formatWeight={fmt}
+                    targetLabel={
+                      targetKg != null
+                        ? t('insights.weight.goalLabel', {
+                            value: fmt(targetKg),
+                            unit,
+                          })
+                        : undefined
+                    }
+                  />
+                  {rateKg === null && (
+                    <Text
+                      style={[
+                        textStyles.caption,
+                        { color: fixedColors.heroLabel2 },
+                      ]}
+                    >
+                      {t('insights.weight.noRate')}
+                    </Text>
+                  )}
+                </>
+              )}
+            </Card>
+            {entries.length > 0 && (
+              <>
                 <Segmented
                   value={range}
                   onChange={(v) => setRange(v as WeightRange)}
@@ -322,56 +448,39 @@ export default function InsightsScreen() {
                     label: t(`insights.weight.range.${r}`),
                   }))}
                 />
-                <WeightTrendChart
-                  raw={rangeRaw}
-                  trend={rangeTrend}
-                  targetKg={targetKg}
-                  formatWeight={fmt}
-                />
-                <View className="flex-row flex-wrap items-center gap-x-4 gap-y-1">
-                  <Legend
-                    color={accentHex}
-                    label={t('insights.weight.legendTrend')}
+                <Card className="gap-0 overflow-hidden p-0">
+                  <ListRow
+                    title={t('insights.weight.allEntries')}
+                    symbol="list.bullet"
+                    onPress={() => router.push('/insights/weight-history')}
                   />
-                  {targetKg != null && (
-                    <Legend
-                      color={dangerHex}
-                      dashed
-                      label={t('insights.weight.goalLabel', {
-                        value: fmt(targetKg),
-                        unit,
-                      })}
-                    />
-                  )}
-                </View>
-                {rateKg === null && (
-                  <Text className="text-secondary-label text-xs">
-                    {t('insights.weight.noRate')}
-                  </Text>
-                )}
-                <Pressable
-                  onPress={() => router.push('/insights/weight-history')}
-                  accessibilityRole="button"
-                  className="flex-row items-center justify-between pt-1"
-                >
-                  <Text className="text-tint text-sm">
-                    {t('insights.weight.allEntries')}
-                  </Text>
-                  <SymbolView
-                    name="chevron.right"
-                    size={12}
-                    tintColor="secondaryLabel"
-                  />
-                </Pressable>
+                </Card>
               </>
             )}
-          </InsightCard>,
-        )}
+          </View>
+        </Reveal>
 
-        {/* Calories vs target */}
-        {card(
-          1,
-          <InsightCard title={t('insights.kcal.title')}>
+        {/* Patterns */}
+        <Reveal index={2}>
+          <Card variant="tinted">
+            <Text className="text-label" style={textStyles.headline}>
+              {t('insights.correlations.title')}
+            </Text>
+            {insightRows.length === 0 ? (
+              <Text className="text-label-secondary" style={textStyles.callout}>
+                {t('insights.correlations.notEnough')}
+              </Text>
+            ) : (
+              insightRows.map((row) => (
+                <InsightRow key={row.text} icon={row.icon} text={row.text} />
+              ))
+            )}
+          </Card>
+        </Reveal>
+
+        {/* Calories vs level */}
+        <Reveal index={3}>
+          <Section title={t('insights.kcal.title')}>
             <Segmented
               value={kcalRange}
               onChange={(v) => setKcalRange(v as '7' | '30')}
@@ -388,20 +497,26 @@ export default function InsightsScreen() {
                 >
                   <DailyKcalBars bars={bars} />
                 </View>
-                <Text className="text-label text-base font-semibold">
+                <Text className="text-label" style={textStyles.headline}>
                   {t('insights.kcal.average', {
                     eaten: Math.round(adherence.avgEatenKcal),
                     target: Math.round(adherence.avgTargetKcal),
                   })}
                 </Text>
-                <Text className="text-secondary-label text-sm">
+                <Text
+                  className="text-label-secondary"
+                  style={textStyles.callout}
+                >
                   {t('insights.kcal.daysOnTarget', {
                     count: adherence.daysOnTarget,
                     total: adherence.loggedDays,
                   })}
                 </Text>
                 {Math.abs(adherence.avgDeltaKcal) >= 25 && (
-                  <Text className="text-secondary-label text-sm">
+                  <Text
+                    className="text-label-secondary"
+                    style={textStyles.callout}
+                  >
                     {adherence.avgDeltaKcal < 0
                       ? t('insights.kcal.under', {
                           value: Math.round(-adherence.avgDeltaKcal),
@@ -419,13 +534,12 @@ export default function InsightsScreen() {
                 body={t('insights.kcal.emptyBody')}
               />
             )}
-          </InsightCard>,
-        )}
+          </Section>
+        </Reveal>
 
         {/* Training frequency + logging streak */}
-        {card(
-          2,
-          <InsightCard title={t('insights.training.title')}>
+        <Reveal index={4}>
+          <Section title={t('insights.training.title')}>
             {totalWorkoutDays === 0 && loggedStreak === 0 ? (
               <EmptyState
                 icon="figure.strengthtraining.traditional"
@@ -434,11 +548,17 @@ export default function InsightsScreen() {
               />
             ) : (
               <>
-                <Text className="text-secondary-label text-xs uppercase">
+                <Text
+                  className="text-label-secondary"
+                  style={textStyles.overline}
+                >
                   {t('insights.training.weeksLabel')}
                 </Text>
                 <WeeklyBars values={weeklyWorkouts} labels={weekBarLabels} />
-                <Text className="text-secondary-label text-sm">
+                <Text
+                  className="text-label-secondary"
+                  style={textStyles.callout}
+                >
                   {t('insights.training.total', { count: totalWorkoutDays })}
                 </Text>
                 <InsightRow
@@ -453,13 +573,12 @@ export default function InsightsScreen() {
                 />
               </>
             )}
-          </InsightCard>,
-        )}
+          </Section>
+        </Reveal>
 
         {/* Strength progress */}
-        {card(
-          3,
-          <InsightCard title={t('insights.strength.title')}>
+        <Reveal index={5}>
+          <Section title={t('insights.strength.title')}>
             {trends.length === 0 ? (
               <EmptyState
                 icon="dumbbell"
@@ -468,7 +587,10 @@ export default function InsightsScreen() {
               />
             ) : (
               <>
-                <Text className="text-secondary-label text-xs">
+                <Text
+                  className="text-label-secondary"
+                  style={textStyles.caption}
+                >
                   {t('insights.strength.caption')}
                 </Text>
                 {trends.map((tr) => {
@@ -483,16 +605,20 @@ export default function InsightsScreen() {
                         })
                       }
                       accessibilityRole="button"
-                      className="flex-row items-center justify-between"
+                      className="min-h-11 flex-row items-center justify-between"
                     >
                       <View className="flex-1 pr-3">
                         <Text
-                          className="text-label text-base"
+                          className="text-label"
+                          style={textStyles.headline}
                           numberOfLines={1}
                         >
                           {exerciseName(tr.exerciseId)}
                         </Text>
-                        <Text className="text-secondary-label text-xs">
+                        <Text
+                          className="text-label-secondary"
+                          style={textStyles.caption}
+                        >
                           {t('insights.strength.change', {
                             from: fmt(tr.firstOneRmKg),
                             to: fmt(tr.latestOneRmKg),
@@ -504,7 +630,9 @@ export default function InsightsScreen() {
                         name={up ? 'arrow.up.right' : 'arrow.down.right'}
                         size={18}
                         tintColor={
-                          up ? themeColor('accent') : themeColor('danger')
+                          up
+                            ? themeColor('accent')
+                            : themeColor('labelSecondary')
                         }
                       />
                     </Pressable>
@@ -512,24 +640,27 @@ export default function InsightsScreen() {
                 })}
               </>
             )}
-          </InsightCard>,
-        )}
+          </Section>
+        </Reveal>
 
-        {/* Correlation insights */}
-        {card(
-          4,
-          <InsightCard title={t('insights.correlations.title')}>
-            {insightRows.length === 0 ? (
-              <Text className="text-secondary-label text-sm">
-                {t('insights.correlations.notEnough')}
-              </Text>
-            ) : (
-              insightRows.map((row) => (
-                <InsightRow key={row.text} icon={row.icon} text={row.text} />
-              ))
-            )}
-          </InsightCard>,
-        )}
+        {/* Earlier weeks */}
+        <Reveal index={6}>
+          <View className="gap-2">
+            <SectionHeader title={t('rhythm.tideTable.archive')} />
+            <Card className="gap-0 overflow-hidden p-0">
+              {archiveWeeks.map((w, i) => (
+                <ListRow
+                  key={w}
+                  title={t('insights.review.week', { week: isoWeekNumber(w) })}
+                  subtitle={rangeLabel(w)}
+                  symbol="calendar"
+                  separator={i < archiveWeeks.length - 1}
+                  onPress={() => openWeek(w)}
+                />
+              ))}
+            </Card>
+          </View>
+        </Reveal>
       </ScrollView>
     </View>
   );

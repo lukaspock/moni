@@ -2,6 +2,7 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTranslation } from 'react-i18next';
 
 import { useHealthAutoSync } from '@/features/health';
+import { useNudgeScheduler } from '@/features/notifications';
 import { useRecomputeTargetsIfDue } from '@/features/targets';
 import { themeColor } from '@/theme/colors';
 
@@ -9,6 +10,7 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   // Apple Health import on mount + foreground (throttled; no-op unless enabled & signed in).
   useHealthAutoSync();
+  useNudgeScheduler();
   useRecomputeTargetsIfDue();
 
   return (

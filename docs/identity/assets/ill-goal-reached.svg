@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Ziel erreicht</title>
+  <circle cx="80" cy="62" r="38" style="stroke:var(--moni-accent,#1D6B47)" stroke-width="12"/>
+  <path d="M64 63L76 75L98 50" stroke-width="6"/>
+  <path d="M120 22L130 12M136 40H148M40 16L34 8M22 44H12" style="stroke:var(--moni-bonus,#C2410C)" stroke-width="4"/>
+
+</svg>

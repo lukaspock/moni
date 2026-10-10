@@ -337,7 +337,9 @@ export type Database = {
           id: string;
           order_index: number;
           routine_id: string;
+          superset_group: number | null;
           target_reps: number | null;
+          target_reps_min: number | null;
           target_sets: number | null;
         };
         Insert: {
@@ -345,7 +347,9 @@ export type Database = {
           id?: string;
           order_index?: number;
           routine_id: string;
+          superset_group?: number | null;
           target_reps?: number | null;
+          target_reps_min?: number | null;
           target_sets?: number | null;
         };
         Update: {
@@ -353,7 +357,9 @@ export type Database = {
           id?: string;
           order_index?: number;
           routine_id?: string;
+          superset_group?: number | null;
           target_reps?: number | null;
+          target_reps_min?: number | null;
           target_sets?: number | null;
         };
         Relationships: [
@@ -464,6 +470,33 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      water_logs: {
+        Row: {
+          created_at: string;
+          date: string;
+          id: string;
+          logged_at: string;
+          ml: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          date: string;
+          id?: string;
+          logged_at?: string;
+          ml: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          date?: string;
+          id?: string;
+          logged_at?: string;
+          ml?: number;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       weight_logs: {
         Row: {

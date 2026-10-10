@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +9,7 @@ import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import type { SFSymbol } from '@/features/auth/components/OptionCard';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
 import { themeColor } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
 
 function Point({
   symbol,
@@ -25,7 +25,7 @@ function Point({
       entering={FadeInDown.duration(260).delay(80 + index * 60)}
       className="flex-row items-start gap-3"
     >
-      <View className="bg-secondary-system-background mt-0.5 h-8 w-8 items-center justify-center rounded-lg">
+      <View className="bg-surface mt-0.5 h-8 w-8 items-center justify-center rounded-lg">
         <SymbolView
           name={symbol}
           size={18}
@@ -80,13 +80,11 @@ export default function DisclaimerScreen() {
         accessibilityRole="checkbox"
         accessibilityState={{ checked }}
         onPress={() => {
-          void Haptics.selectionAsync();
+          haptic.select();
           setChecked((v) => !v);
         }}
-        className={`mt-2 flex-row items-center gap-3 rounded-2xl border-2 p-4 ${
-          checked
-            ? 'border-tint bg-secondary-system-background'
-            : 'border-separator'
+        className={`mt-2 flex-row items-center gap-3 rounded-[20px] border-2 p-4 ${
+          checked ? 'border-tint bg-tint-soft' : 'border-line'
         }`}
       >
         <SymbolView

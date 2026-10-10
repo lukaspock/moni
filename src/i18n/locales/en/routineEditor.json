@@ -1,0 +1,88 @@
+{
+  "titleNew": "New routine",
+  "titleEdit": "Edit routine",
+  "close": "Close",
+  "nameLabel": "Name",
+  "namePlaceholder": "e.g. Push",
+  "names": {
+    "push": "Push",
+    "pull": "Pull",
+    "legs": "Legs",
+    "fullBody": "Full body",
+    "upper": "Upper body",
+    "lower": "Lower body"
+  },
+  "exercises": "Exercises",
+  "empty": "Still empty. Add exercises, then tap a target to adjust it.",
+  "addExercises": "Add exercises",
+  "fillFromTemplate": "Fill from template",
+  "template": {
+    "gym": "Gym",
+    "home": "Home",
+    "endurance": "Endurance"
+  },
+  "save": "Save",
+  "saveHint": "Give the routine a name and at least one exercise.",
+  "target": {
+    "reps": "Reps",
+    "minutes": "Minutes",
+    "a11y": "Target {{target}}. Tap to change.",
+    "sets": "Sets",
+    "rounds": "Rounds",
+    "repsFrom": "Reps from",
+    "repsTo": "to",
+    "range": "Range",
+    "done": "Done"
+  },
+  "stepper": {
+    "increase": "Increase {{label}}",
+    "decrease": "Decrease {{label}}"
+  },
+  "exerciseMenu": {
+    "label": "Options for {{name}}",
+    "swap": "Swap",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "link": "Couple with next",
+    "unlink": "Uncouple"
+  },
+  "routineMenu": {
+    "label": "Routine options",
+    "delete": "Delete routine",
+    "deleteTitle": "Delete routine?",
+    "deleteMessage": "“{{name}}” will be removed. Your past sessions stay.",
+    "deleteConfirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "picker": {
+    "addTitle": "Add exercises",
+    "swapTitle": "Swap exercise",
+    "back": "Back",
+    "search": "Search exercises",
+    "allMuscles": "All",
+    "recent": "Recent",
+    "popular": "Popular",
+    "az": "A–Z",
+    "results": "Results",
+    "noResults": "Nothing found. Create it below as your own exercise.",
+    "addCount": "Add {{count}}",
+    "inRoutine": "Already in",
+    "createCustom": "Create your own exercise",
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbell": "Dumbbell",
+      "machine": "Machine",
+      "cable": "Cable",
+      "bodyweight": "Bodyweight",
+      "kettlebell": "Kettlebell",
+      "medicine_ball": "Medicine ball",
+      "other": "Other"
+    }
+  },
+  "group": {
+    "superset": "Superset",
+    "circuit": "Circuit",
+    "a11y": "{{label}} with {{count}} exercises, trained alternately"
+  }
+}

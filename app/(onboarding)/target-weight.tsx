@@ -1,5 +1,4 @@
 import { Host, Slider } from '@expo/ui/swift-ui';
-import * as Haptics from 'expo-haptics';
 import { SymbolView } from 'expo-symbols';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +18,7 @@ import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import { formatLongDate, formatWeight } from '@/features/auth/format';
 import { useDraftProjection } from '@/features/auth/useDraftProjection';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
+import { haptic } from '@/lib/haptics';
 
 const STEP_KG = 0.5;
 
@@ -37,7 +37,7 @@ function StepButton({
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={8}
-      className="bg-secondary-system-background h-12 w-12 items-center justify-center rounded-full"
+      className="bg-surface h-12 w-12 items-center justify-center rounded-full"
     >
       <SymbolView name={symbol} size={18} weight="semibold" />
     </Pressable>
@@ -83,7 +83,7 @@ export default function TargetWeightScreen() {
   function setTarget(kg: number) {
     const clamped = Math.min(Math.max(kg, bounds.minKg), bounds.maxKg);
     if (clamped === draft.targetWeightKg) return;
-    void Haptics.selectionAsync();
+    haptic.select();
     update({ targetWeightKg: clamped });
   }
 
@@ -111,7 +111,7 @@ export default function TargetWeightScreen() {
             value={target}
             duration={200}
             format={(v) => formatWeight(v, unit)}
-            className="text-label min-w-40 text-center text-5xl font-bold"
+            className="text-label min-w-40 text-center font-display-black text-[48px] leading-[52px]"
           />
           <StepButton
             symbol="plus"
@@ -120,12 +120,12 @@ export default function TargetWeightScreen() {
           />
         </View>
         <View className="flex-row gap-2 pt-2">
-          <Text className="bg-secondary-system-background text-secondary-label rounded-full px-3 py-1 text-sm">
+          <Text className="bg-surface text-label-secondary rounded-full px-3 py-1 text-sm">
             {t('account.onboarding.targetWeight.current', {
               value: formatWeight(currentWeightKg, unit),
             })}
           </Text>
-          <Text className="bg-secondary-system-background text-tint rounded-full px-3 py-1 text-sm font-semibold">
+          <Text className="bg-surface text-tint rounded-full px-3 py-1 text-sm font-semibold">
             {t('account.onboarding.targetWeight.difference', {
               value: formatWeight(Math.abs(currentWeightKg - target), unit),
             })}
@@ -145,7 +145,7 @@ export default function TargetWeightScreen() {
         </Host>
       )}
 
-      <Text className="text-secondary-label text-center text-sm">
+      <Text className="text-label-secondary text-center text-sm">
         {t('account.onboarding.targetWeight.healthyRange', {
           min: formatWeight(healthy.minKg, unit, 0),
           max: formatWeight(healthy.maxKg, unit, 0),
@@ -169,7 +169,7 @@ export default function TargetWeightScreen() {
       {projection?.targetDate && status !== 'tooLow' ? (
         <Animated.View
           entering={FadeIn.duration(250)}
-          className="bg-secondary-system-background rounded-2xl p-4"
+          className="bg-surface rounded-2xl p-4"
         >
           <Text className="text-label text-center text-base">
             {t('account.onboarding.targetWeight.projection', {

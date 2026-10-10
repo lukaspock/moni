@@ -1,10 +1,10 @@
-import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
 import { router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { useTranslation } from 'react-i18next';
+import { Text, View } from 'react-native';
 
+import { Illustration } from '@/components/brand';
+import { Reveal } from '@/components/motion';
 import { Card, GlassActionButton, SheetScreen } from '@/components/ui';
-import { themeColor } from '@/theme/colors';
 
 /**
  * Phase 7 will replace this with a real RevenueCat paywall
@@ -18,16 +18,16 @@ export default function PaywallScreen() {
 
   return (
     <SheetScreen title={t('food.paywall.title')}>
-      <Card className="items-center gap-3 p-6">
-        <SymbolView
-          name="sparkles"
-          size={40}
-          tintColor={themeColor('accent')}
-        />
-        <Text className="text-secondary-label text-center text-base">
-          {t('food.paywall.body')}
-        </Text>
-      </Card>
+      <Reveal>
+        <Card className="items-center gap-3 p-6">
+          <View className="items-center">
+            <Illustration name="goalReached" size={160} />
+          </View>
+          <Text className="text-label-secondary text-center text-base">
+            {t('food.paywall.body')}
+          </Text>
+        </Card>
+      </Reveal>
       <GlassActionButton
         label={t('food.paywall.close')}
         symbol="checkmark"

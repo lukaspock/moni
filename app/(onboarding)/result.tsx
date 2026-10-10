@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { Card } from '@/components/ui';
+import { Reveal, RollingNumber } from '@/components/motion';
 import type { Motivation } from '@/domain';
 import { useOnboardingStore } from '@/features/auth';
 import { CountUpText } from '@/features/auth/components/CountUpText';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
+import { HoldToStart } from '@/features/auth/components/HoldToStart';
 import { WeightProjectionChart } from '@/features/auth/components/WeightProjectionChart';
 import {
   formatKcal,
@@ -14,93 +16,163 @@ import {
 } from '@/features/auth/format';
 import { useDraftProjection } from '@/features/auth/useDraftProjection';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
+import { fixedColors } from '@/theme/colors';
+import { fontFamily } from '@/theme/typography';
 
 function MacroTile({
   label,
   grams,
   delay,
+  onHero,
 }: {
   label: string;
   grams: number;
   delay: number;
+  onHero?: boolean;
 }) {
   return (
-    <View className="bg-system-background flex-1 items-center gap-0.5 rounded-xl py-2.5">
+    <View
+      className={`flex-1 items-center gap-0.5 rounded-xl py-2.5 ${onHero ? 'bg-white/10' : 'bg-surface-raised'}`}
+    >
       <CountUpText
         value={grams}
         startFrom={0}
         duration={800 + delay}
         format={(v) => `${Math.round(v)} g`}
-        className="text-label text-lg font-bold"
+        className={`font-display-bold text-lg ${onHero ? 'text-hero-label' : 'text-label'}`}
       />
-      <Text className="text-secondary-label text-xs">{label}</Text>
+      <Text
+        className={`text-xs ${onHero ? 'text-hero-label-2' : 'text-label-secondary'}`}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
-function DayCard({
-  title,
+type MacroLabels = {
+  protein: string;
+  carbs: string;
+  fat: string;
+  kcal: string;
+};
+
+/** Hero moment: the rest-day level (base) as a big rolling number. */
+function LevelHero({
+  kcal,
+  protein,
+  carbs,
+  fat,
+  macroLabels,
+  groupSeparator,
+}: {
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  macroLabels: MacroLabels;
+  groupSeparator: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Reveal>
+      <Card variant="hero" className="gap-4">
+        <View className="gap-1">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-hero-label-2">
+            {t('account.onboarding.result.levelLabel')} ·{' '}
+            {t('account.onboarding.result.restDay')}
+          </Text>
+          <RollingNumber
+            value={kcal}
+            startFrom={0}
+            fontSize={72}
+            fontFamily={fontFamily.displayBlack}
+            color={fixedColors.heroLabel}
+            glowColor={fixedColors.lime}
+            groupSeparator={groupSeparator}
+            accessibilityLabel={`${formatKcal(kcal)} ${macroLabels.kcal}`}
+          />
+          <Text className="text-base font-semibold text-hero-label-2">
+            {t('account.onboarding.result.kcalPerDay')}
+          </Text>
+        </View>
+        <View className="flex-row gap-2">
+          <MacroTile
+            onHero
+            label={macroLabels.protein}
+            grams={protein}
+            delay={0}
+          />
+          <MacroTile
+            onHero
+            label={macroLabels.carbs}
+            grams={carbs}
+            delay={100}
+          />
+          <MacroTile onHero label={macroLabels.fat} grams={fat} delay={200} />
+        </View>
+      </Card>
+    </Reveal>
+  );
+}
+
+function TrainingDayCard({
   kcal,
   bonusLabel,
   protein,
   carbs,
   fat,
   macroLabels,
-  index,
 }: {
-  title: string;
   kcal: number;
-  bonusLabel?: string;
+  bonusLabel: string;
   protein: number;
   carbs: number;
   fat: number;
-  macroLabels: { protein: string; carbs: string; fat: string; kcal: string };
-  index: number;
+  macroLabels: MacroLabels;
 }) {
+  const { t } = useTranslation();
   return (
-    <Animated.View
-      entering={FadeInDown.duration(300).delay(120 + index * 120)}
-      className="bg-secondary-system-background gap-3 rounded-3xl p-5"
-    >
-      <View className="flex-row items-center justify-between">
-        <Text className="text-secondary-label text-sm font-semibold uppercase">
-          {title}
-        </Text>
-        {bonusLabel ? (
+    <Reveal index={1} delay={200}>
+      <Card className="gap-3">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-label-secondary text-xs font-semibold uppercase tracking-widest">
+            {t('account.onboarding.result.trainingDay')}
+          </Text>
           <Text className="text-bonus text-sm font-semibold">{bonusLabel}</Text>
-        ) : null}
-      </View>
-      <View className="flex-row items-baseline gap-2">
-        <CountUpText
-          value={kcal}
-          startFrom={0}
-          duration={900}
-          format={formatKcal}
-          className="text-label text-5xl font-bold"
-        />
-        <Text className="text-secondary-label text-lg font-semibold">
-          {macroLabels.kcal}
-        </Text>
-      </View>
-      <View className="flex-row gap-2">
-        <MacroTile label={macroLabels.protein} grams={protein} delay={0} />
-        <MacroTile label={macroLabels.carbs} grams={carbs} delay={100} />
-        <MacroTile label={macroLabels.fat} grams={fat} delay={200} />
-      </View>
-    </Animated.View>
+        </View>
+        <View className="flex-row items-baseline gap-2">
+          <CountUpText
+            value={kcal}
+            startFrom={0}
+            duration={900}
+            format={formatKcal}
+            className="text-label font-display-black text-[44px] leading-[48px]"
+          />
+          <Text className="text-label-secondary text-lg font-semibold">
+            {macroLabels.kcal}
+          </Text>
+        </View>
+        <View className="flex-row gap-2">
+          <MacroTile label={macroLabels.protein} grams={protein} delay={0} />
+          <MacroTile label={macroLabels.carbs} grams={carbs} delay={100} />
+          <MacroTile label={macroLabels.fat} grams={fat} delay={200} />
+        </View>
+      </Card>
+    </Reveal>
   );
 }
 
 export default function ResultScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const draft = useOnboardingStore((s) => s.draft);
   const projection = useDraftProjection();
   const { goNext } = useOnboardingNavigation('result');
 
   if (!projection) {
     return (
-      <View className="bg-system-background flex-1 items-center justify-center px-8">
-        <Text className="text-secondary-label text-center text-base">
+      <View className="bg-bg flex-1 items-center justify-center px-8">
+        <Text className="text-label-secondary text-center text-base">
           {t('account.profile.noProfile')}
         </Text>
       </View>
@@ -139,22 +211,28 @@ export default function ResultScreen() {
           ? motivationLines[draft.motivation]
           : t('account.onboarding.result.subtitle')
       }
-      continueLabel={t('account.onboarding.result.cta')}
-      onContinue={() => goNext()}
+      footerNote={
+        <View className="pb-2">
+          <HoldToStart
+            title={t('account.onboarding.result.hold')}
+            hint={t('account.onboarding.result.holdHint')}
+            a11yHint={t('account.onboarding.result.holdA11yHint')}
+            fallbackLabel={t('account.onboarding.result.start')}
+            onComplete={() => goNext()}
+          />
+        </View>
+      }
     >
-      <DayCard
-        index={0}
-        title={t('account.onboarding.result.restDay')}
+      <LevelHero
         kcal={preview.restDay.totalKcal}
         protein={preview.restDay.proteinG}
         carbs={preview.restDay.carbsG}
         fat={preview.restDay.fatG}
         macroLabels={macroLabels}
+        groupSeparator={i18n.language.startsWith('de') ? '.' : ','}
       />
       {hasTraining ? (
-        <DayCard
-          index={1}
-          title={t('account.onboarding.result.trainingDay')}
+        <TrainingDayCard
           kcal={preview.trainingDay.totalKcal}
           bonusLabel={t('account.onboarding.result.workoutBonus', {
             value: preview.trainingDay.workoutBonusKcal,
@@ -166,33 +244,32 @@ export default function ResultScreen() {
         />
       ) : null}
 
-      <Animated.View
-        entering={FadeInDown.duration(300).delay(380)}
-        className="bg-secondary-system-background gap-3 rounded-3xl p-5"
-      >
-        <Text className="text-secondary-label text-sm font-semibold uppercase">
-          {t('account.onboarding.result.projectionTitle')}
-        </Text>
-        <WeightProjectionChart
-          points={projection.curve}
-          startLabel={formatWeight(draft.weightKg ?? 0, unit)}
-          endLabel={
-            target != null && projection.targetDate
-              ? t('account.onboarding.result.projectionReach', {
-                  target: formatWeight(target, unit),
-                  date: formatLongDate(projection.targetDate),
-                })
-              : t('account.onboarding.result.projectionMaintain', {
-                  value: formatWeight(draft.weightKg ?? 0, unit),
-                })
-          }
-        />
-        <Text className="text-secondary-label text-xs">
-          {t('account.onboarding.result.projectionNote')}
-        </Text>
-      </Animated.View>
+      <Reveal index={2} delay={300}>
+        <Card className="gap-3">
+          <Text className="text-label-secondary text-xs font-semibold uppercase tracking-widest">
+            {t('account.onboarding.result.projectionTitle')}
+          </Text>
+          <WeightProjectionChart
+            points={projection.curve}
+            startLabel={formatWeight(draft.weightKg ?? 0, unit)}
+            endLabel={
+              target != null && projection.targetDate
+                ? t('account.onboarding.result.projectionReach', {
+                    target: formatWeight(target, unit),
+                    date: formatLongDate(projection.targetDate),
+                  })
+                : t('account.onboarding.result.projectionMaintain', {
+                    value: formatWeight(draft.weightKg ?? 0, unit),
+                  })
+            }
+          />
+          <Text className="text-label-tertiary text-xs">
+            {t('account.onboarding.result.projectionNote')}
+          </Text>
+        </Card>
+      </Reveal>
 
-      <Text className="text-secondary-label text-sm leading-5">
+      <Text className="text-label-secondary text-sm leading-5">
         {t('account.onboarding.result.explanation')}
       </Text>
 

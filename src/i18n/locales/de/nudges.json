@@ -1,0 +1,105 @@
+{
+  "eveningNote": {
+    "title": "Alles eingetragen?",
+    "body": "Ein Tap, und der Tag ist festgehalten."
+  },
+  "trainingMorning": {
+    "title": "Trainingstag",
+    "body": "Dein Pegel heute: {{kcal}} kcal. Er steigt, sobald du dich bewegt hast."
+  },
+  "proteinBridge": {
+    "title": "Einheit gespeichert",
+    "body": "Gutes Zeitfenster für 30 bis 40 g Protein. Deine Stammgerichte sind einen Tap entfernt."
+  },
+  "sundayReview": {
+    "title": "Deine Gezeitentafel ist da",
+    "body": "Sieh, wie die Woche lief. Keine Note, nur Muster."
+  },
+  "weighIn": {
+    "title": "Messpunkt?",
+    "body": "Der Trend zählt, nicht die einzelne Zahl. Einmal wiegen reicht."
+  },
+  "taktChance": {
+    "title": "Dein Rhythmus ist in Reichweite",
+    "body": "Mit einer Einheit bist du diese Woche im Rhythmus."
+  },
+  "doorOpen": {
+    "early": {
+      "title": "Alles ok bei dir?",
+      "body": "Wenn du magst: ein Eintrag reicht, um wieder drin zu sein."
+    },
+    "mid": {
+      "title": "Wir sind da, wenn du es bist",
+      "body": "Ein Eintrag, mehr braucht es nicht."
+    },
+    "late": {
+      "title": "Kurz vorbeischauen?",
+      "body": "Dein Verlauf ist noch da. Ein Eintrag reicht für den Wiedereinstieg."
+    }
+  },
+  "monthReview": {
+    "title": "Dein {{month}} hat einen Charakter",
+    "body": "Schau dir an, wie der Monat aussah."
+  },
+  "actions": {
+    "notToday": "Heute nicht mehr",
+    "lessOfThis": "Weniger davon"
+  },
+  "categories": {
+    "meals": "Mahlzeiten",
+    "training": "Training",
+    "reviews": "Rückblicke",
+    "rhythm": "Rhythmus",
+    "weight": "Gewicht"
+  },
+  "settings": {
+    "title": "Mitteilungen",
+    "quietMode": "Ruhe-Modus",
+    "quietUntil": "Ruhe bis {{date}}",
+    "quietHours": "Ruhezeiten",
+    "weighInDay": "Wiege-Tag",
+    "mealReminders": "Essens-Erinnerungen",
+    "mealRemindersHint": "Drei feste Hinweise zu Frühstück, Mittag und Abend.",
+    "permissionOff": "Mitteilungen sind für møni ausgeschaltet. Du kannst sie in den Einstellungen erlauben.",
+    "master": "Mitteilungen von møni",
+    "masterHint": "Höchstens eine Mitteilung am Tag, nie vor 8 Uhr, nie nach 21:30. Jederzeit abschaltbar.",
+    "explainer": "møni meldet sich nur, wenn es dir etwas bringt: ein Rückblick, der bereitliegt, ein Hinweis nach dem Training. Wenn du Mitteilungen nicht öffnest, werden es automatisch weniger.",
+    "sections": {
+      "general": "Allgemein",
+      "categories": "Wovon du hören magst",
+      "timing": "Zeiten",
+      "reminders": "Feste Erinnerungen"
+    },
+    "categoryHint": {
+      "meals": "Abends ein Hinweis, falls der Tag noch leer ist.",
+      "training": "Trainingstag-Morgen und Protein nach dem Training.",
+      "reviews": "Wochen- und Monatsrückblick, wenn er bereitliegt.",
+      "rhythm": "Eine Chance in Reichweite, oder eine offene Tür nach einer Pause.",
+      "weight": "Eine Erinnerung an den Messpunkt, einmal pro Woche."
+    },
+    "quietOff": "Aus",
+    "quietDays": {
+      "d3": "3 Tage",
+      "d7": "1 Woche",
+      "d14": "2 Wochen"
+    },
+    "quietModeHint": "Pausiert alle Mitteilungen bis zum gewählten Tag.",
+    "earliest": "Frühestens",
+    "latest": "Spätestens",
+    "quietHoursHint": "Du kannst das Fenster nur enger machen: 8:00 bis 21:30 ist die Grenze.",
+    "openSettings": "Einstellungen öffnen",
+    "footer": "Essens-Erinnerungen sind unabhängig davon und standardmäßig aus."
+  },
+  "quieter": {
+    "title": "Sollen wir leiser sein?",
+    "less": "Weniger",
+    "reviewsOnly": "Nur Rückblicke",
+    "off": "Aus"
+  },
+  "primer": {
+    "title": "Ein Hinweis zum Rückblick?",
+    "body": "Du bekommst eine Mitteilung, wenn dein Rückblick bereitliegt. Höchstens eine pro Tag, jederzeit abschaltbar.",
+    "cta": "Gern",
+    "decline": "Nicht jetzt"
+  }
+}

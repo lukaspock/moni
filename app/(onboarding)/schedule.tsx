@@ -1,11 +1,11 @@
 import { Host, Stepper } from '@expo/ui/swift-ui';
-import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
 import { useOnboardingStore } from '@/features/auth';
 import { OnboardingScreen } from '@/features/auth/components/OnboardingScreen';
 import { useOnboardingNavigation } from '@/features/auth/useOnboardingNavigation';
+import { haptic } from '@/lib/haptics';
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
@@ -18,7 +18,7 @@ export default function ScheduleScreen() {
   const targetCount = draft.workoutsPerWeek;
 
   function toggleWeekday(day: number) {
-    void Haptics.selectionAsync();
+    haptic.select();
     const selected = draft.trainingWeekdays.includes(day);
     if (selected) {
       update({
@@ -70,7 +70,7 @@ export default function ScheduleScreen() {
 
       {targetCount > 0 ? (
         <View className="gap-2">
-          <Text className="text-secondary-label text-sm font-medium">
+          <Text className="text-label-secondary text-sm font-medium">
             {t('account.onboarding.schedule.weekdaysLabel')}
           </Text>
           <View className="flex-row justify-between gap-2">
@@ -83,13 +83,11 @@ export default function ScheduleScreen() {
                   accessibilityState={{ selected }}
                   onPress={() => toggleWeekday(day)}
                   className={`h-14 flex-1 items-center justify-center rounded-2xl border ${
-                    selected
-                      ? 'border-tint bg-tint'
-                      : 'border-separator bg-system-background'
+                    selected ? 'border-tint bg-tint' : 'border-line bg-bg'
                   }`}
                 >
                   <Text
-                    className={`text-sm font-semibold ${selected ? 'text-system-background' : 'text-label'}`}
+                    className={`text-sm font-semibold ${selected ? 'text-on-tint' : 'text-label'}`}
                   >
                     {weekdayLabels[day]}
                   </Text>

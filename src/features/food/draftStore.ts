@@ -31,6 +31,8 @@ interface FoodDraftState {
   date: string;
   loggedAt: string;
   mealType: MealType;
+  /** True once the meal type was chosen explicitly (meal "+" or review chip); the AI guess then no longer overrides it. */
+  mealTypeLocked: boolean;
   title: string;
   items: DraftFoodItem[];
   source: FoodSource;
@@ -94,6 +96,7 @@ function emptyState(): Omit<
     date: toISODate(now),
     loggedAt: now.toISOString(),
     mealType: suggestMealType(now),
+    mealTypeLocked: false,
     title: '',
     items: [],
     source: 'manual',
@@ -126,7 +129,7 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
 
   setStatus: (status, errorKind = null) => set({ status, errorKind }),
   setTitle: (title) => set({ title }),
-  setMealType: (mealType) => set({ mealType }),
+  setMealType: (mealType) => set({ mealType, mealTypeLocked: true }),
   setItems: (items) => set({ items }),
   addItem: (item) =>
     set((state) => ({
@@ -165,7 +168,9 @@ export const useFoodDraftStore = create<FoodDraftState>((set, get) => ({
   }) =>
     set((state) => ({
       title,
-      mealType: mealType ?? state.mealType,
+      mealType: state.mealTypeLocked
+        ? state.mealType
+        : (mealType ?? state.mealType),
       items,
       aiConfidence: confidence,
       aiRaw,

@@ -4,11 +4,18 @@ import '../src/i18n';
 import '../src/lib/outbox';
 
 import {
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import {
   QueryClient,
   QueryClientProvider,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -31,6 +38,9 @@ import {
 import { ApplyingProfileScreen } from '../src/features/auth/components/ApplyingProfileScreen';
 import { initNotifications } from '../src/features/notifications';
 import { useProfile } from '../src/features/targets';
+
+// Keep the native splash up until the display font is ready (see RootLayout).
+void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Foreground notification handler + re-localizing reminders on language change.
 initNotifications();
@@ -174,9 +184,19 @@ function RootNavigator() {
         options={{ presentation: 'fullScreenModal' }}
       />
       <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
+      <Stack.Screen name="voice-log" options={SHEET_OPTIONS} />
+      <Stack.Screen
+        name="food-camera"
+        options={{ presentation: 'fullScreenModal', headerShown: false }}
+      />
+      <Stack.Screen name="recipe-editor" options={FULL_SHEET_OPTIONS} />
       {/* Outside the tabs: no tab bar over the save/add buttons, no native header. */}
       <Stack.Screen
         name="routine-editor"
+        options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="training-setup"
         options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
       />
       {/* Stays full screen (no drag-to-dismiss) so a running workout can't be swiped away. */}
@@ -189,6 +209,18 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  // Display font (Bricolage Grotesque). Names = font-display* tokens in tailwind.config.js.
+  const [fontsLoaded, fontError] = useFonts({
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+  });
+  const fontsReady = fontsLoaded || !!fontError;
+  useEffect(() => {
+    if (fontsReady) void SplashScreen.hideAsync().catch(() => {});
+  }, [fontsReady]);
+  if (!fontsReady) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

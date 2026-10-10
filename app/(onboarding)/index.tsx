@@ -2,20 +2,21 @@ import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  FadeInDown,
   FadeInUp,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
   withTiming,
-  ZoomIn,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Lockup, RingPattern } from '@/components/brand';
+import { Reveal } from '@/components/motion';
 import { useOnboardingStore, useSession } from '@/features/auth';
 import { GlassButton } from '@/features/auth/components/GlassButton';
 import type { SFSymbol } from '@/features/auth/components/OptionCard';
@@ -34,67 +35,71 @@ function ValueProp({
   index: number;
 }) {
   return (
-    <Animated.View
-      entering={FadeInDown.duration(300).delay(350 + index * 90)}
-      className="bg-secondary-system-background flex-row items-center gap-4 rounded-2xl px-4 py-3.5"
-    >
-      <View className="bg-system-background h-10 w-10 items-center justify-center rounded-xl">
-        <SymbolView
-          name={symbol}
-          size={22}
-          type="hierarchical"
-          tintColor={themeColor('accent')}
-        />
+    <Reveal index={index} delay={700}>
+      <View
+        accessible
+        accessibilityLabel={`${title}. ${body}`}
+        className="bg-surface flex-row items-center gap-4 rounded-[20px] px-4 py-3.5"
+      >
+        <View className="bg-tint-soft h-10 w-10 items-center justify-center rounded-xl">
+          <SymbolView
+            name={symbol}
+            size={22}
+            type="hierarchical"
+            tintColor={themeColor('accent')}
+          />
+        </View>
+        <View className="flex-1">
+          <Text className="text-label text-base font-semibold">{title}</Text>
+          <Text className="text-label-secondary text-sm">{body}</Text>
+        </View>
       </View>
-      <View className="flex-1">
-        <Text className="text-label text-base font-semibold">{title}</Text>
-        <Text className="text-secondary-label text-sm">{body}</Text>
-      </View>
-    </Animated.View>
+    </Reveal>
   );
 }
 
-/** Animated hero: a softly "breathing" mint badge with the app's flame/leaf mark. */
+/**
+ * Branding moment 1: the wordmark (its ø carries the mark) surfaces calmly
+ * (fade + settle, then a slow breath). Reduce Motion: static.
+ */
 function Hero() {
   const reduceMotion = useReducedMotion();
   const pulse = useSharedValue(1);
 
   useEffect(() => {
     if (reduceMotion) return;
-    pulse.value = withRepeat(
-      withSequence(
-        withTiming(1.06, { duration: 1400 }),
-        withTiming(1, { duration: 1400 }),
+    pulse.value = withDelay(
+      1200,
+      withRepeat(
+        withSequence(
+          withTiming(1.03, { duration: 1800 }),
+          withTiming(1, { duration: 1800 }),
+        ),
+        -1,
+        false,
       ),
-      -1,
-      false,
     );
   }, [pulse, reduceMotion]);
 
-  const haloStyle = useAnimatedStyle(() => ({
+  const markStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
 
   return (
-    <Animated.View
-      entering={ZoomIn.duration(300)}
-      className="items-center justify-center"
-    >
-      <Animated.View
-        style={haloStyle}
-        className="bg-secondary-system-background h-32 w-32 items-center justify-center rounded-full"
-      >
-        <View className="bg-tint h-24 w-24 items-center justify-center rounded-full">
-          <SymbolView name="leaf.fill" size={46} tintColor="white" />
-        </View>
-      </Animated.View>
-    </Animated.View>
+    <View className="items-center">
+      <Reveal rise={14} duration={520}>
+        <Animated.View style={markStyle}>
+          <Lockup width={220} />
+        </Animated.View>
+      </Reveal>
+    </View>
   );
 }
 
 export default function WelcomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
   const setWantsSignIn = useOnboardingStore((s) => s.setWantsSignIn);
   const { session } = useSession();
   const { goNext } = useOnboardingNavigation('welcome');
@@ -106,70 +111,80 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <ScrollView
-      className="bg-system-background flex-1"
-      contentContainerClassName="justify-between px-6"
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingTop: insets.top + 32,
-        paddingBottom: Math.max(insets.bottom, 16),
-      }}
-      bounces={false}
-    >
-      <View className="gap-7">
-        <Hero />
-        <Animated.View
-          entering={FadeInUp.duration(300).delay(150)}
-          className="items-center gap-2"
-        >
-          <Text className="text-tint text-sm font-semibold uppercase tracking-widest">
-            {t('account.onboarding.welcome.eyebrow')}
-          </Text>
-          <Text className="text-label text-center text-3xl font-bold">
-            {t('account.onboarding.welcome.title')}
-          </Text>
-          <Text className="text-secondary-label text-center text-base leading-6">
-            {t('account.onboarding.welcome.subtitle')}
-          </Text>
-        </Animated.View>
-        <View className="gap-2.5">
-          <ValueProp
-            index={0}
-            symbol="camera.viewfinder"
-            title={t('account.onboarding.welcome.value1Title')}
-            body={t('account.onboarding.welcome.value1Body')}
-          />
-          <ValueProp
-            index={1}
-            symbol="flame.fill"
-            title={t('account.onboarding.welcome.value2Title')}
-            body={t('account.onboarding.welcome.value2Body')}
-          />
-          <ValueProp
-            index={2}
-            symbol="chart.line.uptrend.xyaxis"
-            title={t('account.onboarding.welcome.value3Title')}
-            body={t('account.onboarding.welcome.value3Body')}
-          />
-        </View>
-      </View>
-      <Animated.View
-        entering={FadeInUp.duration(300).delay(650)}
-        className="gap-3 pt-6"
+    <View className="bg-bg flex-1">
+      <RingPattern
+        width={width}
+        height={height}
+        opacity={0.06}
+        scale={1.15}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      />
+      <ScrollView
+        contentContainerClassName="justify-between px-6"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: insets.top + 40,
+          paddingBottom: Math.max(insets.bottom, 16),
+        }}
+        bounces={false}
       >
-        <GlassButton
-          label={t('account.onboarding.welcome.cta')}
-          onPress={() => goNext()}
-        />
-        {/* Already signed in (new account without a profile) → nothing to sign in to. */}
-        {session ? null : (
+        <View className="gap-8">
+          <Hero />
+          <Reveal delay={420}>
+            <View className="items-center gap-2">
+              <Text className="text-tint text-xs font-semibold uppercase tracking-widest">
+                {t('account.onboarding.welcome.eyebrow')}
+              </Text>
+              <Text
+                accessibilityRole="header"
+                className="text-label text-center font-display-black text-[34px] leading-[36px] tracking-tight"
+              >
+                {t('account.onboarding.welcome.title')}
+              </Text>
+              <Text className="text-label-secondary text-center text-[15px] leading-5">
+                {t('account.onboarding.welcome.subtitle')}
+              </Text>
+            </View>
+          </Reveal>
+          <View className="gap-2.5">
+            <ValueProp
+              index={0}
+              symbol="camera.viewfinder"
+              title={t('account.onboarding.welcome.value1Title')}
+              body={t('account.onboarding.welcome.value1Body')}
+            />
+            <ValueProp
+              index={1}
+              symbol="flame.fill"
+              title={t('account.onboarding.welcome.value2Title')}
+              body={t('account.onboarding.welcome.value2Body')}
+            />
+            <ValueProp
+              index={2}
+              symbol="chart.line.uptrend.xyaxis"
+              title={t('account.onboarding.welcome.value3Title')}
+              body={t('account.onboarding.welcome.value3Body')}
+            />
+          </View>
+        </View>
+        <Animated.View
+          entering={FadeInUp.duration(300).delay(1000)}
+          className="gap-3 pt-6"
+        >
           <GlassButton
-            variant="secondary"
-            label={t('account.onboarding.welcome.haveAccount')}
-            onPress={handleHaveAccount}
+            label={t('account.onboarding.welcome.cta')}
+            onPress={() => goNext()}
           />
-        )}
-      </Animated.View>
-    </ScrollView>
+          {/* Already signed in (new account without a profile) → nothing to sign in to. */}
+          {session ? null : (
+            <GlassButton
+              variant="secondary"
+              label={t('account.onboarding.welcome.haveAccount')}
+              onPress={handleHaveAccount}
+            />
+          )}
+        </Animated.View>
+      </ScrollView>
+    </View>
   );
 }

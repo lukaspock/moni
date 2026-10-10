@@ -1,0 +1,363 @@
+{
+  "tagline": "Dein Tag hat Gezeiten.",
+  "term": {
+    "level": "Tagespegel",
+    "levelShort": "Pegel",
+    "baseLevel": "Grundpegel",
+    "swell": "Flut",
+    "restDay": "Ruhetag",
+    "trainingDay": "Trainingstag",
+    "springTide": "Springflut",
+    "highWaterMark": "Hochwassermarke",
+    "plate": "Teller",
+    "regulars": "Stammgerichte",
+    "trendLine": "Trendlinie",
+    "dataPoints": "Messpunkte",
+    "session": "Einheit"
+  },
+  "levelIntro": "Dein Tagespegel ist deine Kalorienmenge für heute. Training hebt ihn, an Ruhetagen sinkt er.",
+  "greeting": {
+    "morning": {
+      "withName": "Guten Morgen, {{name}}.",
+      "noName": "Guten Morgen."
+    },
+    "midday": { "withName": "Guten Tag, {{name}}.", "noName": "Guten Tag." },
+    "afternoon": {
+      "withName": "Schönen Nachmittag, {{name}}.",
+      "noName": "Schönen Nachmittag."
+    },
+    "evening": {
+      "withName": "Guten Abend, {{name}}.",
+      "noName": "Guten Abend."
+    },
+    "night": {
+      "withName": "Noch wach, {{name}}? Der Tag ist gleich durch.",
+      "noName": "Noch wach? Der Tag ist gleich durch."
+    }
+  },
+  "levelToday": "Dein Pegel heute: {{kcal}} kcal.",
+  "trainingDayMorning": "Trainingstag. Die Flut kommt, wenn du dich bewegt hast.",
+  "daySentence": {
+    "bridgeToFood": {
+      "0": "Einheit gespeichert. Jetzt ist ein guter Moment für Protein.",
+      "1": "Training erledigt, der Teller ist als Nächstes dran. 30 bis 40 g Protein passen jetzt gut.",
+      "2": "Nach dem Training: etwas mit Protein auf den Teller."
+    },
+    "trainingGrewLimit": {
+      "0": "Dein Pegel ist um {{kcal}} kcal gestiegen.",
+      "1": "Das Training hebt deinen Pegel um {{kcal}} kcal.",
+      "2": "{{kcal}} kcal mehr Platz, dank Training."
+    },
+    "trainingDay": {
+      "0": "Trainingstag. Dein Pegel: {{kcal}} kcal.",
+      "1": "Heute steht Training an. Pegel bisher: {{kcal}} kcal.",
+      "2": "Trainingstag, und dein Pegel steigt mit jeder Einheit. Aktuell {{kcal}} kcal."
+    },
+    "restDay": {
+      "0": "Ruhetag. Erholung gehört zum Plan.",
+      "1": "Heute Pause vom Training. Dein Körper arbeitet trotzdem.",
+      "2": "Ruhetag. Auch Erholung ist Training."
+    },
+    "balanced": {
+      "0": "Rund. Das war ein ausgewogener Tag.",
+      "1": "Dein Tag liegt genau im Rahmen.",
+      "2": "Ausgewogen. Mehr gibt es dazu nicht zu sagen."
+    },
+    "night": {
+      "0": "Der Tag ist durch. Schlaf gut.",
+      "1": "Für heute reicht es. Morgen geht es weiter.",
+      "2": "Ruhige Nacht. Der nächste Tag fängt bei null an."
+    },
+    "taktReached": {
+      "0": "Diese Woche sitzt der Rhythmus.",
+      "1": "Zwei Ringe sind zu. Dein Rhythmus steht diese Woche.",
+      "2": "Rhythmus für diese Woche gesichert."
+    },
+    "monday": {
+      "0": "Neue Woche, neue Ringe. Du musst nichts nachholen.",
+      "1": "Montag. Die Woche beginnt bei null, ohne Altlasten.",
+      "2": "Neue Woche. Alles, was war, bleibt gezählt."
+    },
+    "friday": {
+      "0": "Freitag. Die Woche ist fast rund.",
+      "1": "Freitag. Schau, welcher Ring noch offen ist.",
+      "2": "Freitag. Ein Eintrag oder eine Einheit, und die Woche steht."
+    },
+    "sunday": {
+      "0": "Sonntag. Die Woche lässt sich jetzt zurückblicken.",
+      "1": "Sonntag. Trag nach, was fehlt, ohne Eile.",
+      "2": "Letzter Tag der Woche. Dein Rückblick wartet am Abend."
+    },
+    "welcomeBack": {
+      "0": "Schön, dass du wieder da bist.",
+      "1": "Willkommen zurück. Ein Eintrag, und du bist drin.",
+      "2": "Da bist du wieder. Fang einfach klein an."
+    },
+    "default": {
+      "0": "{{weekday}}, {{date}}.",
+      "1": "{{weekday}}, {{date}}.",
+      "2": "{{weekday}}, {{date}}."
+    }
+  },
+  "today": {
+    "quickTitle": "Schnell eintragen",
+    "quickSaved": "{{name}} eingetragen",
+    "quickPhoto": "Mahlzeit fotografieren",
+    "undo": "Rückgängig",
+    "undone": "Eintrag entfernt",
+    "meals": "Mahlzeiten",
+    "thisWeek": "Diese Woche",
+    "prevDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "backToToday": "Zurück zu heute",
+    "ringHint": "Tippen zeigt, wie sich der Pegel zusammensetzt",
+    "weightMissingTitle": "Ein Gewicht fehlt noch",
+    "weightMissingBody": "Trag es kurz ein, dann steht dein Tagespegel für heute.",
+    "restDayBody": "Auch das gehört dazu.",
+    "restDayCta": "Ruhetag genießen",
+    "restDayDone": "Ruhetag festgehalten.",
+    "minutes": "{{count}} min",
+    "addToMeal": "{{meal}} hinzufügen",
+    "startTitle": "Dein Start in drei Schritten",
+    "startMeal": "Erste Mahlzeit festhalten",
+    "startWeight": "Gewicht notieren (optional)",
+    "startTraining": "Erstes Training oder Apple Health verbinden",
+    "stepDone": "erledigt",
+    "stepOpen": "offen",
+    "newStamp": "Neuer Stempel",
+    "weekGlyph": "{{weekday}}: {{state}}",
+    "dayKept": "gehalten",
+    "dayOpen": "offen",
+    "dayPaused": "pausiert",
+    "dayFuture": "kommt noch",
+    "dayRest": "Ruhetag"
+  },
+  "dayKind": {
+    "training": "Trainingstag",
+    "rest": "Ruhetag"
+  },
+  "ring": {
+    "unit": "kcal",
+    "roomLeft": "Noch {{kcal}} kcal Platz",
+    "nearLevel": "Fast auf Pegel. Noch {{kcal}} kcal.",
+    "onLevel": "Auf Pegel.",
+    "above": "{{kcal}} kcal über dem Pegel",
+    "springTide": "Springflut heute: {{kcal}} kcal über Pegel. Das kommt vor.",
+    "bonusLine": "inkl. {{kcal}} kcal Flut vom Training",
+    "explainer": "Dein Tagespegel ist, wie viel du heute essen kannst, damit dein Ziel passt. Training hebt ihn.",
+    "why": "{{base}} + {{bonus}} kcal Flut = {{total}} kcal",
+    "whyNoBonus": "{{base}} kcal Grundpegel, noch ohne Training",
+    "eatenOfLevel": "{{eaten}} von {{level}} kcal",
+    "a11y": "{{eaten}} von {{level}} Kilokalorien gegessen"
+  },
+  "nextStep": {
+    "logWeight": {
+      "title": "Gewicht notieren",
+      "body": "Ein Messpunkt hält deinen Trend aktuell.",
+      "cta": "Gewicht eintragen"
+    },
+    "proteinBridge": {
+      "title": "Training, dann Teller",
+      "body": "Gutes Zeitfenster für 30 bis 40 g Protein.",
+      "cta": "Stammgericht wählen"
+    },
+    "startWorkout": {
+      "title": "Heute ist Trainingstag",
+      "body": "Dein Pegel steigt mit der Einheit.",
+      "cta": "Einheit starten"
+    },
+    "logMeal": {
+      "breakfast": {
+        "title": "Frühstück festhalten",
+        "body": "Ein Foto reicht.",
+        "cta": "Frühstück eintragen"
+      },
+      "lunch": {
+        "title": "Mittagessen festhalten",
+        "body": "Foto, Text oder Barcode.",
+        "cta": "Mittagessen eintragen"
+      },
+      "dinner": {
+        "title": "Abendessen festhalten",
+        "body": "Dann steht dein Tag.",
+        "cta": "Abendessen eintragen"
+      },
+      "snack": {
+        "title": "Snack festhalten",
+        "body": "Kleine Mahlzeiten zählen auch.",
+        "cta": "Snack eintragen"
+      }
+    },
+    "closeDay": {
+      "title": "Tag abschließen",
+      "body": "Ein kurzer Blick auf heute.",
+      "cta": "Tag abschließen"
+    },
+    "weeklyReview": {
+      "title": "Dein Rückblick ist da",
+      "body": "Sieh, wie die Woche lief.",
+      "cta": "Rückblick ansehen"
+    }
+  },
+  "closeDay": {
+    "title": "Tag abschließen",
+    "summary": "{{eaten}} von {{level}} kcal, {{protein}} g Protein",
+    "trainingDone": "Einheit erledigt",
+    "trainingNone": "Kein Training heute",
+    "tomorrowTraining": "Morgen: Trainingstag, Pegel {{kcal}} kcal",
+    "tomorrowRest": "Morgen: Ruhetag, Pegel {{kcal}} kcal",
+    "notAllLogged": "Noch nicht alles eingetragen?",
+    "cta": "Tag abschließen",
+    "done": "Tag festgehalten."
+  },
+  "checkIn": {
+    "prompt": "Heute: {{kind}}. Pegel {{kcal}} kcal, Protein {{protein}} g. Wie fühlst du dich?",
+    "tired": "Müde",
+    "okay": "Okay",
+    "strong": "Stark",
+    "tiredHint": "Eine kurze Einheit reicht heute.",
+    "optInTitle": "Kurzer Morgen-Check?",
+    "optInBody": "Eine Zeile am Morgen, kein Pflichtprogramm.",
+    "optInCta": "Gern",
+    "optInDecline": "Nein danke"
+  },
+  "welcomeBack": {
+    "short": {
+      "title": "Schön, dass du wieder da bist.",
+      "body": "Trag einfach ein, was du weißt.",
+      "protected": "Dein Rhythmus ist geschützt.",
+      "primary": "Letzte Mahlzeit festhalten",
+      "secondary": "Einfach umsehen"
+    },
+    "medium": {
+      "title": "Willkommen zurück.",
+      "body_one": "Das bleibt von dir: {{count}} Woche im Rhythmus, Stufe {{stage}}.",
+      "body_other": "Das bleibt von dir: {{count}} Wochen im Rhythmus, Stufe {{stage}}.",
+      "pausePrompt": "Warst du im Urlaub oder krank?",
+      "pauseCta": "Als Pause markieren",
+      "primary": "Heute starten",
+      "secondary": "Pause eintragen"
+    },
+    "long": {
+      "title": "Lass uns kurz abgleichen.",
+      "body": "Gewicht, Ziel und Plan lassen sich in einer Minute auffrischen.",
+      "primary": "Gewicht eintragen",
+      "secondary": "Ziel prüfen"
+    }
+  },
+  "care": {
+    "title": "Kurz innehalten",
+    "body": "Du isst seit ein paar Tagen deutlich weniger, als dein Plan vorsieht. Das ist okay zu bemerken. Wenn du dich damit unwohl fühlst, sprich mit jemandem, dem du vertraust.",
+    "helpCta": "Hilfe finden",
+    "dismiss": "Verstanden"
+  },
+  "ai": {
+    "photoStart": "Schaut sich deinen Teller an …",
+    "ingredients": "Erkennt Zutaten …",
+    "portions": "Schätzt Mengen …",
+    "calculating": "Rechnet Kalorien und Makros …",
+    "text": "Liest deine Beschreibung …",
+    "barcode": "Sucht das Produkt …",
+    "label": "Liest die Nährwerttabelle …",
+    "patience": "Dauert einen Moment länger als sonst.",
+    "done": "Fertig. Schau drüber, ob die Mengen passen.",
+    "estimate": "Das ist eine Schätzung, die Gramm kannst du anpassen."
+  },
+  "error": {
+    "generic": "Das hat nicht geklappt. Nichts ist verloren, versuch es gleich nochmal.",
+    "aiFailed": "Die Analyse hat nicht geklappt. Dein Foto ist noch da: erneut versuchen oder selbst eintragen.",
+    "offline": "Kein Netz. Dein Eintrag wird gespeichert, sobald du wieder verbunden bist.",
+    "saveFailed": "Das Speichern hat nicht geklappt. Nichts ist verloren, versuch es gleich nochmal.",
+    "barcodeNotFound": "Dieses Produkt kennen wir noch nicht. Scanne die Nährwerttabelle oder trag es selbst ein.",
+    "camera": "Für das Foto braucht møni die Kamera. Du kannst sie in den Einstellungen erlauben.",
+    "weightUnusual": "Das klingt ungewöhnlich. Schau noch einmal auf die Zahl.",
+    "signInFailed": "Die Anmeldung hat nicht geklappt. Prüfe E-Mail und Passwort."
+  },
+  "empty": {
+    "today": "Noch nichts auf dem Teller. Foto, Text oder Barcode: such dir was aus.",
+    "routines": "Noch keine Routine. Starte eine Einheit, die erste ergibt sich daraus.",
+    "insights": "Zu wenig Daten für einen Trend. Nach etwa einer Woche wird es lesbar.",
+    "weight": "Noch kein Gewicht eingetragen. Zwei-, dreimal pro Woche reicht, møni glättet den Rest.",
+    "regulars": "Deine Stammgerichte erscheinen hier, sobald du eine Mahlzeit mit dem Stern markierst.",
+    "tideTable": "Diese Woche ist noch nicht vorbei. Die Tafel füllt sich Tag für Tag.",
+    "firstRunTitle": "Dein erster Tag",
+    "firstRunBody": "Trag die erste Mahlzeit ein, dann bekommt dein Tag ein Gesicht."
+  },
+  "workout": {
+    "title": "Einheit gespeichert",
+    "withBonus": "{{kcal}} kcal verbraucht, dein Pegel steigt um {{bonus}} kcal.",
+    "proteinWindow": "Gutes Zeitfenster für 30 bis 40 g Protein. Deine Stammgerichte sind unten.",
+    "short": "Kurze Einheit, trotzdem gespeichert.",
+    "volume_one": "{{count}} Satz · {{volume}} kg bewegt",
+    "volume_other": "{{count}} Sätze · {{volume}} kg bewegt"
+  },
+  "button": {
+    "logMeal": "Mahlzeit eintragen",
+    "startSession": "Einheit starten",
+    "finishSession": "Einheit beenden",
+    "save": "Speichern",
+    "saveRegular": "Als Stammgericht merken",
+    "sameAsYesterday": "Wie gestern",
+    "retry": "Nochmal versuchen",
+    "later": "Später",
+    "haveAccount": "Ich habe schon ein Konto",
+    "begin": "Los",
+    "done": "Fertig",
+    "close": "Schließen",
+    "continue": "Weiter",
+    "share": "Teilen",
+    "openSettings": "Einstellungen öffnen"
+  },
+  "adjust": {
+    "up": "Dein Verbrauch liegt höher als geschätzt. Dein Pegel steigt um {{kcal}} kcal.",
+    "down": "Dein Gewicht reagiert langsamer als erwartet. Dein Pegel sinkt um {{kcal}} kcal.",
+    "floor": "Hier ist die Untergrenze. Darunter geht møni nicht.",
+    "title": "Pegel nachjustiert"
+  },
+  "milestone": {
+    "streak7": "Eine Woche lang jeden Tag eingetragen. So sieht ein Rhythmus aus.",
+    "logged30": "30 Tage eingetragen. Jetzt sagt dein Trend etwas aus.",
+    "highWaterMark": "Neue Hochwassermarke: {{exercise}} {{value}}.",
+    "firstWeighIn": "Erster Messpunkt. Ab hier gibt es einen Trend."
+  },
+  "water": {
+    "title": "Wasser",
+    "amountOfGoal": "{{amount}} von {{goal}}",
+    "remaining": "Noch {{amount}}",
+    "reached": "Tagesziel erreicht",
+    "hint": "Tippen trägt ein Glas ein, lange drücken wählt die Größe.",
+    "a11yLevel": "Wasser: {{amount}} von {{goal}}",
+    "a11yHint": "Tippen trägt {{amount}} ein. Lange drücken zeigt weitere Größen.",
+    "add": "{{amount}} eintragen",
+    "added": "{{amount}} Wasser eingetragen",
+    "presetsTitle": "Wie viel?",
+    "preset": {
+      "glass": "Glas",
+      "smallBottle": "Kleine Flasche",
+      "bottle": "Flasche"
+    },
+    "unit": {
+      "ml": "{{value}} ml",
+      "l": "{{value}} l",
+      "flOz": "{{value}} fl oz"
+    }
+  },
+  "fits": {
+    "title": "Passt noch rein",
+    "subtitle": {
+      "protein": "Dir fehlen noch {{grams}} g Protein. Das passt in {{kcal}} kcal.",
+      "carbs": "Dir fehlen noch {{grams}} g Kohlenhydrate. Das passt in {{kcal}} kcal.",
+      "fat": "Dir fehlen noch {{grams}} g Fett. Das passt in {{kcal}} kcal.",
+      "none": "Makros sind gedeckt. Noch {{kcal}} kcal frei."
+    },
+    "macro": {
+      "protein": "Protein",
+      "carbs": "Kohlenhydrate",
+      "fat": "Fett"
+    },
+    "detail": "{{kcal}} kcal · {{grams}} g {{macro}}",
+    "detailKcal": "{{kcal}} kcal",
+    "after": "Danach {{kcal}} kcal frei",
+    "log": "{{name}} eintragen"
+  }
+}

@@ -1,13 +1,30 @@
-// CONTRACT (owner: `onboarding` agent). Local meal-logging reminders via expo-notifications.
+// CONTRACT (owner: `onboarding` agent). Local notifications via expo-notifications:
+// opt-in meal reminders (below) + smart nudges (`useNudgeScheduler`, `useNudgeSettings`, `useQuieterPrompt`).
 // No push/server involvement — everything is scheduled on-device.
 import * as Notifications from 'expo-notifications';
 import { useCallback } from 'react';
 
 import i18n from '../../i18n';
 import type { MealType } from '../../domain';
+import { ensureNudgeMigration, handleNudgeResponse } from './nudgeEvents';
+import {
+  getReminderPermission,
+  requestReminderPermission,
+} from './permissions';
 import { useReminderStore } from './reminderStore';
 
-export type ReminderPermission = 'granted' | 'denied' | 'undetermined';
+export {
+  getReminderPermission,
+  requestReminderPermission,
+  type ReminderPermission,
+} from './permissions';
+export {
+  useNudgeScheduler,
+  useNudgeSettings,
+  useQuieterPrompt,
+  type NudgeSettingsApi,
+} from './useNudges';
+export type { QuieterChoice } from './nudgeLogic';
 
 export type MealReminder = {
   meal: Extract<MealType, 'breakfast' | 'lunch' | 'dinner'>;
@@ -23,32 +40,6 @@ export const DEFAULT_MEAL_REMINDERS: MealReminder[] = [
 ];
 
 const ID_PREFIX = 'moeni-meal-';
-
-function toPermission(
-  status: Notifications.NotificationPermissionsStatus,
-): ReminderPermission {
-  if (status.granted) return 'granted';
-  const ios = status.ios?.status;
-  if (
-    ios === Notifications.IosAuthorizationStatus.PROVISIONAL ||
-    ios === Notifications.IosAuthorizationStatus.EPHEMERAL
-  ) {
-    return 'granted';
-  }
-  return status.canAskAgain ? 'undetermined' : 'denied';
-}
-
-export async function getReminderPermission(): Promise<ReminderPermission> {
-  return toPermission(await Notifications.getPermissionsAsync());
-}
-
-/** Shows the system permission prompt (only the first time; afterwards returns the stored answer). */
-export async function requestReminderPermission(): Promise<ReminderPermission> {
-  const status = await Notifications.requestPermissionsAsync({
-    ios: { allowAlert: true, allowSound: true, allowBadge: false },
-  });
-  return toPermission(status);
-}
 
 function reminderContent(
   meal: MealReminder['meal'],
@@ -160,6 +151,12 @@ export function initNotifications(): void {
       shouldSetBadge: false,
     }),
   });
+
+  // D12: smart nudges (opt-in) + one-time migration of the old meal-reminder flag.
+  ensureNudgeMigration();
+  Notifications.addNotificationResponseReceivedListener(handleNudgeResponse);
+  const last = Notifications.getLastNotificationResponse();
+  if (last) handleNudgeResponse(last);
 
   i18n.on('languageChanged', () => {
     if (!useReminderStore.getState().enabled) return;

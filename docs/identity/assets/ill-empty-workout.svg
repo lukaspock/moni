@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <title>Noch kein Training</title>
+  <circle cx="80" cy="60" r="42" style="stroke:var(--moni-accent,#1D6B47)" stroke-width="4" stroke-dasharray="3 9"/>
+  <path d="M60 60H100"/>
+  <rect x="46" y="38" width="14" height="44" rx="6" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <rect x="100" y="38" width="14" height="44" rx="6" style="fill:var(--moni-soft,#E4EBE3)"/>
+  <rect x="34" y="47" width="12" height="26" rx="5" style="fill:var(--moni-accent,#1D6B47)"/>
+  <rect x="114" y="47" width="12" height="26" rx="5" style="fill:var(--moni-accent,#1D6B47)"/>
+  <path d="M26 104H134" opacity=".35"/>
+<clipPath id="m1"><circle cx="126" cy="20" r="9"/></clipPath><g clip-path="url(#m1)"><g transform="rotate(-32.0 126 20)"><path d="M114.68 -6.13L137.32 -6.13L137.32 19.27C136.38 19.65 135.44 20.03 134.49 20.3C133.55 20.57 132.6 20.73 131.66 20.73C130.72 20.73 129.77 20.57 128.83 20.3C127.89 20.03 126.94 19.65 126 19.27C125.06 18.89 124.11 18.52 123.17 18.25C122.23 17.98 121.28 17.82 120.34 17.82C119.4 17.82 118.45 17.98 117.51 18.25C116.56 18.52 115.62 18.89 114.68 19.27Z" fill="var(--moni-accent,#1D6B47)" stroke="none"/><path d="M114.68 20.73C115.62 20.35 116.56 19.97 117.51 19.7C118.45 19.43 119.4 19.27 120.34 19.27C121.28 19.27 122.23 19.43 123.17 19.7C124.11 19.97 125.06 20.35 126 20.73C126.94 21.11 127.89 21.48 128.83 21.75C129.77 22.02 130.72 22.18 131.66 22.18C132.6 22.18 133.55 22.02 134.49 21.75C135.44 21.48 136.38 21.11 137.32 20.73L137.32 46.13L114.68 46.13Z" fill="var(--moni-bonus,#C2410C)" stroke="none"/></g></g>
+</svg>
