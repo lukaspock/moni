@@ -17,7 +17,7 @@
     "progressLabel": "Setup progress",
     "welcome": {
       "eyebrow": "Welcome to møni",
-      "title": "Your calories, in sync with your training",
+      "title": "Your day has tides.",
       "subtitle": "A few quick questions and we'll build a plan that fits you. Takes about two minutes.",
       "value1Title": "Snap it, done",
       "value1Body": "Log meals by photo, text or barcode. møni does the rest.",
@@ -260,7 +260,8 @@
         "codeLabel": "6-digit code",
         "codeSentTo": "Code sent to {{email}}",
         "verifyCta": "Verify & sign in",
-        "resendCta": "Resend code"
+        "resendCta": "Resend code",
+        "codeProgress": "{{filled}} of 6 digits"
       },
       "usePassword": "Use a password instead",
       "appleCta": "Continue with Apple",
@@ -272,13 +273,26 @@
         "missingPassword": "Enter your password.",
         "invalidCode": "Enter the 6-digit code.",
         "generic": "Something went wrong. Please try again."
-      }
+      },
+      "headlineSignUp": "Almost there, {{name}}.",
+      "headlineSignUpNoName": "Almost there.",
+      "headlineSignIn": "Welcome back.",
+      "modeLabel": "Account",
+      "modeSignUp": "New account",
+      "modeSignIn": "Sign in",
+      "methodLabel": "Sign in with",
+      "methodPassword": "Password",
+      "methodCode": "Email code",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "applying": {
       "title": "Setting up your plan…",
       "error": "We couldn't save your plan. Check your connection and try again.",
       "retry": "Try again",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "phaseProfile": "Creating your profile…",
+      "phaseTargets": "Saving your targets…"
     }
   },
   "profile": {

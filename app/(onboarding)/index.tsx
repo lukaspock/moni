@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Lockup, LogoMark, RingPattern } from '@/components/brand';
+import { Lockup, RingPattern } from '@/components/brand';
 import { Reveal } from '@/components/motion';
 import { useOnboardingStore, useSession } from '@/features/auth';
 import { GlassButton } from '@/features/auth/components/GlassButton';
@@ -59,8 +59,8 @@ function ValueProp({
 }
 
 /**
- * Branding moment 1: the mark surfaces calmly (fade + settle, then a slow
- * breath), the lockup follows. Reduce Motion: static mark.
+ * Branding moment 1: the wordmark (its ø carries the mark) surfaces calmly
+ * (fade + settle, then a slow breath). Reduce Motion: static.
  */
 function Hero() {
   const reduceMotion = useReducedMotion();
@@ -72,7 +72,7 @@ function Hero() {
       1200,
       withRepeat(
         withSequence(
-          withTiming(1.05, { duration: 1800 }),
+          withTiming(1.03, { duration: 1800 }),
           withTiming(1, { duration: 1800 }),
         ),
         -1,
@@ -86,14 +86,11 @@ function Hero() {
   }));
 
   return (
-    <View className="items-center gap-4">
+    <View className="items-center">
       <Reveal rise={14} duration={520}>
         <Animated.View style={markStyle}>
-          <LogoMark size={108} variant="adaptive" decorative />
+          <Lockup width={220} />
         </Animated.View>
-      </Reveal>
-      <Reveal delay={260} rise={10}>
-        <Lockup width={132} />
       </Reveal>
     </View>
   );
@@ -118,7 +115,7 @@ export default function WelcomeScreen() {
       <RingPattern
         width={width}
         height={height}
-        opacity={0.1}
+        opacity={0.06}
         scale={1.15}
         style={{ position: 'absolute', top: 0, left: 0 }}
       />

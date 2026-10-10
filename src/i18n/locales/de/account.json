@@ -17,7 +17,7 @@
     "progressLabel": "Fortschritt der Einrichtung",
     "welcome": {
       "eyebrow": "Willkommen bei møni",
-      "title": "Deine Kalorien, im Takt mit deinem Training",
+      "title": "Dein Tag hat Gezeiten.",
       "subtitle": "Ein paar kurze Fragen, dann bauen wir dir einen Plan, der zu dir passt. Dauert etwa zwei Minuten.",
       "value1Title": "Foto, fertig",
       "value1Body": "Mahlzeiten per Foto, Text oder Barcode eintragen. møni rechnet den Rest.",
@@ -260,7 +260,8 @@
         "codeLabel": "6-stelliger Code",
         "codeSentTo": "Code gesendet an {{email}}",
         "verifyCta": "Bestätigen & anmelden",
-        "resendCta": "Code erneut senden"
+        "resendCta": "Code erneut senden",
+        "codeProgress": "{{filled}} von 6 Ziffern"
       },
       "usePassword": "Stattdessen mit Passwort",
       "appleCta": "Weiter mit Apple",
@@ -272,13 +273,26 @@
         "missingPassword": "Gib dein Passwort ein.",
         "invalidCode": "Gib den 6-stelligen Code ein.",
         "generic": "Etwas ist schiefgelaufen. Bitte versuch es erneut."
-      }
+      },
+      "headlineSignUp": "Fast geschafft, {{name}}.",
+      "headlineSignUpNoName": "Fast geschafft.",
+      "headlineSignIn": "Willkommen zurück.",
+      "modeLabel": "Konto",
+      "modeSignUp": "Neues Konto",
+      "modeSignIn": "Anmelden",
+      "methodLabel": "Anmelden mit",
+      "methodPassword": "Passwort",
+      "methodCode": "E-Mail-Code",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort verbergen"
     },
     "applying": {
       "title": "Wir richten deinen Plan ein …",
       "error": "Wir konnten deinen Plan nicht speichern. Prüf deine Verbindung und versuch es noch einmal.",
       "retry": "Erneut versuchen",
-      "signOut": "Abmelden"
+      "signOut": "Abmelden",
+      "phaseProfile": "Profil anlegen …",
+      "phaseTargets": "Ziele speichern …"
     }
   },
   "profile": {
