@@ -1,1 +1,97 @@
-{}
+{
+  "header": {
+    "title": "Einheit",
+    "finish": "Fertig",
+    "finishA11y": "Einheit beenden und speichern",
+    "elapsedA11y": "Dauer {{time}}",
+    "more": "Weitere Aktionen"
+  },
+  "rest": {
+    "label": "Pause",
+    "remainingA11y": "Pause, noch {{time}}",
+    "minus": "−15",
+    "plus": "+15",
+    "minusA11y": "Pause 15 Sekunden kürzer",
+    "plusA11y": "Pause 15 Sekunden länger",
+    "skipA11y": "Pause überspringen"
+  },
+  "exercise": {
+    "last": "zuletzt {{value}}",
+    "weightReps": "{{weight}} {{unit}} × {{reps}}",
+    "valueUnit": "{{value}} {{unit}}",
+    "progress": "{{done}}/{{total}}",
+    "progressA11y": "{{done}} von {{total}} Sätzen erledigt",
+    "target": "{{sets}} × {{reps}}",
+    "targetRange": "{{sets}} × {{min}}–{{max}}",
+    "targetMinutes": "{{sets}} × {{minutes}} Min.",
+    "targetSets": "{{sets}} Sätze",
+    "complete": "erledigt",
+    "focusHint": "Zum Tracken aufklappen",
+    "options": "Optionen für {{name}}",
+    "swap": "Übung tauschen",
+    "remove": "Übung entfernen",
+    "cancel": "Abbrechen",
+    "addSet": "Satz",
+    "addSetA11y": "Satz hinzufügen, übernimmt die Werte des letzten",
+    "loading": "Übung"
+  },
+  "progression": {
+    "chip": "+{{step}} {{unit}}?",
+    "a11y": "Alle Sätze für {{step}} {{unit}} mehr übernehmen",
+    "hint": "Letztes Mal alle Wiederholungen geschafft"
+  },
+  "field": {
+    "weight": "Gewicht",
+    "reps": "Wiederholungen",
+    "duration": "Dauer",
+    "distance": "Distanz"
+  },
+  "set": {
+    "valueA11y": "{{field}}, Satz {{set}}: {{value}}",
+    "empty": "leer",
+    "valueHint": "Tippen für Stepper, lange drücken für Tastatur",
+    "check": "Satz {{set}} erledigt",
+    "delete": "Satz löschen"
+  },
+  "stepper": {
+    "decrease": "{{field}} verringern",
+    "increase": "{{field}} erhöhen",
+    "keyboard": "Mit Tastatur eingeben",
+    "close": "Stepper schließen"
+  },
+  "addExercise": "Übung",
+  "addExerciseA11y": "Übung hinzufügen",
+  "empty": "Noch keine Übung in dieser Einheit.",
+  "swapTitle": "Übung tauschen",
+  "discard": {
+    "button": "Einheit verwerfen",
+    "title": "Einheit verwerfen?",
+    "message": "Alle Sätze dieser Einheit gehen verloren.",
+    "emptyTitle": "Noch kein Satz abgehakt",
+    "emptyMessage": "Ohne erledigten Satz gibt es nichts zu speichern. Einheit verwerfen?",
+    "confirm": "Verwerfen",
+    "keep": "Weitertrainieren"
+  },
+  "superset": {
+    "superset": "Supersatz",
+    "circuit": "Zirkel",
+    "round": "Runde {{round}} von {{total}}",
+    "a11y": "{{label}}, {{count}} Übungen abwechselnd, Runde {{round}} von {{total}}"
+  },
+  "plates": {
+    "open": "Scheibenrechner",
+    "title": "Pro Seite",
+    "bar": "Stange",
+    "custom": "Eigene",
+    "customA11y": "Eigenes Stangengewicht {{value}} {{unit}}",
+    "barLighter": "Stange leichter",
+    "barHeavier": "Stange schwerer",
+    "onlyBar": "Nur die Stange",
+    "belowBar": "Leichter als die Stange ({{value}} {{unit}})",
+    "remainder": "Nicht exakt: {{value}} {{unit}} bleiben übrig",
+    "loaded": "Aufgelegt: {{value}} {{unit}}",
+    "emptyWeight": "Erst ein Gewicht wählen",
+    "a11y": "Pro Seite: {{plates}}",
+    "close": "Scheibenrechner schließen"
+  }
+}

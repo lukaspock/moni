@@ -49,6 +49,10 @@ export interface RoutineExercise {
   orderIndex: number;
   targetSets: number | null;
   targetReps: number | null;
+  /** Lower end of the rep range (`target_reps` = upper end); null/absent = no range. */
+  targetRepsMin?: number | null;
+  /** Superset/circuit group (adjacent exercises with the same number); null/absent = standalone. */
+  supersetGroup?: number | null;
 }
 
 export interface Routine {
@@ -74,5 +78,9 @@ export interface ActiveExercise {
   trackingType: TrackingType;
   /** Routine's target reps, shown as a placeholder when there is no previous value. */
   targetReps?: number | null;
+  /** Routine's lower rep bound (additive; absent in sessions started before it existed). */
+  targetRepsMin?: number | null;
+  /** Superset/circuit group from the routine (additive). */
+  supersetGroup?: number | null;
   sets: ActiveSet[];
 }

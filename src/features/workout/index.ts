@@ -72,3 +72,15 @@ export * from './history';
 export * from './progress';
 export * from './weight';
 export * from './recentExercises';
+// Training setup flow (T1): draft store + per-user "shown once" flag. The
+// flow's hooks live in `./setup` (imported directly — they depend on the
+// targets feature, which imports this barrel).
+export * from './setup/setupStore';
+export * from './setup/prompted';
+export type { ExercisePickerViewProps } from './ExercisePickerView';
+export {
+  getRoutineRepMins,
+  setRoutineRepMins,
+  getRoutineRepRange,
+} from './editor/repRangeStore';
+export { useLastSessionSets } from './live/useLastSessionSets';

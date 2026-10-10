@@ -72,6 +72,32 @@ export interface ActiveWorkoutState {
   adjustRestTimer: (deltaSeconds: number) => void;
   clearRestTimer: () => void;
   reset: () => void;
+
+  // ---- additive (live session revamp, docs/identity/06 §5) ----
+  /** Length of the running rest incl. adjustments (for the progress bar); null = unknown. */
+  restTotalSeconds: number | null;
+  /** Starts a rest timer and remembers its length (`startRestTimer` + total). */
+  startRest: (seconds: number) => void;
+  /** Like `adjustRestTimer`, also moving the remembered total. */
+  adjustRest: (deltaSeconds: number) => void;
+  /** Appends an unchecked set carrying `values` ("+ Satz" duplicates the last one). */
+  addSetWithValues: (
+    exerciseId: string,
+    values: Partial<
+      Pick<ActiveSet, 'reps' | 'weightKg' | 'durationS' | 'distanceM'>
+    >,
+  ) => void;
+  /** Writes `weightKg` into every unchecked set of the exercise (progression hint). */
+  applyWeightToOpenSets: (exerciseId: string, weightKg: number) => void;
+  /**
+   * Swaps an exercise in place (same position, same number of sets and
+   * target reps, values cleared). No-op when `toId` is already in the session.
+   */
+  replaceExercise: (
+    fromId: string,
+    toId: string,
+    trackingType: TrackingType,
+  ) => void;
 }
 
 export interface NewActiveExercise {
@@ -79,6 +105,9 @@ export interface NewActiveExercise {
   trackingType: TrackingType;
   targetSets?: number | null;
   targetReps?: number | null;
+  /** Additive: rep range lower bound + superset group from the routine. */
+  targetRepsMin?: number | null;
+  supersetGroup?: number | null;
 }
 
 function blankSet(index: number): ActiveSet {
@@ -105,6 +134,8 @@ function buildExercise(e: NewActiveExercise): ActiveExercise {
     exerciseId: e.exerciseId,
     trackingType: e.trackingType,
     targetReps: e.targetReps ?? null,
+    targetRepsMin: e.targetRepsMin ?? null,
+    supersetGroup: e.supersetGroup ?? null,
     sets: Array.from({ length: count }, (_, i) => blankSet(i)),
   };
 }
@@ -116,6 +147,7 @@ const emptyState = {
   startedAt: null as string | null,
   exercises: [] as ActiveExercise[],
   restEndsAt: null as number | null,
+  restTotalSeconds: null as number | null,
 };
 
 export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
@@ -238,6 +270,91 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       clearRestTimer: () => set({ restEndsAt: null }),
 
       reset: () => set({ ...emptyState }),
+
+      startRest: (seconds) =>
+        set({
+          restEndsAt: Date.now() + seconds * 1000,
+          restTotalSeconds: seconds,
+        }),
+
+      adjustRest: (deltaSeconds) => {
+        const { restEndsAt, restTotalSeconds } = get();
+        if (restEndsAt === null) return;
+        get().adjustRestTimer(deltaSeconds);
+        if (get().restEndsAt === null) return;
+        set({
+          restTotalSeconds:
+            restTotalSeconds === null
+              ? null
+              : Math.max(1, restTotalSeconds + deltaSeconds),
+        });
+      },
+
+      addSetWithValues: (exerciseId, values) => {
+        set((s) => ({
+          exercises: s.exercises.map((e) =>
+            e.exerciseId !== exerciseId
+              ? e
+              : {
+                  ...e,
+                  sets: [
+                    ...e.sets,
+                    {
+                      ...blankSet(e.sets.length),
+                      reps: values.reps ?? null,
+                      weightKg: values.weightKg ?? null,
+                      durationS: values.durationS ?? null,
+                      distanceM: values.distanceM ?? null,
+                    },
+                  ],
+                },
+          ),
+        }));
+      },
+
+      applyWeightToOpenSets: (exerciseId, weightKg) => {
+        set((s) => ({
+          exercises: s.exercises.map((e) =>
+            e.exerciseId !== exerciseId
+              ? e
+              : {
+                  ...e,
+                  sets: e.sets.map((st) =>
+                    st.completedAt === null ? { ...st, weightKg } : st,
+                  ),
+                },
+          ),
+        }));
+      },
+
+      replaceExercise: (fromId, toId, trackingType) => {
+        const { exercises } = get();
+        if (fromId === toId || exercises.some((e) => e.exerciseId === toId))
+          return;
+        set({
+          exercises: exercises.map((e) =>
+            e.exerciseId !== fromId
+              ? e
+              : buildExercise({
+                  exerciseId: toId,
+                  trackingType,
+                  // Different kind (e.g. squat -> running): its own defaults.
+                  targetSets:
+                    e.trackingType === trackingType ? e.sets.length : undefined,
+                  targetReps:
+                    e.trackingType === trackingType
+                      ? (e.targetReps ?? null)
+                      : null,
+                  targetRepsMin:
+                    e.trackingType === trackingType
+                      ? (e.targetRepsMin ?? null)
+                      : null,
+                  // The swapped-in exercise keeps its place in a superset.
+                  supersetGroup: e.supersetGroup ?? null,
+                }),
+          ),
+        });
+      },
     }),
     {
       name: 'workout:activeSession',

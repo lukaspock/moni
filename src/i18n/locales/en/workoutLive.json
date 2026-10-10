@@ -1,1 +1,97 @@
-{}
+{
+  "header": {
+    "title": "Session",
+    "finish": "Done",
+    "finishA11y": "Finish and save session",
+    "elapsedA11y": "Duration {{time}}",
+    "more": "More actions"
+  },
+  "rest": {
+    "label": "Rest",
+    "remainingA11y": "Rest, {{time}} left",
+    "minus": "−15",
+    "plus": "+15",
+    "minusA11y": "Rest 15 seconds shorter",
+    "plusA11y": "Rest 15 seconds longer",
+    "skipA11y": "Skip rest"
+  },
+  "exercise": {
+    "last": "last {{value}}",
+    "weightReps": "{{weight}} {{unit}} × {{reps}}",
+    "valueUnit": "{{value}} {{unit}}",
+    "progress": "{{done}}/{{total}}",
+    "progressA11y": "{{done}} of {{total}} sets done",
+    "target": "{{sets}} × {{reps}}",
+    "targetRange": "{{sets}} × {{min}}–{{max}}",
+    "targetMinutes": "{{sets}} × {{minutes}} min",
+    "targetSets": "{{sets}} sets",
+    "complete": "done",
+    "focusHint": "Expand to track",
+    "options": "Options for {{name}}",
+    "swap": "Swap exercise",
+    "remove": "Remove exercise",
+    "cancel": "Cancel",
+    "addSet": "Set",
+    "addSetA11y": "Add set, copies the last one",
+    "loading": "Exercise"
+  },
+  "progression": {
+    "chip": "+{{step}} {{unit}}?",
+    "a11y": "Use {{step}} {{unit}} more for all sets",
+    "hint": "Last time you hit every rep"
+  },
+  "field": {
+    "weight": "Weight",
+    "reps": "Reps",
+    "duration": "Duration",
+    "distance": "Distance"
+  },
+  "set": {
+    "valueA11y": "{{field}}, set {{set}}: {{value}}",
+    "empty": "empty",
+    "valueHint": "Tap for stepper, long press for keyboard",
+    "check": "Set {{set}} done",
+    "delete": "Delete set"
+  },
+  "stepper": {
+    "decrease": "Decrease {{field}}",
+    "increase": "Increase {{field}}",
+    "keyboard": "Type with keyboard",
+    "close": "Close stepper"
+  },
+  "addExercise": "Exercise",
+  "addExerciseA11y": "Add exercise",
+  "empty": "No exercise in this session yet.",
+  "swapTitle": "Swap exercise",
+  "discard": {
+    "button": "Discard session",
+    "title": "Discard session?",
+    "message": "All sets of this session will be lost.",
+    "emptyTitle": "No set checked yet",
+    "emptyMessage": "Without a finished set there is nothing to save. Discard the session?",
+    "confirm": "Discard",
+    "keep": "Keep training"
+  },
+  "superset": {
+    "superset": "Superset",
+    "circuit": "Circuit",
+    "round": "Round {{round}} of {{total}}",
+    "a11y": "{{label}}, {{count}} exercises alternating, round {{round}} of {{total}}"
+  },
+  "plates": {
+    "open": "Plate calculator",
+    "title": "Per side",
+    "bar": "Bar",
+    "custom": "Custom",
+    "customA11y": "Custom bar weight {{value}} {{unit}}",
+    "barLighter": "Lighter bar",
+    "barHeavier": "Heavier bar",
+    "onlyBar": "Just the bar",
+    "belowBar": "Lighter than the bar ({{value}} {{unit}})",
+    "remainder": "Not exact: {{value}} {{unit}} left over",
+    "loaded": "Loaded: {{value}} {{unit}}",
+    "emptyWeight": "Pick a weight first",
+    "a11y": "Per side: {{plates}}",
+    "close": "Close plate calculator"
+  }
+}

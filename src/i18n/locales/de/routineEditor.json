@@ -1,1 +1,88 @@
-{}
+{
+  "titleNew": "Neue Routine",
+  "titleEdit": "Routine bearbeiten",
+  "close": "Schließen",
+  "nameLabel": "Name",
+  "namePlaceholder": "z. B. Push",
+  "names": {
+    "push": "Push",
+    "pull": "Pull",
+    "legs": "Beine",
+    "fullBody": "Ganzkörper",
+    "upper": "Oberkörper",
+    "lower": "Unterkörper"
+  },
+  "exercises": "Übungen",
+  "empty": "Noch leer. Füge Übungen hinzu, Ziele kannst du danach antippen.",
+  "addExercises": "Übungen hinzufügen",
+  "fillFromTemplate": "Aus Vorlage füllen",
+  "template": {
+    "gym": "Studio",
+    "home": "Zuhause",
+    "endurance": "Ausdauer"
+  },
+  "save": "Speichern",
+  "saveHint": "Gib der Routine einen Namen und mindestens eine Übung.",
+  "target": {
+    "reps": "Wdh.",
+    "minutes": "Minuten",
+    "a11y": "Ziel {{target}}. Tippen zum Ändern.",
+    "sets": "Sätze",
+    "rounds": "Runden",
+    "repsFrom": "Wdh. von",
+    "repsTo": "bis",
+    "range": "Bereich",
+    "done": "Fertig"
+  },
+  "stepper": {
+    "increase": "{{label}} erhöhen",
+    "decrease": "{{label}} verringern"
+  },
+  "exerciseMenu": {
+    "label": "Optionen für {{name}}",
+    "swap": "Tauschen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "remove": "Entfernen",
+    "link": "Mit nächster koppeln",
+    "unlink": "Entkoppeln"
+  },
+  "routineMenu": {
+    "label": "Routine-Optionen",
+    "delete": "Routine löschen",
+    "deleteTitle": "Routine löschen?",
+    "deleteMessage": "„{{name}}“ verschwindet. Deine bisherigen Einheiten bleiben erhalten.",
+    "deleteConfirm": "Löschen",
+    "cancel": "Abbrechen"
+  },
+  "picker": {
+    "addTitle": "Übungen hinzufügen",
+    "swapTitle": "Übung tauschen",
+    "back": "Zurück",
+    "search": "Übung suchen",
+    "allMuscles": "Alle",
+    "recent": "Zuletzt",
+    "popular": "Beliebt",
+    "az": "A–Z",
+    "results": "Treffer",
+    "noResults": "Nichts gefunden. Leg sie unten als eigene Übung an.",
+    "addCount": "{{count}} hinzufügen",
+    "inRoutine": "Schon drin",
+    "createCustom": "Eigene Übung anlegen",
+    "equipment": {
+      "barbell": "Langhantel",
+      "dumbbell": "Kurzhantel",
+      "machine": "Maschine",
+      "cable": "Kabelzug",
+      "bodyweight": "Körpergewicht",
+      "kettlebell": "Kettlebell",
+      "medicine_ball": "Medizinball",
+      "other": "Sonstiges"
+    }
+  },
+  "group": {
+    "superset": "Supersatz",
+    "circuit": "Zirkel",
+    "a11y": "{{label}} mit {{count}} Übungen, abwechselnd trainiert"
+  }
+}

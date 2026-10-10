@@ -65,6 +65,14 @@ export function overlayRoutines(params: {
         p.target_reps !== undefined
           ? (p.target_reps as number | null)
           : (prev?.targetReps ?? null),
+      targetRepsMin:
+        p.target_reps_min !== undefined
+          ? (p.target_reps_min as number | null)
+          : (prev?.targetRepsMin ?? null),
+      supersetGroup:
+        p.superset_group !== undefined
+          ? (p.superset_group as number | null)
+          : (prev?.supersetGroup ?? null),
     };
     if (!next.exerciseId) continue;
     if (idx === -1) routine.exercises.push(next);
