@@ -14,6 +14,9 @@ import deNotifications from './locales/de/notifications.json';
 import deNudges from './locales/de/nudges.json';
 import deRhythm from './locales/de/rhythm.json';
 import deWorkout from './locales/de/workout.json';
+import deRoutineEditor from './locales/de/routineEditor.json';
+import deTrainingSetup from './locales/de/trainingSetup.json';
+import deWorkoutLive from './locales/de/workoutLive.json';
 import en from './locales/en.json';
 import enAccount from './locales/en/account.json';
 import enAchievements from './locales/en/achievements.json';
@@ -26,6 +29,9 @@ import enNotifications from './locales/en/notifications.json';
 import enNudges from './locales/en/nudges.json';
 import enRhythm from './locales/en/rhythm.json';
 import enWorkout from './locales/en/workout.json';
+import enRoutineEditor from './locales/en/routineEditor.json';
+import enTrainingSetup from './locales/en/trainingSetup.json';
+import enWorkoutLive from './locales/en/workoutLive.json';
 
 /**
  * Each language = the base file (`<code>.json`: common, tabs, screen titles)
@@ -46,6 +52,9 @@ export const deTranslation = {
   nudges: deNudges,
   rhythm: deRhythm,
   workout: deWorkout,
+  routineEditor: deRoutineEditor,
+  trainingSetup: deTrainingSetup,
+  workoutLive: deWorkoutLive,
 };
 
 const enTranslation = {
@@ -61,6 +70,9 @@ const enTranslation = {
   nudges: enNudges,
   rhythm: enRhythm,
   workout: enWorkout,
+  routineEditor: enRoutineEditor,
+  trainingSetup: enTrainingSetup,
+  workoutLive: enWorkoutLive,
 };
 
 /**
