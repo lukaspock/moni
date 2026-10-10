@@ -93,5 +93,13 @@
     "emptyWeight": "Pick a weight first",
     "a11y": "Per side: {{plates}}",
     "close": "Close plate calculator"
+  },
+  "liveActivity": {
+    "setOf": "Set {{current}} of {{total}}",
+    "weightReps": "{{weight}} {{unit}} × {{reps}}",
+    "weight": "{{weight}} {{unit}}",
+    "reps": "{{count}} reps",
+    "rest": "Rest",
+    "elapsed": "Elapsed"
   }
 }

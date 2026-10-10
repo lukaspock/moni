@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -44,6 +44,10 @@ import {
 import type { ActiveExercise } from '@/features/workout';
 import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
+import {
+  useWorkoutLiveActivity,
+  type WorkoutActivityLabels,
+} from '@/features/liveActivity';
 
 /** Lets the check animation land before the next exercise opens. */
 const FOCUS_ADVANCE_DELAY_MS = 450;
@@ -61,7 +65,7 @@ type PendingOp =
  * discarding asks.
  */
 export default function ActiveWorkoutScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const { userId } = useSession();
   const { profile } = useProfile();
@@ -110,6 +114,37 @@ export default function ActiveWorkoutScreen() {
   const focusIndex =
     overrideIndex !== -1 ? overrideIndex : initialFocusIndex(progress);
   const focusedId = focusIndex === null ? null : exerciseIds[focusIndex];
+
+  // Lock screen + Dynamic Island (no-op where Live Activities aren't supported).
+  const activityLabels = useMemo<WorkoutActivityLabels>(
+    () => ({
+      locale: i18n.language,
+      setOf: (current, total) =>
+        t('workoutLive.liveActivity.setOf', { current, total }),
+      weightReps: (weight, unit, reps) =>
+        t('workoutLive.liveActivity.weightReps', { weight, unit, reps }),
+      weight: (weight, unit) =>
+        t('workoutLive.liveActivity.weight', { weight, unit }),
+      reps: (count) => t('workoutLive.liveActivity.reps', { count }),
+      rest: t('workoutLive.liveActivity.rest'),
+      elapsed: t('workoutLive.liveActivity.elapsed'),
+    }),
+    [t, i18n.language],
+  );
+  const activityExerciseName = useCallback(
+    (id: string) => {
+      const entry = catalogById.get(id);
+      return entry ? exerciseDisplayName(entry, t) : '';
+    },
+    [catalogById, t],
+  );
+  useWorkoutLiveActivity({
+    routineName: routineName ?? t('workoutLive.header.title'),
+    focusedExerciseId: focusedId,
+    exerciseName: activityExerciseName,
+    unit: unitSystem === 'imperial' ? 'lb' : 'kg',
+    labels: activityLabels,
+  });
 
   const scrollRef = useRef<ScrollView>(null);
   const pendingScrollId = useRef<string | null>(null);

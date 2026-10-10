@@ -51,12 +51,34 @@ const config: ExpoConfig = {
     // Must stay BEFORE 'expo-notifications' (mods run in reverse order) — see plugin header.
     './plugins/withoutPushEntitlement',
     'expo-notifications',
+    // Workout Live Activity (src/features/liveActivity). Local updates only, no
+    // push. Must stay AFTER withoutPushEntitlement: expo-widgets always writes
+    // `aps-environment`, the earlier-registered plugin strips it again.
+    // Needs the App Group (layout is handed to the extension through it).
+    [
+      'expo-widgets',
+      {
+        bundleIdentifier: 'app.moeni.widgets',
+        groupIdentifier: 'group.app.moeni',
+        enablePushNotifications: false,
+        widgets: [],
+      },
+    ],
     [
       'expo-camera',
       {
         cameraPermission:
           'møni uses the camera to photograph meals and scan barcodes.',
         recordAudioAndroid: false,
+      },
+    ],
+    [
+      'expo-speech-recognition',
+      {
+        microphonePermission:
+          'møni uses the microphone so you can describe a meal by voice.',
+        speechRecognitionPermission:
+          'møni turns what you say into text to estimate a meal.',
       },
     ],
     [
