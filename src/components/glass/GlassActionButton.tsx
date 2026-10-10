@@ -1,10 +1,10 @@
-import * as Haptics from 'expo-haptics';
 import { GlassView } from 'expo-glass-effect';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { Pressable, Text } from 'react-native';
 
 import { useThemeHex } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
+import { haptic } from '@/lib/haptics';
 
 export interface GlassActionButtonProps {
   label: string;
@@ -36,7 +36,7 @@ export function GlassActionButton({
       disabled={disabled}
       style={{ opacity: disabled ? 0.4 : 1 }}
       onPress={() => {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        haptic.tap();
         onPress();
       }}
     >
