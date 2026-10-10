@@ -18,31 +18,25 @@ function Tile({
   label,
   onPress,
   active = false,
-  disabled = false,
 }: {
   icon: ReactNode;
   label: string;
   onPress: () => void;
   active?: boolean;
-  disabled?: boolean;
 }) {
   return (
     <PressableScale
       onPress={onPress}
-      disabled={disabled}
+      accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ expanded: active }}
       className="flex-1 items-center gap-1.5"
     >
       <View
-        className={`h-14 w-full items-center justify-center ${
+        className={`h-12 w-full items-center justify-center ${
           active ? 'bg-tint' : 'bg-tint-soft'
         }`}
-        style={{
-          borderRadius: 20,
-          borderCurve: 'continuous',
-          opacity: disabled ? 0.5 : 1,
-        }}
+        style={{ borderRadius: 18, borderCurve: 'continuous' }}
       >
         {icon}
       </View>
@@ -61,8 +55,33 @@ function Tile({
 }
 
 /**
- * Five always-visible capture actions in one row: photo, describe (inline),
- * speak (voice sheet), barcode, nutrition label.
+ * The main capture action: one big accent "+" that opens the møni camera
+ * (`app/food-camera.tsx`). Deliberately larger than and above the other tiles.
+ */
+function PhotoButton({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  const onAccent = useThemeHex('onAccent');
+  return (
+    <PressableScale
+      onPress={onPress}
+      preset="subtle"
+      haptic="tap"
+      accessibilityRole="button"
+      accessibilityLabel={t('identity.today.quickPhoto')}
+    >
+      <View
+        className="bg-tint items-center justify-center"
+        style={{ height: 54, borderRadius: 27, borderCurve: 'continuous' }}
+      >
+        <SymbolView name="plus" size={26} weight="bold" tintColor={onAccent} />
+      </View>
+    </PressableScale>
+  );
+}
+
+/**
+ * Capture actions: a big photo "+" on top, below it four equal tiles —
+ * describe (inline), speak (voice sheet), barcode, nutrition label.
  */
 export const QuickLogBar = memo(function QuickLogBar({
   date,
@@ -86,60 +105,57 @@ export const QuickLogBar = memo(function QuickLogBar({
 
   return (
     <View className="gap-3">
-      <View className="flex-row gap-2">
-        <Tile
-          icon={<BrandIcon name="photoMeal" size={26} color={accent} />}
-          label={t('food.logFood.photo')}
-          disabled={capture.busy}
-          onPress={() => void capture.photo()}
-        />
-        <Tile
-          icon={
-            <SymbolView
-              name="text.bubble"
-              size={24}
-              weight="semibold"
-              tintColor={describing ? onAccent : accent}
-            />
-          }
-          label={t('food.logFood.describe')}
-          active={describing}
-          onPress={() => {
-            haptic.tapLight();
-            setDescribing((v) => !v);
-          }}
-        />
-        <Tile
-          icon={
-            <SymbolView
-              name="mic.fill"
-              size={24}
-              weight="semibold"
-              tintColor={accent}
-            />
-          }
-          label={t('food.voice.tile')}
-          onPress={() =>
-            router.push({ pathname: '/voice-log', params: { date } })
-          }
-        />
-        <Tile
-          icon={
-            <SymbolView
-              name="barcode.viewfinder"
-              size={25}
-              weight="semibold"
-              tintColor={accent}
-            />
-          }
-          label={t('food.logFood.barcode')}
-          onPress={() => capture.scanner('barcode')}
-        />
-        <Tile
-          icon={<BrandIcon name="scanLabel" size={25} color={accent} />}
-          label={t('food.logFood.label')}
-          onPress={() => capture.scanner('label')}
-        />
+      <View className="gap-2">
+        <PhotoButton onPress={capture.photo} />
+        <View className="flex-row gap-2">
+          <Tile
+            icon={
+              <SymbolView
+                name="text.bubble"
+                size={21}
+                weight="semibold"
+                tintColor={describing ? onAccent : accent}
+              />
+            }
+            label={t('food.logFood.describe')}
+            active={describing}
+            onPress={() => {
+              haptic.tapLight();
+              setDescribing((v) => !v);
+            }}
+          />
+          <Tile
+            icon={
+              <SymbolView
+                name="mic.fill"
+                size={21}
+                weight="semibold"
+                tintColor={accent}
+              />
+            }
+            label={t('food.voice.tile')}
+            onPress={() =>
+              router.push({ pathname: '/voice-log', params: { date } })
+            }
+          />
+          <Tile
+            icon={
+              <SymbolView
+                name="barcode.viewfinder"
+                size={22}
+                weight="semibold"
+                tintColor={accent}
+              />
+            }
+            label={t('food.logFood.barcode')}
+            onPress={() => capture.scanner('barcode')}
+          />
+          <Tile
+            icon={<BrandIcon name="scanLabel" size={22} color={accent} />}
+            label={t('food.logFood.label')}
+            onPress={() => capture.scanner('label')}
+          />
+        </View>
       </View>
       {describing ? (
         <Animated.View

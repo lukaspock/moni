@@ -14,13 +14,22 @@ import { PressableScale, withAlpha } from '@/components/motion';
 import { formatClock } from '@/domain';
 import { DEFAULT_REST_SECONDS } from '@/domain/workoutPrefill';
 import { haptic } from '@/lib/haptics';
-import { fixedColors } from '@/theme/colors';
+import { useThemeHex } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
 import { elapsedSeconds, useActiveWorkoutStore } from '../session';
 import { useNow } from './shared';
 
 const REST_ADJUST_SECONDS = 15;
-const INK_SOFT = withAlpha(fixedColors.ink, 0.14);
+/**
+ * Neutral header (owner: no orange): raised surface + label colors, adapts to
+ * Light/Dark. `ink` = text/primary button, `paper` = text on that button.
+ */
+function useHeaderColors() {
+  const ink = useThemeHex('label');
+  const paper = useThemeHex('bg');
+  const surface = useThemeHex('surfaceRaised');
+  return { ink, paper, surface, inkSoft: withAlpha(ink, 0.1) };
+}
 
 export function LiveHeader({
   title,
@@ -29,11 +38,12 @@ export function LiveHeader({
   title: string;
   onFinish: () => void;
 }) {
+  const c = useHeaderColors();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   return (
     <LinearGradient
-      colors={[fixedColors.ember, fixedColors.emberHot]}
+      colors={[c.surface, c.surface]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
@@ -52,7 +62,7 @@ export function LiveHeader({
             accessibilityRole="header"
             numberOfLines={1}
             maxFontSizeMultiplier={1.3}
-            style={{ ...textStyles.headline, color: fixedColors.ink }}
+            style={{ ...textStyles.headline, color: c.ink }}
           >
             {title}
           </Text>
@@ -71,12 +81,12 @@ export function LiveHeader({
             borderRadius: 999,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: fixedColors.ink,
+            backgroundColor: c.ink,
           }}
         >
           <Text
             maxFontSizeMultiplier={1.3}
-            style={{ ...textStyles.headline, color: fixedColors.paper }}
+            style={{ ...textStyles.headline, color: c.paper }}
           >
             {t('workoutLive.header.finish')}
           </Text>
@@ -89,6 +99,7 @@ export function LiveHeader({
 
 /** Own component so the 1 Hz tick re-renders only the clock. */
 function ElapsedClock() {
+  const c = useHeaderColors();
   const { t } = useTranslation();
   const startedAt = useActiveWorkoutStore((s) => s.startedAt);
   const now = useNow(1000);
@@ -98,7 +109,7 @@ function ElapsedClock() {
       accessibilityRole="timer"
       accessibilityLabel={t('workoutLive.header.elapsedA11y', { time })}
       maxFontSizeMultiplier={1.15}
-      style={{ ...textStyles.numericM, color: fixedColors.ink }}
+      style={{ ...textStyles.numericM, color: c.ink }}
     >
       {time}
     </Text>
@@ -106,6 +117,7 @@ function ElapsedClock() {
 }
 
 function RestBar() {
+  const c = useHeaderColors();
   const { t } = useTranslation();
   const restEndsAt = useActiveWorkoutStore((s) => s.restEndsAt);
   const restTotal = useActiveWorkoutStore((s) => s.restTotalSeconds);
@@ -146,13 +158,13 @@ function RestBar() {
         <View className="flex-row items-baseline gap-2">
           <Text
             maxFontSizeMultiplier={1.3}
-            style={{ ...textStyles.callout, color: fixedColors.ink }}
+            style={{ ...textStyles.callout, color: c.ink }}
           >
             {t('workoutLive.rest.label')}
           </Text>
           <Text
             maxFontSizeMultiplier={1.15}
-            style={{ ...textStyles.numericS, color: fixedColors.ink }}
+            style={{ ...textStyles.numericS, color: c.ink }}
           >
             {time}
           </Text>
@@ -161,7 +173,7 @@ function RestBar() {
           style={{
             height: 4,
             borderRadius: 2,
-            backgroundColor: INK_SOFT,
+            backgroundColor: c.inkSoft,
             overflow: 'hidden',
           }}
         >
@@ -170,7 +182,7 @@ function RestBar() {
               width: `${fraction * 100}%`,
               height: 4,
               borderRadius: 2,
-              backgroundColor: fixedColors.ink,
+              backgroundColor: c.ink,
             }}
           />
         </View>
@@ -205,6 +217,7 @@ function RestButton({
   accessibilityLabel: string;
   onPress: () => void;
 }) {
+  const c = useHeaderColors();
   return (
     <PressableScale
       accessibilityRole="button"
@@ -218,20 +231,15 @@ function RestButton({
         borderRadius: 999,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: INK_SOFT,
+        backgroundColor: c.inkSoft,
       }}
     >
       {symbol ? (
-        <SymbolView
-          name="xmark"
-          size={13}
-          weight="bold"
-          tintColor={fixedColors.ink}
-        />
+        <SymbolView name="xmark" size={13} weight="bold" tintColor={c.ink} />
       ) : (
         <Text
           maxFontSizeMultiplier={1.2}
-          style={{ ...textStyles.callout, color: fixedColors.ink }}
+          style={{ ...textStyles.callout, color: c.ink }}
         >
           {label}
         </Text>

@@ -66,6 +66,21 @@
     "logged": "Logged",
     "describeLabel": "Or describe it"
   },
+  "camera": {
+    "close": "Close",
+    "frameHint": "Fit your plate in the frame",
+    "shutter": "Take photo",
+    "library": "Choose from Photos",
+    "flashOff": "Flash off",
+    "flashAuto": "Flash auto",
+    "flashOn": "Flash on",
+    "captured": "Captured photo",
+    "permissionTitle": "Allow the camera",
+    "permissionBody": "møni needs the camera to recognize your meal. You can also pick a photo from your library instead.",
+    "allow": "Allow camera",
+    "openSettings": "Open Settings",
+    "useLibrary": "Choose a photo from your library"
+  },
   "barcode": {
     "permissionBody": "møni needs the camera to scan a barcode. You can allow it in Settings.",
     "grantAccess": "Grant access",

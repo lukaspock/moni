@@ -31,7 +31,7 @@ export interface CardProps {
   onPress?: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
-  /** Extra layout classes (gap, flex-row, overflow-hidden …). A `p-*` class replaces the default padding. */
+  /** Extra layout classes (gap, flex-row, overflow-hidden …). A shorthand `p-*` class replaces the default padding; side classes (`pt-*`, `px-*`) only override their side. */
   className?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -60,7 +60,9 @@ const TONE_BG: Record<CardTone, string> = {
 };
 const HAIRLINE_ON_HERO = 'rgba(245,242,234,0.10)';
 const PRESS_HIGHLIGHT = 'rgba(255,255,255,0.06)';
-const HAS_PADDING = /(^|\s)p[xytblrse]?-/;
+// Only a shorthand `p-*` replaces the default padding. Side classes (`pt-4`,
+// `px-5` …) keep it and override just their side (RN: paddingTop beats padding).
+const HAS_PADDING = /(^|\s)p-/;
 const HAS_GAP = /(^|\s)gap-/;
 
 /**

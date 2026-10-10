@@ -3,13 +3,18 @@
  * Components stay thin; everything testable lives here.
  */
 
-export const clamp01 = (n: number): number =>
-  Number.isFinite(n) ? Math.min(Math.max(n, 0), 1) : 0;
+// Every helper here may run on the UI thread (useDerivedValue / Skia), so all
+// of them are worklets – arrow consts included.
+export function clamp01(n: number): number {
+  'worklet';
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), 1) : 0;
+}
 
 // ---------------------------------------------------------------- Kcal ring
 
 /** Center + radius of a stroked circle that fits a square canvas. */
 export function ringGeometry(size: number, strokeWidth: number) {
+  'worklet';
   return { cx: size / 2, cy: size / 2, r: (size - strokeWidth) / 2 };
 }
 
@@ -24,12 +29,14 @@ export function ringPoint(
   r: number,
   share: number,
 ): { x: number; y: number } {
+  'worklet';
   const a = clamp01(share) * Math.PI * 2;
   return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
 }
 
 /** Segment ends for a fill share: lime part is capped at the base share. */
 export function ringSegments(fill: number, baseShare: number) {
+  'worklet';
   const f = clamp01(fill);
   const base = clamp01(baseShare);
   return {
@@ -41,16 +48,22 @@ export function ringSegments(fill: number, baseShare: number) {
 }
 
 /** Where the bonus track ends while it streams in (t: 0..1). */
-export const bonusTrackEnd = (baseShare: number, t: number): number =>
-  clamp01(baseShare) + (1 - clamp01(baseShare)) * clamp01(t);
+export function bonusTrackEnd(baseShare: number, t: number): number {
+  'worklet';
+  return clamp01(baseShare) + (1 - clamp01(baseShare)) * clamp01(t);
+}
 
 /** Glow only for a visible fill (> 2 %). */
-export const showGlow = (fill: number): boolean => fill > 0.02;
+export function showGlow(fill: number): boolean {
+  'worklet';
+  return fill > 0.02;
+}
 
 // ---------------------------------------------------------------- Macro bar
 
 /** Single uppercase marker letter taken from the (localized) macro label. */
 export function markerLetter(label: string): string {
+  'worklet';
   const ch = Array.from(label.trim())[0];
   return ch ? ch.toLocaleUpperCase() : '·';
 }
@@ -68,6 +81,7 @@ export interface MacroBarModel {
  * target stays visible as a tick inside the bar.
  */
 export function macroBarModel(eaten: number, target: number): MacroBarModel {
+  'worklet';
   const e = Number.isFinite(eaten) ? Math.max(eaten, 0) : 0;
   const t = Number.isFinite(target) ? Math.max(target, 0) : 0;
   if (t <= 0) return { fill: 0, targetPos: 1, isOver: false };
@@ -83,6 +97,7 @@ export function dailyBarRatio(
   target: number | null,
   cap = 1.3,
 ): number {
+  'worklet';
   if (!target || target <= 0 || eaten <= 0) return 0;
   return Math.min(eaten / target, cap) / cap;
 }
@@ -92,6 +107,7 @@ export function isOverTarget(
   target: number | null,
   tolerance = 1.1,
 ): boolean {
+  'worklet';
   return !!target && target > 0 && eaten > target * tolerance;
 }
 
@@ -102,6 +118,7 @@ export function bonusCapStart(
   bonusKcal: number | undefined,
   cap = 1.3,
 ): number | null {
+  'worklet';
   if (!target || target <= 0 || !bonusKcal || bonusKcal <= 0) return null;
   const baseKcal = Math.max(target - bonusKcal, 0);
   if (eaten <= baseKcal) return null;
@@ -115,6 +132,7 @@ export function barHeightPx(
   areaPx: number,
   minPx = 4,
 ): number {
+  'worklet';
   if (!(value > 0) || !(top > 0)) return 0;
   return Math.max(Math.min(value / top, 1) * areaPx, minPx);
 }
@@ -140,6 +158,7 @@ export function smoothSegments(
   points: readonly Pt[],
   tension = 0.5,
 ): BezierSeg[] {
+  'worklet';
   const k = tension / 3;
   const segs: BezierSeg[] = [];
   for (let i = 0; i < points.length - 1; i++) {
@@ -165,6 +184,7 @@ export function paddedDomain(
   padRatio = 0.1,
   minSpan = 1,
 ): { min: number; max: number } {
+  'worklet';
   if (values.length === 0) return { min: 0, max: 1 };
   const lo = Math.min(...values);
   const hi = Math.max(...values);
@@ -178,6 +198,7 @@ export function paddedDomain(
 
 /** `#RRGGBB` + alpha → `rgba(...)` (Skia-safe string). Other formats pass through. */
 export function withAlpha(hex: string, alpha: number): string {
+  'worklet';
   const m = /^#([0-9a-f]{6})$/i.exec(hex);
   if (!m) return hex;
   const n = parseInt(m[1], 16);

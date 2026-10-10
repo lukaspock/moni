@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ToastView } from '@/components/ui';
+
+/** Native tab bar (floating, iOS 26) height + gap. */
+const TAB_BAR_CLEARANCE = 84;
 
 export interface UndoToastState {
   id: number;
@@ -12,7 +15,11 @@ export interface UndoToastState {
   onAction?: () => void;
 }
 
-/** Top toast that hides itself after `ms` (default 4 s). */
+/**
+ * Toast above the tab bar that hides itself after `ms` (default 4 s). Bottom,
+ * not top: the screen title area is drawn natively above RN content and hid it;
+ * down here "Rückgängig" is also in thumb reach.
+ */
 export function UndoToast({
   toast,
   onHide,
@@ -34,12 +41,12 @@ export function UndoToast({
     <View
       pointerEvents="box-none"
       className="absolute left-0 right-0 items-center px-5"
-      style={{ top: insets.top + 8 }}
+      style={{ bottom: insets.bottom + TAB_BAR_CLEARANCE }}
     >
       <Animated.View
         key={toast.id}
-        entering={FadeInUp.duration(200)}
-        exiting={FadeOutUp.duration(160)}
+        entering={FadeInDown.duration(200)}
+        exiting={FadeOutDown.duration(160)}
       >
         <ToastView
           kind="success"

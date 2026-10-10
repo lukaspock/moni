@@ -12,13 +12,15 @@ export function flightPosition(
   p: number,
   from: Point,
   to: Point,
-  arc: number = FLIGHT_ARC,
+  arc?: number,
 ): Point {
   'worklet';
+  // No module constant as a default param: worklets don't capture those (crashed on the UI thread).
+  const h = arc ?? 28;
   const c = p < 0 ? 0 : p > 1 ? 1 : p;
   return {
     x: from.x + (to.x - from.x) * c,
-    y: from.y + (to.y - from.y) * c - Math.sin(Math.PI * c) * arc,
+    y: from.y + (to.y - from.y) * c - Math.sin(Math.PI * c) * h,
   };
 }
 

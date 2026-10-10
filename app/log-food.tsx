@@ -24,6 +24,7 @@ import {
 } from '@/features/food';
 import { FieldInput } from '@/features/food/ui/FieldInput';
 import { RecipeQuickList } from '@/features/food/ui/RecipeQuickList';
+import { openFoodCamera } from '@/features/today/useQuickCapture';
 import { BrandIcon } from '@/components/brand';
 import { PressableScale, SkeletonBlock } from '@/components/motion';
 import { Card, ListRow, SectionHeader, SheetScreen } from '@/components/ui';
@@ -85,13 +86,13 @@ export default function LogFoodScreen() {
     void analyzeText(text).then(finishAnalysis);
   };
 
-  const runPhoto = async (fromCamera: boolean) => {
+  // The camera goes through the møni camera (`/food-camera`); this is the library path.
+  const pickFromLibrary = async () => {
     if (isBusy) return;
     setIsBusy(true);
     try {
-      const permission = fromCamera
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         Alert.alert(
           t('food.logFood.permissionDeniedTitle'),
@@ -99,9 +100,9 @@ export default function LogFoodScreen() {
         );
         return;
       }
-      const result = fromCamera
-        ? await ImagePicker.launchCameraAsync({ quality: 0.9 })
-        : await ImagePicker.launchImageLibraryAsync({ quality: 0.9 });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        quality: 0.9,
+      });
       if (result.canceled || !result.assets?.[0]) return;
       haptic.aiStart();
       openDraft('photo');
@@ -199,8 +200,7 @@ export default function LogFoodScreen() {
     <SheetScreen title={t('food.logFood.title')}>
       <View className="gap-3">
         <PressableScale
-          onPress={() => void runPhoto(true)}
-          disabled={isBusy}
+          onPress={() => openFoodCamera(logDate, presetMeal)}
           accessibilityRole="button"
           accessibilityLabel={t('food.logFood.takePhoto')}
         >
@@ -209,7 +209,6 @@ export default function LogFoodScreen() {
             style={{
               borderRadius: 24,
               borderCurve: 'continuous',
-              opacity: isBusy ? 0.6 : 1,
             }}
           >
             <BrandIcon name="photoMeal" size={40} color={accent} />
@@ -280,7 +279,7 @@ export default function LogFoodScreen() {
             </Pressable>
           ) : (
             <Pressable
-              onPress={() => void runPhoto(false)}
+              onPress={() => void pickFromLibrary()}
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={t('food.logFood.chooseFromLibrary')}

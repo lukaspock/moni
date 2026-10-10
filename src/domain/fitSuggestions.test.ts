@@ -148,3 +148,21 @@ describe('shouldShowFitCard', () => {
     expect(shouldShowFitCard({ hour: 14, remainingKcal: 200 })).toBe(true);
   });
 });
+
+describe('pickFitSuggestions – meaningful candidates only', () => {
+  const consumed: FitMacros = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
+
+  it('skips tiny entries (a 2 kcal drink) and ones without the missing macro', () => {
+    const picks = pickFitSuggestions({
+      candidates: [
+        cand('soda', 2, 0),
+        cand('candy', 200, 0, 50),
+        cand('skyr', 150, 20, 8),
+      ],
+      targets: TARGETS,
+      consumed,
+      careFlagged: false,
+    });
+    expect(picks.map((p) => p.candidate.key)).toEqual(['skyr']);
+  });
+});

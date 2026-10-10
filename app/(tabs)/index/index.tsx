@@ -34,7 +34,7 @@ import { useMealFlightBridge } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
 import { AchievementOverlay } from '@/features/today/AchievementOverlay';
 import { CareCard } from '@/features/today/CareCard';
-import { daySentenceText, greetingText } from '@/features/today/copy';
+import { greetingText } from '@/features/today/copy';
 import { FirstRunCard } from '@/features/today/FirstRunCard';
 import { FitCard } from '@/features/today/FitCard';
 import { MealGroups } from '@/features/today/MealGroups';
@@ -154,15 +154,6 @@ export default function TodayScreen() {
   const subtitle = isToday
     ? greetingText(t, rituals.slot, rituals.displayName)
     : fmtDate(date, { weekday: 'long', day: 'numeric', month: 'long' });
-
-  const sentenceText = (() => {
-    if (!isToday || !rituals.sentence) return null;
-    return daySentenceText(t, rituals.sentence.key, rituals.sentence.variant, {
-      kcal: Math.round(targets?.totalKcal ?? 0).toLocaleString(i18n.language),
-      weekday: fmtDate(today, { weekday: 'long' }),
-      date: fmtDate(today, { day: 'numeric', month: 'long' }),
-    });
-  })();
 
   // Meal flight: the food sheets queue it, Today launches it towards the ring centre.
   const ringRef = useRef<View>(null);
@@ -335,17 +326,8 @@ export default function TodayScreen() {
       >
         <GestureDetector gesture={swipeGesture}>
           <View className="gap-6">
-            {isToday && rituals.careFlagged ? (
-              <CareCard today={today} />
-            ) : sentenceText ? (
-              <Text
-                className="text-label px-1"
-                style={textStyles.body}
-                maxFontSizeMultiplier={1.4}
-              >
-                {sentenceText}
-              </Text>
-            ) : null}
+            {/* Owner: no daily sentence on Today; only the care card stays. */}
+            {isToday && rituals.careFlagged ? <CareCard today={today} /> : null}
 
             {targets ? (
               <Reveal index={0} once="today-hero">

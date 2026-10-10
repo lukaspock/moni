@@ -102,6 +102,7 @@
   "today": {
     "quickTitle": "Schnell eintragen",
     "quickSaved": "{{name}} eingetragen",
+    "quickPhoto": "Mahlzeit fotografieren",
     "undo": "Rückgängig",
     "undone": "Eintrag entfernt",
     "meals": "Mahlzeiten",

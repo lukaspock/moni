@@ -66,6 +66,21 @@
     "logged": "Erfasst",
     "describeLabel": "Oder beschreiben"
   },
+  "camera": {
+    "close": "Schließen",
+    "frameHint": "Teller in den Rahmen",
+    "shutter": "Foto aufnehmen",
+    "library": "Aus Fotos wählen",
+    "flashOff": "Blitz aus",
+    "flashAuto": "Blitz automatisch",
+    "flashOn": "Blitz an",
+    "captured": "Aufgenommenes Foto",
+    "permissionTitle": "Kamera erlauben",
+    "permissionBody": "Damit møni deine Mahlzeit erkennt, braucht es die Kamera. Du kannst stattdessen auch ein Foto aus deiner Mediathek nehmen.",
+    "allow": "Kamera erlauben",
+    "openSettings": "Einstellungen öffnen",
+    "useLibrary": "Foto aus Mediathek wählen"
+  },
   "barcode": {
     "permissionBody": "Für den Barcode braucht møni die Kamera. Du kannst sie in den Einstellungen erlauben.",
     "grantAccess": "Zugriff erlauben",

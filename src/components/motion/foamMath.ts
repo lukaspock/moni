@@ -44,6 +44,7 @@ export interface FoamOptions {
 
 /** Small deterministic PRNG (mulberry32). */
 export function mulberry32(seed: number): () => number {
+  'worklet';
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -55,6 +56,7 @@ export function mulberry32(seed: number): () => number {
 }
 
 export function createFoam(opts: FoamOptions): FoamParticle[] {
+  'worklet';
   const {
     origin,
     spread = 18,
@@ -128,6 +130,7 @@ export function foamAlpha(p: FoamParticle, t: number): number {
 }
 
 export function foamMaxLifeMs(particles: readonly FoamParticle[]): number {
+  'worklet';
   let m = 0;
   for (const p of particles) m = Math.max(m, p.life * 1000);
   return Math.ceil(m);

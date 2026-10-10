@@ -19,6 +19,7 @@ export function celebrationPreset(
   kind: CelebrationKind,
   level: CelebrationLevel = 1,
 ): CelebrationPreset {
+  'worklet';
   switch (kind) {
     case 'goalReached':
       return {

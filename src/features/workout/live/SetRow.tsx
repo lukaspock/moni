@@ -249,15 +249,14 @@ function ValueButton({
       >
         {text ?? '–'}
       </Text>
-      {text !== null && column.unit !== 'reps' ? (
-        <Text
-          maxFontSizeMultiplier={1.3}
-          className="text-label-secondary"
-          style={textStyles.caption}
-        >
-          {unit}
-        </Text>
-      ) : null}
+      {/* Always show the unit (also for reps and empty values) so "– | 10" reads as "– kg | 10 Wdh.". */}
+      <Text
+        maxFontSizeMultiplier={1.3}
+        className="text-label-secondary"
+        style={textStyles.caption}
+      >
+        {unit}
+      </Text>
     </PressableScale>
   );
 }

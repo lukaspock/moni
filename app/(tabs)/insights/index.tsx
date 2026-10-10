@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -53,9 +54,16 @@ import { textStyles } from '@/theme/typography';
 const RANGES: WeightRange[] = ['4w', '12w', 'all'];
 const MIN_CORRELATION_DAYS = 14;
 
+/** Locale-aware number ("94,5" in DE), max `decimals` fraction digits. */
+function formatNumber(value: number, decimals = 1): string {
+  return new Intl.NumberFormat(i18next.language, {
+    maximumFractionDigits: decimals,
+  }).format(roundTo(value, decimals));
+}
+
 function formatSigned(value: number, decimals = 1): string {
   const r = roundTo(value, decimals);
-  return r > 0 ? `+${r}` : String(r);
+  return r > 0 ? `+${formatNumber(r, decimals)}` : formatNumber(r, decimals);
 }
 
 function Segmented({
@@ -109,7 +117,7 @@ export default function InsightsScreen() {
   const [kcalRange, setKcalRange] = useState<'7' | '30'>('7');
 
   const unit = t(unitLabelKey);
-  const fmt = (kg: number) => String(toDisplay(kg));
+  const fmt = (kg: number) => formatNumber(toDisplay(kg));
 
   // --- weight ---
   const rangeRaw = useMemo(

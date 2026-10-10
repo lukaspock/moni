@@ -3,6 +3,7 @@
  * strings). Non-hex inputs are returned unchanged.
  */
 export function withAlpha(color: string, alpha: number): string {
+  'worklet';
   const a = Math.min(Math.max(alpha, 0), 1);
   const m = /^#([0-9a-f]{3,8})$/i.exec(color.trim());
   if (!m) return color;

@@ -185,6 +185,10 @@ function RootNavigator() {
       />
       <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
       <Stack.Screen name="voice-log" options={SHEET_OPTIONS} />
+      <Stack.Screen
+        name="food-camera"
+        options={{ presentation: 'fullScreenModal', headerShown: false }}
+      />
       <Stack.Screen name="recipe-editor" options={FULL_SHEET_OPTIONS} />
       {/* Outside the tabs: no tab bar over the save/add buttons, no native header. */}
       <Stack.Screen

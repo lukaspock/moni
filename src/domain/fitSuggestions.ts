@@ -43,6 +43,10 @@ export interface FitSuggestion<T = unknown> {
 /** No suggestions below this many kcal left. */
 export const FIT_MIN_REMAINING_KCAL = 150;
 export const FIT_MAX_SUGGESTIONS = 3;
+/** Snacks/drinks below this are never a meaningful suggestion (e.g. a 2 kcal soda). */
+export const FIT_MIN_CANDIDATE_KCAL = 50;
+/** With a macro gap, a candidate must bring at least this much of that macro. */
+export const FIT_MIN_FOCUS_GRAMS = 5;
 /** Score weights (sum 1). */
 export const FIT_WEIGHTS: Readonly<FitScoreParts> = {
   coverage: 0.6,
@@ -114,7 +118,11 @@ export function pickFitSuggestions<T>(input: {
   for (const candidate of candidates) {
     if (seen.has(candidate.key)) continue;
     seen.add(candidate.key);
-    if (!(candidate.kcal > 0) || candidate.kcal > remainingKcal) continue;
+    if (
+      !(candidate.kcal >= FIT_MIN_CANDIDATE_KCAL) ||
+      candidate.kcal > remainingKcal
+    )
+      continue;
 
     const fill = clamp01(candidate.kcal / remainingKcal);
     let parts: FitScoreParts;
@@ -122,6 +130,8 @@ export function pickFitSuggestions<T>(input: {
     let focusGrams = 0;
     if (gap) {
       focusGrams = Math.max(0, gramsOf(candidate, gap.macro));
+      // Only suggest what actually closes the gap (no 0 g protein "fixes").
+      if (focusGrams < FIT_MIN_FOCUS_GRAMS) continue;
       parts = {
         coverage: clamp01(Math.min(focusGrams, gap.missingG) / gap.missingG),
         density: clamp01((focusGrams * KCAL_PER_G[gap.macro]) / candidate.kcal),

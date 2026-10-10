@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
-import { fixedColors, themeColor } from '@/theme/colors';
+import { themeColor, useThemeHex } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
 import {
   Card,
@@ -221,7 +221,9 @@ export default function TrainingScreen() {
         </Reveal>
 
         {routines.length > 0 && (
-          <Reveal index={1}>
+          // Plain View, not <Reveal>: an entering animation around a horizontal
+          // ScrollView left this whole section stuck invisible (Fabric).
+          <View>
             <View className="gap-2">
               <View className="px-4">
                 <SectionHeader
@@ -257,7 +259,7 @@ export default function TrainingScreen() {
                 />
               </ScrollView>
             </View>
-          </Reveal>
+          </View>
         )}
 
         <Reveal index={2} style={{ paddingHorizontal: 16 }}>
@@ -355,7 +357,9 @@ function TrainingHero({
         };
   }
 
-  const ink = fixedColors.ink;
+  // Neutral hero (owner: no orange) – raised surface, label text, Light/Dark aware.
+  const ink = useThemeHex('label');
+  const heroSurface = useThemeHex('surfaceRaised');
 
   return (
     <Pressable
@@ -367,7 +371,7 @@ function TrainingHero({
       style={{ borderRadius: 32, borderCurve: 'continuous' }}
     >
       <LinearGradient
-        colors={[fixedColors.ember, fixedColors.emberHot]}
+        colors={[heroSurface, heroSurface]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ padding: 24, gap: 16 }}

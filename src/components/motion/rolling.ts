@@ -23,6 +23,7 @@ export function rollingCells(
   value: number,
   opts: RollingOptions = {},
 ): RollingCell[] {
+  'worklet';
   const {
     fractionDigits = 0,
     groupSeparator = '',
@@ -58,6 +59,7 @@ export function rollingCells(
 
 /** Large digit jumps use a timing instead of a spring (no wild flinging). */
 export function isBigDigitJump(from: number, to: number): boolean {
+  'worklet';
   return Math.abs(to - from) >= 6;
 }
 
@@ -67,15 +69,18 @@ export function columnDelayMs(
   step: number,
   max = 240,
 ): number {
+  'worklet';
   return Math.min(Math.max(indexFromRight, 0) * step, max);
 }
 
 export function easeOutCubic(t: number): number {
+  'worklet';
   return 1 - Math.pow(1 - t, 3);
 }
 
 /** Number of table steps for a count animation (about 60 fps, bounded). */
 export function countFrames(durationMs: number): number {
+  'worklet';
   return Math.min(Math.max(Math.ceil(durationMs / 16), 1), 180);
 }
 
@@ -90,6 +95,7 @@ export function countTable(
   frames: number,
   ease: (t: number) => number = easeOutCubic,
 ): number[] {
+  'worklet';
   const n = Math.max(1, Math.floor(frames));
   const out: number[] = [];
   for (let i = 0; i <= n; i++) {

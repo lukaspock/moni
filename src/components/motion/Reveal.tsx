@@ -16,6 +16,8 @@ import {
   staggerDelay,
 } from '@/theme/motion';
 
+const SETTLED: ViewStyle = { opacity: 1, transform: [] };
+
 /** Keys that already played in this app run (see `once`). */
 const played = new Set<string>();
 
@@ -51,16 +53,23 @@ export function Reveal({
   style,
 }: RevealProps) {
   const [skip] = useState(() => once != null && played.has(once));
+  // Fail-safe: once the entrance is over, render a plain (fully visible) View.
+  // A screen frozen while the animation ran (inactive tab) could otherwise keep
+  // the stale opacity 0 and leave whole sections invisible.
+  const [done, setDone] = useState(skip);
   const progress = useSharedValue(skip ? 1 : 0);
 
   useEffect(() => {
     if (skip) return;
     if (once != null) played.add(once);
+    const total = staggerDelay(index, step) + delay;
     progress.value = withDelay(
-      staggerDelay(index, step) + delay,
+      total,
       withTiming(1, { duration, easing: easing.rise, reduceMotion: REDUCE }),
       REDUCE,
     );
+    const timer = setTimeout(() => setDone(true), total + duration + 120);
+    return () => clearTimeout(timer);
   }, [skip, once, index, step, delay, duration, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -71,7 +80,11 @@ export function Reveal({
     ],
   }));
 
+  // Same element either way (no remount of children); after the entrance the
+  // explicit final style wins over any stale animated value.
   return (
-    <Animated.View style={[style, animatedStyle]}>{children}</Animated.View>
+    <Animated.View style={[style, done ? SETTLED : animatedStyle]}>
+      {children}
+    </Animated.View>
   );
 }
