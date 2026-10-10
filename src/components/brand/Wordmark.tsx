@@ -5,7 +5,7 @@ import { fixedColors, useThemeHex } from '@/theme/colors';
 
 import { WM_O_BANDS, WM_O_RADIUS } from './markGeometry';
 
-const VB_W = 402;
+const VB_W = 410;
 const VB_H = 158;
 const SW = 22;
 
@@ -31,28 +31,32 @@ export function Wordmark({
   const ink = color ?? label;
   const upper = colorMark ? fixedColors.lime : ink;
   const lower = colorMark ? fixedColors.ember : ink;
-  const m = 120;
-  const n = 268;
-  const i = 360;
+  // Letter order m-ø-n-i; the ø mark is drawn around (52, 50) and shifted by O_DX.
+  const m = 0;
+  const O_DX = 154;
+  const n = 278;
+  const i = 376;
 
   return (
     <Svg
       width={width}
       height={(width * VB_H) / VB_W}
-      viewBox={`-8 -50 ${VB_W} ${VB_H}`}
+      viewBox={`-6 -50 ${VB_W} ${VB_H}`}
       accessible={!decorative}
       accessibilityLabel={decorative ? undefined : 'møni'}
     >
       <Defs>
         <ClipPath id={id}>
-          <Circle cx={52} cy={50} r={WM_O_RADIUS} />
+          <Circle cx={52 + O_DX} cy={50} r={WM_O_RADIUS} />
         </ClipPath>
       </Defs>
       <G clipPath={`url(#${id})`}>
-        <G rotation={-32} origin="52, 50">
-          {WM_O_BANDS.map((b, k) => (
-            <Path key={k} d={b.d} fill={b.role === 'upper' ? upper : lower} />
-          ))}
+        <G x={O_DX}>
+          <G rotation={-32} origin="52, 50">
+            {WM_O_BANDS.map((b, k) => (
+              <Path key={k} d={b.d} fill={b.role === 'upper' ? upper : lower} />
+            ))}
+          </G>
         </G>
       </G>
       <G

@@ -1,6 +1,6 @@
-import { useId } from 'react';
+import { useMemo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import Svg, { Defs, G, Pattern, Rect } from 'react-native-svg';
+import Svg, { G } from 'react-native-svg';
 
 import { useThemeHex } from '@/theme/colors';
 
@@ -27,7 +27,7 @@ const CELLS: readonly (readonly [number, number, number, boolean])[] = [
 export type RingPatternProps = {
   width: number;
   height: number;
-  /** Overall opacity (default 0.12). */
+  /** Overall opacity (default 0.08). */
   opacity?: number;
   /** Tile scale (default 1 = 240 pt tile). */
   scale?: number;
@@ -40,16 +40,24 @@ export type RingPatternProps = {
 export function RingPattern({
   width,
   height,
-  opacity = 0.12,
+  opacity = 0.08,
   scale = 1,
   color,
   style,
 }: RingPatternProps) {
-  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   const accent = useThemeHex('accent');
   const bonus = useThemeHex('bonus');
   const base = color ?? accent;
   const t = TILE * scale;
+  // Tiled by hand: react-native-svg does not apply the marks' clipPaths inside
+  // a <Pattern>, which rendered the raw wave bands as blocks.
+  const tiles = useMemo(() => {
+    const out: { x: number; y: number }[] = [];
+    for (let y = 0; y < height; y += t) {
+      for (let x = 0; x < width; x += t) out.push({ x, y });
+    }
+    return out;
+  }, [width, height, t]);
   return (
     <Svg
       width={width}
@@ -58,28 +66,24 @@ export function RingPattern({
       pointerEvents="none"
       accessible={false}
     >
-      <Defs>
-        <Pattern
-          id={id}
-          width={t}
-          height={t}
-          patternUnits="userSpaceOnUse"
-          viewBox={`0 0 ${TILE} ${TILE}`}
-        >
-          {CELLS.map(([cx, cy, r, ember], i) => (
-            <MiniMark
-              key={i}
-              cx={cx}
-              cy={cy}
-              r={r}
-              upper={base}
-              lower={ember ? bonus : base}
-            />
-          ))}
-        </Pattern>
-      </Defs>
       <G opacity={opacity}>
-        <Rect width={width} height={height} fill={`url(#${id})`} />
+        {tiles.map(({ x, y }) => (
+          <G
+            key={`${x}-${y}`}
+            transform={`translate(${x} ${y}) scale(${scale})`}
+          >
+            {CELLS.map(([cx, cy, r, ember], i) => (
+              <MiniMark
+                key={i}
+                cx={cx}
+                cy={cy}
+                r={r}
+                upper={base}
+                lower={ember ? bonus : base}
+              />
+            ))}
+          </G>
+        ))}
       </G>
     </Svg>
   );
