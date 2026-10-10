@@ -307,30 +307,49 @@ Deno.serve(async (req: Request) => {
     // next model. 404 (retired model) skips straight to the next one; other 4xx abort.
     const RETRY_DELAYS_MS = [0, 700, 1800];
     const TRANSIENT = new Set([429, 500, 502, 503, 504]);
+    // A hanging Gemini request used to keep the client spinning forever: cap each
+    // attempt and the whole call, then fall through to the next model / an error.
+    const ATTEMPT_TIMEOUT_MS = 20_000;
+    const TOTAL_BUDGET_MS = 45_000;
+    const startedAt = Date.now();
     outer: for (const model of GEMINI_MODEL_FALLBACKS) {
       for (const delayMs of RETRY_DELAYS_MS) {
         if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
-        const geminiResp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': GEMINI_API_KEY,
-            },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts }],
-              generationConfig: {
-                responseMimeType: 'application/json',
-                responseSchema:
-                  mode === 'label'
-                    ? GEMINI_LABEL_SCHEMA
-                    : GEMINI_RESPONSE_SCHEMA,
-                temperature: 0.2,
+        if (Date.now() - startedAt > TOTAL_BUDGET_MS) break outer;
+        let geminiResp: Response;
+        try {
+          geminiResp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY,
               },
-            }),
-          },
-        );
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts }],
+                generationConfig: {
+                  responseMimeType: 'application/json',
+                  responseSchema:
+                    mode === 'label'
+                      ? GEMINI_LABEL_SCHEMA
+                      : GEMINI_RESPONSE_SCHEMA,
+                  temperature: 0.2,
+                },
+              }),
+              signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+            },
+          );
+        } catch (err) {
+          // Timeout / network error on this attempt: try the next model.
+          lastStatus = 504;
+          lastDetail = String(err).slice(0, 300);
+          console.error(
+            `analyze-food: Gemini attempt failed (model ${model})`,
+            lastDetail,
+          );
+          break;
+        }
         if (geminiResp.ok) {
           geminiJson = await geminiResp.json();
           break outer;

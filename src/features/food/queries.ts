@@ -325,10 +325,21 @@ export class AnalyzeFoodError extends Error {
   }
 }
 
+/** The edge function gives up on Gemini after ~45 s; never let the UI spin longer than this. */
+const ANALYZE_CLIENT_TIMEOUT_MS = 60_000;
+
 async function invokeAnalyze<T>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('analyze-food', {
-    body,
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new AnalyzeFoodError('timeout', 504, 'client_timeout')),
+      ANALYZE_CLIENT_TIMEOUT_MS,
+    );
   });
+  const { data, error } = await Promise.race([
+    supabase.functions.invoke('analyze-food', { body }),
+    timeout,
+  ]).finally(() => clearTimeout(timer));
 
   if (error) {
     // supabase-js FunctionsHttpError exposes the response on `context`.
