@@ -59,6 +59,7 @@ import { addDays, toISODate, weekdayOf } from '@/lib/date';
 import { haptic } from '@/lib/haptics';
 import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
@@ -258,61 +259,10 @@ export default function TodayScreen() {
     !targets && !targetsLoading && rituals.weightsLoaded && !rituals.hasWeight;
   const firstRun = isToday && !rituals.hasAnyFood && logs.length === 0;
   const color = themeColor('labelSecondary');
+  const insets = useSafeAreaInsets();
 
   return (
     <View className="bg-bg flex-1">
-      <ScreenTitle
-        title={headerTitle}
-        subtitle={subtitle}
-        right={
-          <View className="flex-row items-center">
-            {!isToday ? (
-              <Pressable
-                onPress={() => setDate(today)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t('identity.today.backToToday')}
-                className="h-11 w-11 items-center justify-center"
-              >
-                <SymbolView
-                  name="arrow.uturn.backward"
-                  size={17}
-                  weight="semibold"
-                  tintColor={themeColor('accent')}
-                />
-              </Pressable>
-            ) : null}
-            <Pressable
-              onPress={goPrevDay}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel={t('identity.today.prevDay')}
-              className="h-11 w-9 items-center justify-center"
-            >
-              <SymbolView
-                name="chevron.left"
-                size={17}
-                weight="semibold"
-                tintColor={color}
-              />
-            </Pressable>
-            <Pressable
-              onPress={goNextDay}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel={t('identity.today.nextDay')}
-              className="h-11 w-9 items-center justify-center"
-            >
-              <SymbolView
-                name="chevron.right"
-                size={17}
-                weight="semibold"
-                tintColor={color}
-              />
-            </Pressable>
-          </View>
-        }
-      />
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-7 px-5 pb-32 pt-3"
@@ -324,6 +274,61 @@ export default function TodayScreen() {
           />
         }
       >
+        {/* Title + greeting scroll away with the content (owner request). */}
+        <View className="-mx-5 -mt-3">
+          <ScreenTitle
+            title={headerTitle}
+            subtitle={subtitle}
+            right={
+              <View className="flex-row items-center">
+                {!isToday ? (
+                  <Pressable
+                    onPress={() => setDate(today)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('identity.today.backToToday')}
+                    className="h-11 w-11 items-center justify-center"
+                  >
+                    <SymbolView
+                      name="arrow.uturn.backward"
+                      size={17}
+                      weight="semibold"
+                      tintColor={themeColor('accent')}
+                    />
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  onPress={goPrevDay}
+                  hitSlop={4}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('identity.today.prevDay')}
+                  className="h-11 w-9 items-center justify-center"
+                >
+                  <SymbolView
+                    name="chevron.left"
+                    size={17}
+                    weight="semibold"
+                    tintColor={color}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={goNextDay}
+                  hitSlop={4}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('identity.today.nextDay')}
+                  className="h-11 w-9 items-center justify-center"
+                >
+                  <SymbolView
+                    name="chevron.right"
+                    size={17}
+                    weight="semibold"
+                    tintColor={color}
+                  />
+                </Pressable>
+              </View>
+            }
+          />
+        </View>
         <GestureDetector gesture={swipeGesture}>
           <View className="gap-6">
             {/* Owner: no daily sentence on Today; only the care card stays. */}
@@ -437,6 +442,12 @@ export default function TodayScreen() {
           )}
         </View>
       </ScrollView>
+      {/* Keeps scrolled content from showing under the status bar. */}
+      <View
+        pointerEvents="none"
+        className="bg-bg absolute left-0 right-0 top-0"
+        style={{ height: insets.top }}
+      />
 
       <AchievementOverlay enabled={isToday && !!targets} />
       <View pointerEvents="none" className="absolute inset-0">

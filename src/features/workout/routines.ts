@@ -84,6 +84,11 @@ async function fetchRoutinesFromServer(userId: string): Promise<Routine[]> {
  * overlaid — so a delete/edit/create shows up immediately and also offline.
  */
 async function fetchRoutines(userId: string): Promise<Routine[]> {
+  // Snapshot the outbox BEFORE the network read: an entry that syncs (and leaves
+  // the outbox) while the request is in flight would otherwise be missing from
+  // both the stale server answer and the pending list -> a freshly created
+  // routine vanished until the next refetch.
+  const before = pendingSnapshot();
   let server: Routine[];
   try {
     server = await fetchRoutinesFromServer(userId);
@@ -92,14 +97,25 @@ async function fetchRoutines(userId: string): Promise<Routine[]> {
     console.warn('[workout] routines read failed, using cached copy', err);
     server = readRoutinesCache(userId);
   }
+  const after = pendingSnapshot();
   return overlayRoutines({
     server,
     userId,
+    // Older snapshot first, newer wins (overlay applies upserts in order).
+    routineUpserts: [...before.routineUpserts, ...after.routineUpserts],
+    routineDeleteIds: after.routineDeleteIds,
+    exerciseUpserts: [...before.exerciseUpserts, ...after.exerciseUpserts],
+    exerciseDeleteIds: after.exerciseDeleteIds,
+  });
+}
+
+function pendingSnapshot() {
+  return {
     routineUpserts: pendingUpsertsForTable('routines'),
     routineDeleteIds: pendingDeleteIdsForTable('routines'),
     exerciseUpserts: pendingUpsertsForTable('routine_exercises'),
     exerciseDeleteIds: pendingDeleteIdsForTable('routine_exercises'),
-  });
+  };
 }
 
 export function useRoutines(): {
@@ -204,6 +220,17 @@ export function useSaveRoutine() {
       });
     });
 
+    // Show it right away (no network round trip), then reconcile with the server.
+    queryClient.setQueryData<Routine[]>(routinesQueryKey(userId), (old) =>
+      overlayRoutines({
+        server: old ?? [],
+        userId,
+        routineUpserts: pendingUpsertsForTable('routines'),
+        routineDeleteIds: pendingDeleteIdsForTable('routines'),
+        exerciseUpserts: pendingUpsertsForTable('routine_exercises'),
+        exerciseDeleteIds: pendingDeleteIdsForTable('routine_exercises'),
+      }),
+    );
     void queryClient.invalidateQueries({ queryKey: routinesQueryKey(userId) });
     return routineId;
   };
