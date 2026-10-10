@@ -23,7 +23,13 @@ export function NextStepCard({
   const { t } = useTranslation();
   const [weightOpen, setWeightOpen] = useState(false);
   if (step.kind === 'none') return null;
-  if (step.kind === 'closeDay' || step.kind === 'weeklyReview') return null;
+  // logging a meal is always one tap away in the quick-log bar; no duplicate card
+  if (
+    step.kind === 'closeDay' ||
+    step.kind === 'weeklyReview' ||
+    step.kind === 'logMeal'
+  )
+    return null;
   const copy = nextStepText(t, step.kind, step.mealType);
   const act = () => {
     if (step.kind === 'logWeight') setWeightOpen(true);

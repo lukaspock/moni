@@ -43,7 +43,7 @@ function DayGlyph({ day, label }: { day: WeekTallyDay; label: string }) {
       >
         {label}
       </Text>
-      <Svg width={30} height={30} viewBox="0 0 30 30">
+      <Svg width={24} height={24} viewBox="0 0 30 30">
         <Circle
           cx={15}
           cy={15}
@@ -137,7 +137,7 @@ export function WeekStrip() {
           </Text>
         ) : null}
       </View>
-      <Card className="gap-4">
+      <Card className="gap-3 p-4">
         <View className="flex-row justify-between">
           {tally.days.map((d) => (
             <DayGlyph key={d.date} day={d} label={label(d.date)} />

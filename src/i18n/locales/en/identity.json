@@ -94,6 +94,10 @@
     }
   },
   "today": {
+    "quickTitle": "Quick add",
+    "quickSaved": "{{name}} logged",
+    "undo": "Undo",
+    "undone": "Entry removed",
     "meals": "Meals",
     "thisWeek": "This week",
     "prevDay": "Previous day",

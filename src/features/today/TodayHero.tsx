@@ -4,7 +4,6 @@ import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { KcalRing } from '@/components/charts/KcalRing';
-import { MacroBar } from '@/components/charts/MacroBar';
 import { RollingNumber, withAlpha } from '@/components/motion';
 import { Card } from '@/components/ui';
 import type { FoodTotals } from '@/features/food';
@@ -27,7 +26,7 @@ export function TodayHero({ targets, totals, ringRef }: TodayHeroProps) {
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const [explain, setExplain] = useState(false);
-  const size = Math.max(200, Math.min(264, width - 40 - 48));
+  const size = Math.max(180, Math.min(224, width - 40 - 48 - 60));
   const bonus = Math.round(targets.workoutBonusKcal);
   const base = Math.round(targets.baseKcal);
   const fmt = (n: number) => n.toLocaleString(i18n.language);
@@ -51,7 +50,7 @@ export function TodayHero({ targets, totals, ringRef }: TodayHeroProps) {
   const groupSeparator = i18n.language.startsWith('de') ? '.' : ',';
 
   return (
-    <Card variant="hero" className="items-stretch gap-5">
+    <Card variant="hero" className="items-stretch gap-4 pb-5 pt-4">
       <Pressable
         onPress={() => {
           haptic.select();
@@ -72,7 +71,7 @@ export function TodayHero({ targets, totals, ringRef }: TodayHeroProps) {
               <RollingNumber
                 value={info.value}
                 startFrom={0}
-                fontSize={64}
+                fontSize={48}
                 fontFamily={fontFamily.displayBlack}
                 color={
                   info.isOver ? fixedColors.emberHead : fixedColors.heroLabel
@@ -155,30 +154,96 @@ export function TodayHero({ targets, totals, ringRef }: TodayHeroProps) {
           backgroundColor: 'rgba(245,242,234,0.10)',
         }}
       />
-      <View className="gap-3.5">
-        <MacroBar
-          onHero
-          highlighted
-          macro="protein"
-          label={t('food.dashboard.protein')}
-          gramsEaten={totals.proteinG}
-          gramsTarget={targets.proteinG}
+      <View className="flex-row gap-4">
+        <MacroMini
+          letterLabel={t('food.dashboard.protein')}
+          color={fixedColors.protein}
+          eaten={totals.proteinG}
+          target={targets.proteinG}
         />
-        <MacroBar
-          onHero
-          macro="carbs"
-          label={t('food.dashboard.carbs')}
-          gramsEaten={totals.carbsG}
-          gramsTarget={targets.carbsG}
+        <MacroMini
+          letterLabel={t('food.dashboard.carbs')}
+          color={fixedColors.carbs}
+          eaten={totals.carbsG}
+          target={targets.carbsG}
         />
-        <MacroBar
-          onHero
-          macro="fat"
-          label={t('food.dashboard.fat')}
-          gramsEaten={totals.fatG}
-          gramsTarget={targets.fatG}
+        <MacroMini
+          letterLabel={t('food.dashboard.fat')}
+          color={fixedColors.fat}
+          eaten={totals.fatG}
+          target={targets.fatG}
         />
       </View>
     </Card>
+  );
+}
+
+/** Compact macro column: name, eaten / target g (display font), thin bar in the macro color. */
+function MacroMini({
+  letterLabel,
+  color,
+  eaten,
+  target,
+}: {
+  letterLabel: string;
+  color: string;
+  eaten: number;
+  target: number;
+}) {
+  const e = Math.round(eaten);
+  const g = Math.round(target);
+  const share = g > 0 ? Math.min(1, e / g) : 0;
+  return (
+    <View
+      className="flex-1 gap-1.5"
+      accessible
+      accessibilityLabel={`${letterLabel}: ${e} / ${g} g`}
+    >
+      <Text
+        style={{
+          color: fixedColors.heroLabel2,
+          fontSize: 12,
+          fontWeight: '600',
+        }}
+        numberOfLines={1}
+        maxFontSizeMultiplier={1.2}
+      >
+        {letterLabel}
+      </Text>
+      <Text
+        style={{
+          color: fixedColors.heroLabel,
+          fontFamily: fontFamily.display,
+          fontSize: 16,
+          fontVariant: ['tabular-nums'],
+        }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        maxFontSizeMultiplier={1.15}
+      >
+        {e}
+        <Text style={{ color: fixedColors.heroLabel2, fontSize: 13 }}>
+          {' '}
+          / {g} g
+        </Text>
+      </Text>
+      <View
+        style={{
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: 'rgba(245,242,234,0.12)',
+          overflow: 'hidden',
+        }}
+      >
+        <View
+          style={{
+            width: `${share * 100}%`,
+            height: '100%',
+            borderRadius: 3,
+            backgroundColor: color,
+          }}
+        />
+      </View>
+    </View>
   );
 }

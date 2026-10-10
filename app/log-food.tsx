@@ -28,7 +28,7 @@ import { themeColor, useThemeHex } from '@/theme/colors';
 
 export default function LogFoodScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ date?: string }>();
+  const params = useLocalSearchParams<{ date?: string; meal?: string }>();
   // Day being viewed on the Today tab (route param `date`, YYYY-MM-DD); default/invalid = today.
   const logDate = resolveLogDate(params.date, toISODate());
   const accent = useThemeHex('accent');
@@ -47,7 +47,14 @@ export default function LogFoodScreen() {
   const [isBusy, setIsBusy] = useState(false);
   const [loggedKey, setLoggedKey] = useState<string | null>(null);
 
-  const openDraft = (source: FoodSource) => start({ date: logDate, source });
+  // Optional `meal` param (Today's per-meal plus): pre-selects the meal type of the new draft.
+  const presetMeal = (['breakfast', 'lunch', 'dinner', 'snack'] as const).find(
+    (m) => m === params.meal,
+  );
+  const openDraft = (source: FoodSource) => {
+    start({ date: logDate, source });
+    if (presetMeal) useFoodDraftStore.getState().setMealType(presetMeal);
+  };
   const goToReview = () => router.push('/food-review');
 
   const finishAnalysis = (failure: AnalysisFailure | null) => {

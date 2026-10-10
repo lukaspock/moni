@@ -100,6 +100,10 @@
     }
   },
   "today": {
+    "quickTitle": "Schnell eintragen",
+    "quickSaved": "{{name}} eingetragen",
+    "undo": "Rückgängig",
+    "undone": "Eintrag entfernt",
     "meals": "Mahlzeiten",
     "thisWeek": "Diese Woche",
     "prevDay": "Vorheriger Tag",

@@ -1,6 +1,14 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -11,17 +19,17 @@ import {
   SkeletonBlock,
   useMealFlight,
 } from '@/components/motion';
-import {
-  Card,
-  GlassActionButton,
-  ScreenTitle,
-  SectionHeader,
-} from '@/components/ui';
+import { Card, ScreenTitle, SectionHeader } from '@/components/ui';
+import type { MealType } from '@/domain';
 import {
   useDeleteFoodLog,
   useFoodLogsForDate,
   useFoodTotals,
+  useQuickLogEntries,
+  useQuickLogMeal,
+  type QuickLogEntry,
 } from '@/features/food';
+import { invalidateLedger } from '@/features/rhythm';
 import { useMealFlightBridge } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
 import { AchievementOverlay } from '@/features/today/AchievementOverlay';
@@ -30,6 +38,9 @@ import { daySentenceText, greetingText } from '@/features/today/copy';
 import { FirstRunCard } from '@/features/today/FirstRunCard';
 import { MealGroups } from '@/features/today/MealGroups';
 import { NextStepCard } from '@/features/today/NextStepCard';
+import { QuickCarousel, type QuickPoint } from '@/features/today/QuickCarousel';
+import { QuickLogBar } from '@/features/today/QuickLogBar';
+import { UndoToast, type UndoToastState } from '@/features/today/UndoToast';
 import { TodayHero } from '@/features/today/TodayHero';
 import { TrainingCard } from '@/features/today/TrainingCard';
 import { useNow } from '@/features/today/useNow';
@@ -55,11 +66,23 @@ export default function TodayScreen() {
 
   const { targets, isLoading: targetsLoading } = useDailyTargets(date);
   const { totals } = useFoodTotals(date);
-  const { logs } = useFoodLogsForDate(date);
+  const { logs, isLoading: logsLoading } = useFoodLogsForDate(date);
   const { workouts } = useWorkoutsForDate(date);
   const { plannedDay } = usePlannedDay(date);
   const deleteFoodLog = useDeleteFoodLog();
   const { startEmpty } = useStartWorkout();
+  const { favorites, recents } = useQuickLogEntries();
+  const quickLog = useQuickLogMeal();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const [toast, setToast] = useState<UndoToastState | null>(null);
+  const hideToast = useCallback(() => setToast(null), [setToast]);
+  const quickEntries = useMemo(() => {
+    const seen = new Set<string>();
+    return [...favorites, ...recents]
+      .filter((e) => (seen.has(e.key) ? false : (seen.add(e.key), true)))
+      .slice(0, 8);
+  }, [favorites, recents]);
   const rituals = useTodayRituals({
     today,
     now,
@@ -131,29 +154,85 @@ export default function TodayScreen() {
   const ringRef = useRef<View>(null);
   const flight = useMealFlight();
   const launchFlight = flight.launch;
+  const flyToRing = useCallback(
+    (kcal: number, from?: QuickPoint) => {
+      ringRef.current?.measureInWindow((x, y, w, h) =>
+        launchFlight({ kcal, from, to: { x: x + w / 2, y: y + h / 2 } }),
+      );
+    },
+    [launchFlight],
+  );
   useFocusEffect(
     useCallback(() => {
       const pending = useMealFlightBridge.getState().consume();
       if (!pending) return;
-      const id = setTimeout(() => {
-        ringRef.current?.measureInWindow((x, y, w, h) => {
-          launchFlight({
-            kcal: pending.kcal,
-            from: pending.from,
-            to: { x: x + w / 2, y: y + h / 2 },
-          });
-        });
-      }, 250);
+      const id = setTimeout(() => flyToRing(pending.kcal, pending.from), 250);
       return () => clearTimeout(id);
-    }, [launchFlight]),
+    }, [flyToRing]),
   );
 
-  const handleDelete = (id: string) => {
-    haptic.mealDeleted();
-    deleteFoodLog.mutate(id);
-  };
   const openLog = () =>
     router.push({ pathname: '/log-food', params: { date } });
+  const openLogFor = useCallback(
+    (meal: MealType) =>
+      router.push({ pathname: '/log-food', params: { date, meal } }),
+    [date],
+  );
+
+  const deleteMutate = deleteFoodLog.mutate;
+  const handleDelete = useCallback(
+    (id: string) => {
+      haptic.mealDeleted();
+      deleteMutate(id);
+    },
+    [deleteMutate],
+  );
+  const quickMutate = quickLog.mutate;
+  const onQuickLog = useCallback(
+    (entry: QuickLogEntry, from?: QuickPoint) => {
+      quickMutate(
+        { entry, date },
+        {
+          onSuccess: (id) => {
+            haptic.mealQuickSaved();
+            flyToRing(entry.kcal, from);
+            setToast({
+              id: Date.now(),
+              message: t('identity.today.quickSaved', {
+                name: entry.title || t('food.dashboard.untitledMeal'),
+              }),
+              actionLabel: t('identity.today.undo'),
+              onAction: () => {
+                deleteMutate(id);
+                setToast(null);
+              },
+            });
+          },
+          onError: () =>
+            Alert.alert(
+              t('food.review.saveErrorTitle'),
+              t('food.logFood.quickLogError'),
+            ),
+        },
+      );
+    },
+    [quickMutate, deleteMutate, date, flyToRing, t, setToast],
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['food'] }),
+        queryClient.invalidateQueries({ queryKey: ['workout'] }),
+        queryClient.invalidateQueries({ queryKey: ['latestWeight'] }),
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+      ]);
+      invalidateLedger(queryClient);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient]);
 
   const needsWeight =
     !targets && !targetsLoading && rituals.weightsLoaded && !rituals.hasWeight;
@@ -216,8 +295,14 @@ export default function TodayScreen() {
       />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-8 px-5 pb-32 pt-4"
+        contentContainerClassName="gap-7 px-5 pb-32 pt-3"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+          />
+        }
       >
         <GestureDetector gesture={swipeGesture}>
           <View className="gap-6">
@@ -242,7 +327,7 @@ export default function TodayScreen() {
                 />
               </Reveal>
             ) : targetsLoading ? (
-              <SkeletonBlock width="100%" height={420} radius={32} />
+              <SkeletonBlock width="100%" height={340} radius={32} />
             ) : needsWeight ? (
               <Card className="gap-3">
                 <Text
@@ -280,12 +365,15 @@ export default function TodayScreen() {
               </Card>
             )}
 
-            <GlassActionButton
-              label={t('food.dashboard.addMeal')}
-              onPress={openLog}
-            />
+            <QuickLogBar date={date} />
           </View>
         </GestureDetector>
+
+        <QuickCarousel
+          entries={quickEntries}
+          disabled={quickLog.isPending}
+          onLog={onQuickLog}
+        />
 
         {firstRun ? (
           <FirstRunCard
@@ -315,7 +403,15 @@ export default function TodayScreen() {
 
         <View className="gap-2">
           <SectionHeader title={t('identity.today.meals')} />
-          <MealGroups logs={logs} onAdd={openLog} onDelete={handleDelete} />
+          {logsLoading && logs.length === 0 ? (
+            <SkeletonBlock width="100%" height={240} radius={24} />
+          ) : (
+            <MealGroups
+              logs={logs}
+              onAdd={openLogFor}
+              onDelete={handleDelete}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -323,6 +419,7 @@ export default function TodayScreen() {
       <View pointerEvents="none" className="absolute inset-0">
         <MealFlight flight={flight.flight} onDone={flight.clear} />
       </View>
+      <UndoToast toast={toast} onHide={hideToast} />
     </View>
   );
 }
