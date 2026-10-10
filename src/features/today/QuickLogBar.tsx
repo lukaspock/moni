@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SymbolView } from 'expo-symbols';
+import { router } from 'expo-router';
 
 import { BrandIcon } from '@/components/brand';
 import { PressableScale } from '@/components/motion';
@@ -34,11 +35,11 @@ function Tile({
       className="flex-1 items-center gap-1.5"
     >
       <View
-        className={`h-16 w-full items-center justify-center ${
+        className={`h-14 w-full items-center justify-center ${
           active ? 'bg-tint' : 'bg-tint-soft'
         }`}
         style={{
-          borderRadius: 22,
+          borderRadius: 20,
           borderCurve: 'continuous',
           opacity: disabled ? 0.5 : 1,
         }}
@@ -49,6 +50,8 @@ function Tile({
         className="text-label"
         style={[textStyles.caption, { fontWeight: '600' }]}
         numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
         maxFontSizeMultiplier={1.2}
       >
         {label}
@@ -57,7 +60,10 @@ function Tile({
   );
 }
 
-/** Four always-visible capture actions: photo, describe (inline), barcode, nutrition label. */
+/**
+ * Five always-visible capture actions in one row: photo, describe (inline),
+ * speak (voice sheet), barcode, nutrition label.
+ */
 export const QuickLogBar = memo(function QuickLogBar({
   date,
 }: {
@@ -80,9 +86,9 @@ export const QuickLogBar = memo(function QuickLogBar({
 
   return (
     <View className="gap-3">
-      <View className="flex-row gap-3">
+      <View className="flex-row gap-2">
         <Tile
-          icon={<BrandIcon name="photoMeal" size={30} color={accent} />}
+          icon={<BrandIcon name="photoMeal" size={26} color={accent} />}
           label={t('food.logFood.photo')}
           disabled={capture.busy}
           onPress={() => void capture.photo()}
@@ -91,7 +97,7 @@ export const QuickLogBar = memo(function QuickLogBar({
           icon={
             <SymbolView
               name="text.bubble"
-              size={26}
+              size={24}
               weight="semibold"
               tintColor={describing ? onAccent : accent}
             />
@@ -106,8 +112,22 @@ export const QuickLogBar = memo(function QuickLogBar({
         <Tile
           icon={
             <SymbolView
+              name="mic.fill"
+              size={24}
+              weight="semibold"
+              tintColor={accent}
+            />
+          }
+          label={t('food.voice.tile')}
+          onPress={() =>
+            router.push({ pathname: '/voice-log', params: { date } })
+          }
+        />
+        <Tile
+          icon={
+            <SymbolView
               name="barcode.viewfinder"
-              size={28}
+              size={25}
               weight="semibold"
               tintColor={accent}
             />
@@ -116,7 +136,7 @@ export const QuickLogBar = memo(function QuickLogBar({
           onPress={() => capture.scanner('barcode')}
         />
         <Tile
-          icon={<BrandIcon name="scanLabel" size={28} color={accent} />}
+          icon={<BrandIcon name="scanLabel" size={25} color={accent} />}
           label={t('food.logFood.label')}
           onPress={() => capture.scanner('label')}
         />

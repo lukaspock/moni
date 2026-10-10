@@ -76,3 +76,21 @@ export { foodKeys } from './keys';
 // UI bridge: the food sheets queue a "+kcal" meal flight, Today consumes it (see flightStore.ts).
 export { useMealFlightBridge } from './flightStore';
 export type { FlightPoint, PendingMealFlight } from './flightStore';
+
+// Own dishes / recipes (stored as favorite_meals with per-serving items, see recipes.ts).
+export {
+  favoriteToRecipe,
+  isRecipeFavorite,
+  useRecipes,
+  useRecipe,
+  useSaveRecipe,
+  useDeleteRecipe,
+  useLogRecipe,
+  useIngredientCatalog,
+  useIngredientLookup,
+} from './recipes';
+export type {
+  Recipe,
+  SaveRecipeInput,
+  IngredientLookupResult,
+} from './recipes';

@@ -36,6 +36,7 @@ import { AchievementOverlay } from '@/features/today/AchievementOverlay';
 import { CareCard } from '@/features/today/CareCard';
 import { daySentenceText, greetingText } from '@/features/today/copy';
 import { FirstRunCard } from '@/features/today/FirstRunCard';
+import { FitCard } from '@/features/today/FitCard';
 import { MealGroups } from '@/features/today/MealGroups';
 import { NextStepCard } from '@/features/today/NextStepCard';
 import { QuickCarousel, type QuickPoint } from '@/features/today/QuickCarousel';
@@ -44,9 +45,11 @@ import { UndoToast, type UndoToastState } from '@/features/today/UndoToast';
 import { TodayHero } from '@/features/today/TodayHero';
 import { TrainingCard } from '@/features/today/TrainingCard';
 import { useNow } from '@/features/today/useNow';
+import { useFitSuggestions } from '@/features/today/useFitSuggestions';
 import { useTodayRituals } from '@/features/today/useTodayRituals';
 import { WeekStrip } from '@/features/today/WeekStrip';
 import { WeightQuickLog } from '@/features/today/WeightQuickLog';
+import { WaterCard, type WaterAddedInfo } from '@/features/water/ui/WaterCard';
 import {
   usePlannedDay,
   useStartWorkout,
@@ -77,12 +80,23 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<UndoToastState | null>(null);
   const hideToast = useCallback(() => setToast(null), [setToast]);
-  const quickEntries = useMemo(() => {
+  const allQuickEntries = useMemo(() => {
     const seen = new Set<string>();
-    return [...favorites, ...recents]
-      .filter((e) => (seen.has(e.key) ? false : (seen.add(e.key), true)))
-      .slice(0, 8);
+    return [...favorites, ...recents].filter((e) =>
+      seen.has(e.key) ? false : (seen.add(e.key), true),
+    );
   }, [favorites, recents]);
+  const quickEntries = useMemo(
+    () => allQuickEntries.slice(0, 8),
+    [allQuickEntries],
+  );
+  const fits = useFitSuggestions({
+    enabled: isToday,
+    hour: now.getHours(),
+    targets,
+    totals,
+    entries: allQuickEntries,
+  });
   const rituals = useTodayRituals({
     today,
     now,
@@ -219,6 +233,20 @@ export default function TodayScreen() {
     [quickMutate, deleteMutate, date, flyToRing, t, setToast],
   );
 
+  const onWaterAdded = useCallback(
+    ({ message, undo }: WaterAddedInfo) =>
+      setToast({
+        id: Date.now(),
+        message,
+        actionLabel: t('identity.today.undo'),
+        onAction: () => {
+          undo();
+          setToast(null);
+        },
+      }),
+    [t, setToast],
+  );
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -227,6 +255,7 @@ export default function TodayScreen() {
         queryClient.invalidateQueries({ queryKey: ['workout'] }),
         queryClient.invalidateQueries({ queryKey: ['latestWeight'] }),
         queryClient.invalidateQueries({ queryKey: ['profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['water'] }),
       ]);
       invalidateLedger(queryClient);
     } finally {
@@ -371,6 +400,18 @@ export default function TodayScreen() {
 
         <QuickCarousel
           entries={quickEntries}
+          disabled={quickLog.isPending}
+          onLog={onQuickLog}
+        />
+
+        <WaterCard
+          date={date}
+          isTrainingDay={!!targets?.isTrainingDay}
+          onAdded={onWaterAdded}
+        />
+
+        <FitCard
+          result={fits}
           disabled={quickLog.isPending}
           onLog={onQuickLog}
         />

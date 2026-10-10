@@ -312,5 +312,45 @@
     "logged30": "30 days logged. Now your trend actually says something.",
     "highWaterMark": "New high-water mark: {{exercise}} {{value}}.",
     "firstWeighIn": "First data point. From here on there’s a trend."
+  },
+  "water": {
+    "title": "Water",
+    "amountOfGoal": "{{amount}} of {{goal}}",
+    "remaining": "{{amount}} to go",
+    "reached": "Daily goal reached",
+    "hint": "Tap logs a glass, long-press picks the size.",
+    "a11yLevel": "Water: {{amount}} of {{goal}}",
+    "a11yHint": "Tap logs {{amount}}. Long-press shows more sizes.",
+    "add": "Log {{amount}}",
+    "added": "{{amount}} of water logged",
+    "presetsTitle": "How much?",
+    "preset": {
+      "glass": "Glass",
+      "smallBottle": "Small bottle",
+      "bottle": "Bottle"
+    },
+    "unit": {
+      "ml": "{{value}} ml",
+      "l": "{{value}} l",
+      "flOz": "{{value}} fl oz"
+    }
+  },
+  "fits": {
+    "title": "Still fits",
+    "subtitle": {
+      "protein": "You are {{grams}} g of protein short. These fit into {{kcal}} kcal.",
+      "carbs": "You are {{grams}} g of carbs short. These fit into {{kcal}} kcal.",
+      "fat": "You are {{grams}} g of fat short. These fit into {{kcal}} kcal.",
+      "none": "Macros are covered. {{kcal}} kcal left."
+    },
+    "macro": {
+      "protein": "protein",
+      "carbs": "carbs",
+      "fat": "fat"
+    },
+    "detail": "{{kcal}} kcal · {{grams}} g {{macro}}",
+    "detailKcal": "{{kcal}} kcal",
+    "after": "{{kcal}} kcal left after",
+    "log": "Log {{name}}"
   }
 }

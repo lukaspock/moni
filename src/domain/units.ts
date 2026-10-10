@@ -58,3 +58,14 @@ export function roundTo(value: number, decimals: number = 0): number {
   const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
 }
+
+/** US customary fluid ounce in millilitres (exact by definition). */
+export const ML_PER_FL_OZ = 29.5735295625;
+
+export function mlToFlOz(ml: number): number {
+  return ml / ML_PER_FL_OZ;
+}
+
+export function flOzToMl(flOz: number): number {
+  return flOz * ML_PER_FL_OZ;
+}

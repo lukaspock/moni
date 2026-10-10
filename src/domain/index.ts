@@ -25,3 +25,6 @@ export * from './rituals';
 export * from './weeklyReview';
 export * from './nudges';
 export * from './shareCard';
+export * from './water';
+export * from './fitSuggestions';
+export * from './recipe';

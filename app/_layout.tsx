@@ -184,9 +184,15 @@ function RootNavigator() {
         options={{ presentation: 'fullScreenModal' }}
       />
       <Stack.Screen name="food-review" options={FULL_SHEET_OPTIONS} />
+      <Stack.Screen name="voice-log" options={SHEET_OPTIONS} />
+      <Stack.Screen name="recipe-editor" options={FULL_SHEET_OPTIONS} />
       {/* Outside the tabs: no tab bar over the save/add buttons, no native header. */}
       <Stack.Screen
         name="routine-editor"
+        options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="training-setup"
         options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
       />
       {/* Stays full screen (no drag-to-dismiss) so a running workout can't be swiped away. */}

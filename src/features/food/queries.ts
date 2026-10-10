@@ -8,6 +8,7 @@ import {
 } from '@/features/health';
 import { supabase } from '@/lib/supabase';
 import type { Database, Json } from '@/types/database';
+import { isRecipeItems } from '@/domain/recipe';
 
 import { foodKeys } from './keys';
 import type { DraftFoodItem } from './draftStore';
@@ -223,7 +224,7 @@ export function useSaveFoodDraft() {
         const favoriteTitle = input.title || 'Meal';
         const { data: existingFavorite } = await supabase
           .from('favorite_meals')
-          .select('id')
+          .select('id, items')
           .eq('user_id', userId)
           .eq('title', favoriteTitle)
           .limit(1)
@@ -237,11 +238,14 @@ export function useSaveFoodDraft() {
           fat_g: item.fatG,
         })) as unknown as Json;
         // Same title again -> refresh that favorite instead of piling up duplicates.
+        // A self-built dish (recipe) with that title is never overwritten.
         const { error: favError } = existingFavorite
-          ? await supabase
-              .from('favorite_meals')
-              .update({ items: favoriteItems })
-              .eq('id', existingFavorite.id)
+          ? isRecipeItems(existingFavorite.items)
+            ? { error: null }
+            : await supabase
+                .from('favorite_meals')
+                .update({ items: favoriteItems })
+                .eq('id', existingFavorite.id)
           : await supabase.from('favorite_meals').insert({
               user_id: userId,
               title: favoriteTitle,

@@ -318,5 +318,45 @@
     "logged30": "30 Tage eingetragen. Jetzt sagt dein Trend etwas aus.",
     "highWaterMark": "Neue Hochwassermarke: {{exercise}} {{value}}.",
     "firstWeighIn": "Erster Messpunkt. Ab hier gibt es einen Trend."
+  },
+  "water": {
+    "title": "Wasser",
+    "amountOfGoal": "{{amount}} von {{goal}}",
+    "remaining": "Noch {{amount}}",
+    "reached": "Tagesziel erreicht",
+    "hint": "Tippen trägt ein Glas ein, lange drücken wählt die Größe.",
+    "a11yLevel": "Wasser: {{amount}} von {{goal}}",
+    "a11yHint": "Tippen trägt {{amount}} ein. Lange drücken zeigt weitere Größen.",
+    "add": "{{amount}} eintragen",
+    "added": "{{amount}} Wasser eingetragen",
+    "presetsTitle": "Wie viel?",
+    "preset": {
+      "glass": "Glas",
+      "smallBottle": "Kleine Flasche",
+      "bottle": "Flasche"
+    },
+    "unit": {
+      "ml": "{{value}} ml",
+      "l": "{{value}} l",
+      "flOz": "{{value}} fl oz"
+    }
+  },
+  "fits": {
+    "title": "Passt noch rein",
+    "subtitle": {
+      "protein": "Dir fehlen noch {{grams}} g Protein. Das passt in {{kcal}} kcal.",
+      "carbs": "Dir fehlen noch {{grams}} g Kohlenhydrate. Das passt in {{kcal}} kcal.",
+      "fat": "Dir fehlen noch {{grams}} g Fett. Das passt in {{kcal}} kcal.",
+      "none": "Makros sind gedeckt. Noch {{kcal}} kcal frei."
+    },
+    "macro": {
+      "protein": "Protein",
+      "carbs": "Kohlenhydrate",
+      "fat": "Fett"
+    },
+    "detail": "{{kcal}} kcal · {{grams}} g {{macro}}",
+    "detailKcal": "{{kcal}} kcal",
+    "after": "Danach {{kcal}} kcal frei",
+    "log": "{{name}} eintragen"
   }
 }

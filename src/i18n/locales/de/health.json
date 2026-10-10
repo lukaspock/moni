@@ -16,7 +16,7 @@
     },
     "enabled": "Mit Apple Health synchronisieren",
     "writeNutrition": "Ernährung in Health schreiben",
-    "writeNutritionHint": "Schreibt Kalorien, Protein, Kohlenhydrate und Fett deiner Mahlzeiten in Health. Änderungen und Löschungen werden übernommen.",
+    "writeNutritionHint": "Schreibt Kalorien, Protein, Kohlenhydrate und Fett deiner Mahlzeiten sowie getrunkenes Wasser in Health. Änderungen und Löschungen werden übernommen.",
     "syncNow": "Jetzt synchronisieren",
     "syncing": "Synchronisiere …",
     "lastSynced": "Zuletzt synchronisiert: {{time}}",

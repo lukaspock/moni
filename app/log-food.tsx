@@ -9,16 +9,21 @@ import { SymbolView } from 'expo-symbols';
 import { resolveLogDate, type FoodSource } from '@/domain';
 import {
   favoriteToItems,
+  isRecipeFavorite,
   logToItems,
   useFoodAnalysis,
   useFoodDraftStore,
+  useLogRecipe,
   useMealFlightBridge,
   useQuickLogEntries,
   useQuickLogMeal,
+  useRecipes,
   type AnalysisFailure,
   type QuickLogEntry,
+  type Recipe,
 } from '@/features/food';
 import { FieldInput } from '@/features/food/ui/FieldInput';
+import { RecipeQuickList } from '@/features/food/ui/RecipeQuickList';
 import { BrandIcon } from '@/components/brand';
 import { PressableScale, SkeletonBlock } from '@/components/motion';
 import { Card, ListRow, SectionHeader, SheetScreen } from '@/components/ui';
@@ -42,10 +47,13 @@ export default function LogFoodScreen() {
   const { favorites, recents, suggestedMealType, isLoading } =
     useQuickLogEntries();
   const quickLog = useQuickLogMeal();
+  const { recipes } = useRecipes();
+  const logRecipe = useLogRecipe();
 
   const [description, setDescription] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [loggedKey, setLoggedKey] = useState<string | null>(null);
+  const [loggedRecipeId, setLoggedRecipeId] = useState<string | null>(null);
 
   // Optional `meal` param (Today's per-meal plus): pre-selects the meal type of the new draft.
   const presetMeal = (['breakfast', 'lunch', 'dinner', 'snack'] as const).find(
@@ -139,6 +147,26 @@ export default function LogFoodScreen() {
     );
   };
 
+  const logRecipeNow = (recipe: Recipe, portions: number, kcal: number) => {
+    if (logRecipe.isPending) return;
+    logRecipe.mutate(
+      { recipe, portions, date: logDate, mealType: presetMeal },
+      {
+        onSuccess: () => {
+          setLoggedRecipeId(recipe.id);
+          haptic.mealQuickSaved();
+          useMealFlightBridge.getState().queue(kcal);
+          setTimeout(() => router.back(), 450);
+        },
+        onError: () =>
+          Alert.alert(
+            t('food.review.saveErrorTitle'),
+            t('food.recipe.logError'),
+          ),
+      },
+    );
+  };
+
   const manualEntry = () => {
     openDraft('manual');
     setItems([
@@ -157,7 +185,10 @@ export default function LogFoodScreen() {
   };
 
   // Max. 3 quick-log rows: favorites first, recents fill the rest.
-  const quickFavorites = favorites.slice(0, 3);
+  // Recipes (own dishes) have their own section below and are not listed as regulars.
+  const quickFavorites = favorites
+    .filter((e) => !e.favorite || !isRecipeFavorite(e.favorite))
+    .slice(0, 3);
   const favoriteKeys = new Set(quickFavorites.map((e) => e.key));
   const quickRecents = recents
     .filter((e) => !favoriteKeys.has(e.key))
@@ -303,6 +334,17 @@ export default function LogFoodScreen() {
           {t('food.logFood.noFavoritesYet')}
         </Text>
       )}
+
+      <RecipeQuickList
+        recipes={recipes}
+        loggedId={loggedRecipeId}
+        disabled={logRecipe.isPending}
+        onLog={logRecipeNow}
+        onEdit={(recipe) =>
+          router.push({ pathname: '/recipe-editor', params: { id: recipe.id } })
+        }
+        onCreate={() => router.push('/recipe-editor')}
+      />
 
       <Card className="gap-0 overflow-hidden p-0">
         <ListRow

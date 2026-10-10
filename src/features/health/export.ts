@@ -172,3 +172,64 @@ export async function deleteFoodLogFromHealth(
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Water (identity N1): same guard as nutrition (`enabled && writeNutrition`).
+
+/** Custom metadata key on møni's water samples (loop prevention if water is ever imported). */
+export const MOENI_WATER_LOG_ID_METADATA_KEY = 'moeni_water_log_id';
+const WATER_TYPE = 'HKQuantityTypeIdentifierDietaryWater' as const;
+
+/** HealthKit sync identifier of a water log's sample (`moeni:water:<id>`). */
+export function waterSyncIdentifier(waterLogId: string): string {
+  return `moeni:water:${waterLogId}`;
+}
+
+export interface ExportWaterLogInput {
+  id: string;
+  loggedAt: string; // ISO
+  ml: number;
+}
+
+/**
+ * Writes one water log as a `dietaryWater` sample (mL), tagged with
+ * `HKMetadataKeySyncIdentifier` = `moeni:water:<id>` + a time-based sync
+ * version and `moeni_water_log_id`. Fire-and-forget: never throws.
+ */
+export async function exportWaterLogToHealth(
+  input: ExportWaterLogInput,
+): Promise<void> {
+  if (!nutritionEnabled() || !(input.ml > 0)) return;
+  const hk = getHealthKit();
+  if (!hk) return;
+  try {
+    const at = new Date(input.loggedAt);
+    await hk.saveQuantitySample(WATER_TYPE, 'mL', input.ml, at, at, {
+      HKMetadataKeySyncIdentifier: waterSyncIdentifier(input.id),
+      HKMetadataKeySyncVersion: Date.now(),
+      [MOENI_WATER_LOG_ID_METADATA_KEY]: input.id,
+    });
+  } catch (err) {
+    console.warn('[health] exporting water log failed', err);
+  }
+}
+
+/** Removes an undone water log's sample from Health (by sync identifier). Never throws. */
+export async function deleteWaterLogFromHealth(
+  waterLogId: string,
+): Promise<void> {
+  if (!nutritionEnabled()) return;
+  const hk = getHealthKit();
+  if (!hk) return;
+  try {
+    await hk.deleteObjects(WATER_TYPE, {
+      metadata: {
+        withMetadataKey: 'HKMetadataKeySyncIdentifier',
+        operatorType: ComparisonPredicateOperator.equalTo,
+        value: waterSyncIdentifier(waterLogId),
+      },
+    });
+  } catch (err) {
+    console.warn('[health] deleting water log failed', err);
+  }
+}
