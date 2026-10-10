@@ -275,3 +275,43 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - "Compared to last time" (previous session values per exercise during a workout) not implemented.
 - Share card for a finished workout (summary 2.0) not implemented.
 - Stage names (Anlauf, Einklang, Gleichschritt, Eingespielt, Metronom, Original) are working titles (D4) — owner approval pending.
+
+## HANDOFF 2026-10-10 (late) – READ FIRST, open items for the next agent
+
+State: everything is merged to `main` and pushed (repo moved to `github.com/lukaspock/moni`). Owner's iPhone has a **Release** build (free team profile, expires **2026-10-17 22:54**) from commit `f84df5c` — it does NOT yet contain the later analyze-food client timeout (`f383a21`/`33bd438`), rebuild before the profile expires. Migrations `water_logs` and `routine_exercise_groups` are applied (advisors clean except the Auth item below).
+
+### 1. BLOCKER – AI food analysis gets no answer from Gemini (owner can't log food via photo/text/voice)
+
+- Symptom: app showed endless loading, then `546` (worker killed), after our fixes `502 ai_provider_error` / `503 ai_rate_limited`.
+- Facts from `function_logs` (Supabase): `gemini-3.8-flash` and `gemini-flash-latest` **never answer** (timeouts at 20 s and 30 s, the very first request at 23:08 local hung > 2 min while NOT over any limit); `gemini-2.5-flash` → 404 "no longer available to new users, use gemini-3.8-flash … We recommend the Interactions API".
+- AI Studio (owner screenshot): project "Default Gemini Project" is on the **free tier** (Gemini 3.8 Flash: 5 RPM, 20 RPD, 250K TPM), banner "Ratenbegrenzung erreicht – Abrechnung einrichten". The 6/5 RPM peak shown there is a 28-day peak (≈ Oct 1), today's peak was ~2 RPM → throttling alone does NOT explain the hang.
+- Already done (deployed, `supabase/functions/analyze-food/index.ts`): `AbortSignal.timeout` 30 s per attempt / 60 s budget, `thinkingConfig: { thinkingLevel: 'low' }` (auto-retry without it on a 400 mentioning "thinking"), stop immediately on timeout/429 (all models share one quota), 404 → next model, new error code `ai_rate_limited` (503). Client: 75 s timeout in `src/features/food/queries.ts::invokeAnalyze`.
+- **Next steps (in this order)**:
+  1. Owner runs the tiny key test in the terminal (key typed by owner, never in chat/repo):
+     `read -s GEMINI_KEY && time curl -s -m 60 -H "x-goog-api-key: $GEMINI_KEY" -H "Content-Type: application/json" -d '{"contents":[{"parts":[{"text":"Sag nur: ok"}]}]}' "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" | head -c 600`
+     - answers fast → our request is the problem: test without `responseSchema`/image, or migrate to the **Interactions API** Google recommends.
+     - hangs/errors → key/project problem: owner sets up billing in AI Studio ("Abrechnung einrichten") and/or creates a fresh key; then retest.
+  2. Optional diagnostic idea (owner stopped it, do NOT do it without asking): temporary token-protected edge function that uses the server-side key and returns only status codes/timings; delete it afterwards.
+  3. Consider pinning `GEMINI_MODEL` (Supabase secret) once a working model is known; the app's error screen could show a dedicated text for `ai_rate_limited`.
+
+### 2. Owner-side to-dos
+
+- Supabase Auth: enable **Leaked Password Protection** (only advisor warning; security setting → owner).
+- AI Studio billing (see 1).
+- Free Apple team: reinstall before 2026-10-17 (build commands in CLAUDE.md, add `-configuration Release`). The App Group `group.app.moeni` + widget extension `app.moeni.widgets` DID sign fine on the personal team.
+
+### 3. Not verified on a device yet (simulator can't show them)
+
+- Dynamic Island / lock-screen Live Activity during a workout (if nothing shows: Settings → møni → Live Activities).
+- Voice logging (`app/voice-log.tsx`, on-device de-DE recognition + server fallback).
+- Own camera screen (`app/food-camera.tsx`) with a real camera: shutter → freeze → `food-review` (router.replace from fullScreenModal to sheet was the least certain step).
+- Training setup flow auto-open on first visit (owner already has a routine; test with a fresh account).
+
+### 4. Small open UI/feature items
+
+- Insights weight chart: y-axis tick label (e.g. "78.5") overlaps the "Ziel: 80 kg" label.
+- Recipe editor: barcode scan for ingredients not built (needs `?target=recipe` in `app/barcode-scanner.tsx` + inbox store).
+- Native tab bar taps were laggy/misrouted in the **simulator** only (input injection) — check on device, probably fine.
+- Undo toast now sits above the tab bar (`src/features/today/UndoToast.tsx`, `TAB_BAR_CLEARANCE = 84`) — verify the spacing on a real iPhone 15.
+- Old unused i18n keys (`workout.active.*`, `workout.training.*`, `account.auth.signIn.signUpTitle` …) can be removed.
+- Apple Watch app: deliberately not started (needs a Watch to test + own native target).
