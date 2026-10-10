@@ -3,7 +3,6 @@ import type { TFunction } from 'i18next';
 import type { AchievementId, StageKey, WeekTitleKey } from '@/domain';
 
 // Typed i18n keys do not allow template literals, so every lookup is a literal t() call.
-// Two catalog ids differ from their copy keys: plusTen -> plus10, firstRhythm -> firstTakt.
 
 export interface AchievementCopy {
   name: string;
@@ -46,9 +45,9 @@ export function achievementCopy(
       celebrate: t('achievements.volume10t.celebrate'),
     },
     plusTen: {
-      name: t('achievements.plus10.name'),
-      desc: t('achievements.plus10.desc'),
-      celebrate: t('achievements.plus10.celebrate'),
+      name: t('achievements.plusTen.name'),
+      desc: t('achievements.plusTen.desc'),
+      celebrate: t('achievements.plusTen.celebrate'),
     },
     allRounder: {
       name: t('achievements.allRounder.name'),
@@ -96,9 +95,9 @@ export function achievementCopy(
       celebrate: t('achievements.bridgeDay.celebrate'),
     },
     firstRhythm: {
-      name: t('achievements.firstTakt.name'),
-      desc: t('achievements.firstTakt.desc'),
-      celebrate: t('achievements.firstTakt.celebrate'),
+      name: t('achievements.firstRhythm.name'),
+      desc: t('achievements.firstRhythm.desc'),
+      celebrate: t('achievements.firstRhythm.celebrate'),
     },
     rhythm4: {
       name: t('achievements.rhythm4.name'),

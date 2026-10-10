@@ -22,7 +22,7 @@ import {
   useFoodLogsForDate,
   useFoodTotals,
 } from '@/features/food';
-import { useMealFlightBridge } from '@/features/food/flightStore';
+import { useMealFlightBridge } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
 import { AchievementOverlay } from '@/features/today/AchievementOverlay';
 import { CareCard } from '@/features/today/CareCard';

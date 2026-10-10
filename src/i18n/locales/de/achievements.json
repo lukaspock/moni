@@ -29,11 +29,6 @@
     "desc": "Bewege insgesamt 10.000 kg im Training.",
     "celebrate": "Zehn Tonnen bewegt. Das sind etwa zwei Elefanten."
   },
-  "plus10": {
-    "name": "Plus zehn",
-    "desc": "Steigere das geschätzte Maximum einer Übung um 10 % gegenüber dem Start.",
-    "celebrate": "Zehn Prozent mehr als am Anfang. Das ist echte Arbeit."
-  },
   "allRounder": {
     "name": "Allrounder",
     "desc": "Mache in einer Woche eine Kraft- und eine Cardio- oder Sporteinheit.",
@@ -78,11 +73,6 @@
     "name": "Die Brücke",
     "desc": "Trag innerhalb von drei Stunden nach einer Einheit mindestens 25 g Protein ein.",
     "celebrate": "Training, dann Teller. Genau die Verbindung, für die møni gemacht ist."
-  },
-  "firstTakt": {
-    "name": "Erster Rhythmus",
-    "desc": "Schließe deine erste Woche im Rhythmus ab.",
-    "celebrate": "Die erste Woche im Rhythmus. Es beginnt."
   },
   "rhythm4": {
     "name": "Vier im Rhythmus",
@@ -245,5 +235,15 @@
     "common": "Häufig",
     "rare": "Selten",
     "special": "Besonders"
+  },
+  "plusTen": {
+    "name": "Plus zehn",
+    "desc": "Steigere das geschätzte Maximum einer Übung um 10 % gegenüber dem Start.",
+    "celebrate": "Zehn Prozent mehr als am Anfang. Das ist echte Arbeit."
+  },
+  "firstRhythm": {
+    "name": "Erster Rhythmus",
+    "desc": "Schließe deine erste Woche im Rhythmus ab.",
+    "celebrate": "Die erste Woche im Rhythmus. Es beginnt."
   }
 }

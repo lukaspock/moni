@@ -29,11 +29,6 @@
     "desc": "Move 10,000 kg in total.",
     "celebrate": "Ten tonnes moved. That is about two elephants."
   },
-  "plus10": {
-    "name": "Plus Ten",
-    "desc": "Raise the estimated max of an exercise by 10 % from where you started.",
-    "celebrate": "Ten percent more than at the start. That is real work."
-  },
   "allRounder": {
     "name": "All-Rounder",
     "desc": "Do one strength and one cardio or sport session in the same week.",
@@ -78,11 +73,6 @@
     "name": "The Bridge",
     "desc": "Log at least 25 g of protein within three hours after a session.",
     "celebrate": "Training, then plate. The exact link møni was made for."
-  },
-  "firstTakt": {
-    "name": "First Rhythm",
-    "desc": "Complete your first week in rhythm.",
-    "celebrate": "The first week in rhythm. It begins."
   },
   "rhythm4": {
     "name": "Four in Rhythm",
@@ -245,5 +235,15 @@
     "common": "Common",
     "rare": "Rare",
     "special": "Special"
+  },
+  "plusTen": {
+    "name": "Plus Ten",
+    "desc": "Raise the estimated max of an exercise by 10 % from where you started.",
+    "celebrate": "Ten percent more than at the start. That is real work."
+  },
+  "firstRhythm": {
+    "name": "First Rhythm",
+    "desc": "Complete your first week in rhythm.",
+    "celebrate": "The first week in rhythm. It begins."
   }
 }

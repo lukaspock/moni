@@ -205,8 +205,8 @@ export function achievementText(
       celebrate: t('achievements.volume10t.celebrate'),
     },
     plusTen: {
-      name: t('achievements.plus10.name'),
-      celebrate: t('achievements.plus10.celebrate'),
+      name: t('achievements.plusTen.name'),
+      celebrate: t('achievements.plusTen.celebrate'),
     },
     allRounder: {
       name: t('achievements.allRounder.name'),
@@ -245,8 +245,8 @@ export function achievementText(
       celebrate: t('achievements.bridgeDay.celebrate'),
     },
     firstRhythm: {
-      name: t('achievements.firstTakt.name'),
-      celebrate: t('achievements.firstTakt.celebrate'),
+      name: t('achievements.firstRhythm.name'),
+      celebrate: t('achievements.firstRhythm.celebrate'),
     },
     rhythm4: {
       name: t('achievements.rhythm4.name'),

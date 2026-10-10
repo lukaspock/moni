@@ -93,9 +93,9 @@ Neue Namespaces in `src/i18n/locales/{de,en}/`: `identity`, `rhythm`, `achieveme
 
 **IDs** (camelCase aus Doc 05 §3; der Lead gleicht mit B4 `src/domain/achievements.ts` ab, Abweichung = nur Keys umbenennen). Versteckt: `bridgeDay`, `sharedFirst` (bis Freischaltung `achievements.hidden.*` zeigen).
 
-- Training: `firstWorkout`, `workouts10`, `workouts50`, `workouts100`, `firstPr`, `volume10t`, `plus10`, `allRounder`
+- Training: `firstWorkout`, `workouts10`, `workouts50`, `workouts100`, `firstPr`, `volume10t`, `plusTen`, `allRounder`
 - Ernährung: `firstMeal`, `threeMeals`, `meals100`, `meals500`, `wellFuelled`, `proteinWeek`, `proteinStreak4`, `bridgeDay`
-- Konsistenz: `firstTakt`, `rhythm4`, `rhythm12`, `rhythm26`, `fullWeek`, `fullWeek4`, `comeback`, `goodPause`, `weekendKeeper`, `fullMonth`
+- Konsistenz: `firstRhythm`, `rhythm4`, `rhythm12`, `rhythm26`, `fullWeek`, `fullWeek4`, `comeback`, `goodPause`, `weekendKeeper`, `fullMonth`
 - Körper: `firstWeigh`, `trendReady`, `adaptiveOn`, `bodyGoal2kg`, `strongAsYou`, `goalReached`
 - Entdecker: `firstPhoto`, `firstVoice`, `firstLabel`, `scanner25`, `firstFavorite`, `ownExercise`, `healthLinked`, `patternFound`, `reviews4`, `sharedFirst`, `oneYear`
 
