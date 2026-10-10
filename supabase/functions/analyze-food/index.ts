@@ -309,8 +309,12 @@ Deno.serve(async (req: Request) => {
     const TRANSIENT = new Set([429, 500, 502, 503, 504]);
     // A hanging Gemini request used to keep the client spinning forever: cap each
     // attempt and the whole call, then fall through to the next model / an error.
-    const ATTEMPT_TIMEOUT_MS = 20_000;
-    const TOTAL_BUDGET_MS = 45_000;
+    const ATTEMPT_TIMEOUT_MS = 30_000;
+    const TOTAL_BUDGET_MS = 60_000;
+    // Gemini 3 "thinks" a lot by default (photo answers took > 20 s and timed out).
+    // A food estimate doesn't need it: ask for low thinking; if a model rejects the
+    // field (400), the same model is retried once without it.
+    let useLowThinking = true;
     const startedAt = Date.now();
     outer: for (const model of GEMINI_MODEL_FALLBACKS) {
       for (const delayMs of RETRY_DELAYS_MS) {
@@ -335,6 +339,9 @@ Deno.serve(async (req: Request) => {
                       ? GEMINI_LABEL_SCHEMA
                       : GEMINI_RESPONSE_SCHEMA,
                   temperature: 0.2,
+                  ...(useLowThinking
+                    ? { thinkingConfig: { thinkingLevel: 'low' } }
+                    : {}),
                 },
               }),
               signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
@@ -348,7 +355,9 @@ Deno.serve(async (req: Request) => {
             `analyze-food: Gemini attempt failed (model ${model})`,
             lastDetail,
           );
-          break;
+          // All models share one project quota: a hang usually means throttling
+          // (free tier stalls instead of answering 429), so don't burn more calls.
+          break outer;
         }
         if (geminiResp.ok) {
           geminiJson = await geminiResp.json();
@@ -362,6 +371,16 @@ Deno.serve(async (req: Request) => {
           lastDetail,
         );
         if (lastStatus === 404) break; // retired model -> next candidate
+        // Rate limited: every further attempt (any model) counts against the same quota.
+        if (lastStatus === 429) break outer;
+        if (
+          lastStatus === 400 &&
+          useLowThinking &&
+          /thinking/i.test(lastDetail)
+        ) {
+          useLowThinking = false; // model doesn't know thinkingLevel -> retry plain
+          continue;
+        }
         if (!TRANSIENT.has(lastStatus)) break outer; // 400/403/...: retrying won't help
       }
     }
@@ -373,6 +392,12 @@ Deno.serve(async (req: Request) => {
 
   if (!geminiJson) {
     await refund();
+    if (lastStatus === 429 || lastStatus === 504) {
+      return jsonResponse(
+        { error: 'ai_rate_limited', detail: `gemini ${lastStatus}` },
+        { status: 503 },
+      );
+    }
     return jsonResponse(
       { error: 'ai_provider_error', detail: `gemini ${lastStatus}` },
       { status: 502 },

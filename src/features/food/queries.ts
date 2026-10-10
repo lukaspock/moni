@@ -325,8 +325,8 @@ export class AnalyzeFoodError extends Error {
   }
 }
 
-/** The edge function gives up on Gemini after ~45 s; never let the UI spin longer than this. */
-const ANALYZE_CLIENT_TIMEOUT_MS = 60_000;
+/** The edge function gives up on Gemini after ~60 s; never let the UI spin longer than this. */
+const ANALYZE_CLIENT_TIMEOUT_MS = 75_000;
 
 async function invokeAnalyze<T>(body: Record<string, unknown>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
