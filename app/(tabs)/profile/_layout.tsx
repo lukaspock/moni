@@ -8,6 +8,19 @@ export default function ProfileStackLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
+        name="goals"
+        options={{ title: t('account.profile.rows.goals') }}
+      />
+      <Stack.Screen
+        name="body"
+        options={{ title: t('account.profile.rows.body') }}
+      />
+      <Stack.Screen name="rhythm" options={{ title: t('rhythm.title') }} />
+      <Stack.Screen
+        name="settings"
+        options={{ title: t('account.profile.rows.settings') }}
+      />
+      <Stack.Screen
         name="health"
         options={{ title: t('health.settings.title') }}
       />

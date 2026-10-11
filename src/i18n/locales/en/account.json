@@ -302,7 +302,14 @@
       "body": "Body",
       "activity": "Activity & training",
       "preferences": "Preferences",
-      "account": "Account"
+      "account": "Account",
+      "general": "General",
+      "training": "Training"
+    },
+    "rows": {
+      "goals": "Goals & plan",
+      "body": "Body & data",
+      "settings": "Settings"
     },
     "personal": {
       "name": "Name",
@@ -340,6 +347,8 @@
     "save": "Save",
     "saved": "Saved",
     "loading": "Loading your profile…",
-    "noProfile": "No profile yet."
+    "noProfile": "No profile yet.",
+    "statusOn": "On",
+    "statusOff": "Off"
   }
 }

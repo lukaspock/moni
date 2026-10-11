@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Host, Toggle } from '@expo/ui/swift-ui';
 
-import { Chip, Pill } from '@/components/ui';
+import { Card, Chip } from '@/components/ui';
 import { shiftIsoDate, type Goal } from '@/domain';
 import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
 import { useRhythm } from '@/features/rhythm';
@@ -22,8 +22,12 @@ function initials(name: string): string {
     .join('');
 }
 
-/** Profile head: monogram, name, goal pill, member-since line (docs/02 §6.4). */
-export function MyMoeniHeader({
+/**
+ * Profile head (docs/02 §6.4), one calm card: monogram, name, goal line and
+ * member-since, then the stage with a thin progress line and the rhythm
+ * counter. The full stage card + rhythm settings live on `profile/rhythm`.
+ */
+export function ProfileIdentityCard({
   name,
   goal,
   rateKgPerWeek,
@@ -35,6 +39,7 @@ export function MyMoeniHeader({
   memberSince: string | null;
 }) {
   const { t } = useTranslation();
+  const { stage, state, showRhythm, isReady } = useRhythm();
   const goalLabel =
     goal === 'lose'
       ? t('account.onboarding.goal.lose')
@@ -43,7 +48,7 @@ export function MyMoeniHeader({
         : goal === 'maintain'
           ? t('account.onboarding.goal.maintain')
           : null;
-  const pill =
+  const goalLine =
     goalLabel == null
       ? null
       : goal !== 'maintain' && rateKgPerWeek
@@ -52,39 +57,83 @@ export function MyMoeniHeader({
           })}`
         : goalLabel;
   const display = name?.trim() ?? '';
+  const names = stageNames(t);
+  const percent = Math.round(stage.progress * 100);
+
   return (
-    <View className="items-center gap-2 pb-2 pt-1">
-      <View
-        accessible
-        accessibilityLabel={t('rhythm.profile.avatar', {
-          name: display || 'møni',
-        })}
-        className="bg-tint-soft h-[72px] w-[72px] items-center justify-center rounded-full"
-      >
-        <Text
-          maxFontSizeMultiplier={1.2}
-          className="text-tint"
-          style={[textStyles.title, { fontSize: 28 }]}
+    <Card className="gap-4">
+      <View className="flex-row items-center gap-4">
+        <View
+          accessible
+          accessibilityLabel={t('rhythm.profile.avatar', {
+            name: display || 'møni',
+          })}
+          className="bg-tint-soft h-14 w-14 items-center justify-center rounded-full"
         >
-          {initials(display)}
-        </Text>
+          <Text
+            maxFontSizeMultiplier={1.2}
+            className="text-tint"
+            style={[textStyles.title, { fontSize: 22 }]}
+          >
+            {initials(display)}
+          </Text>
+        </View>
+        <View className="flex-1 gap-0.5">
+          {display ? (
+            <Text
+              accessibilityRole="header"
+              maxFontSizeMultiplier={1.3}
+              numberOfLines={1}
+              className="text-label"
+              style={textStyles.title}
+            >
+              {display}
+            </Text>
+          ) : null}
+          {goalLine ? (
+            <Text className="text-label-secondary" style={textStyles.callout}>
+              {goalLine}
+            </Text>
+          ) : null}
+          {memberSince ? (
+            <Text className="text-label-tertiary" style={textStyles.caption}>
+              {t('rhythm.profile.memberSince', { date: memberSince })}
+            </Text>
+          ) : null}
+        </View>
       </View>
-      {display ? (
-        <Text
-          accessibilityRole="header"
-          className="text-label"
-          style={textStyles.title}
+      {isReady ? (
+        <View
+          accessible
+          accessibilityLabel={`${t('rhythm.stage.title')}: ${
+            names[stage.stage.key]
+          }. ${
+            stage.next
+              ? t('rhythm.profile.stageProgressA11y', { percent })
+              : t('rhythm.stage.top')
+          }${showRhythm ? `. ${t('rhythm.counter', { count: state.current })}` : ''}`}
+          className="gap-2"
         >
-          {display}
-        </Text>
+          <View className="bg-line h-px" />
+          <View className="flex-row items-baseline justify-between pt-2">
+            <Text className="text-label" style={textStyles.headline}>
+              {names[stage.stage.key]}
+            </Text>
+            {showRhythm ? (
+              <Text className="text-label-secondary" style={textStyles.caption}>
+                {t('rhythm.counter', { count: state.current })}
+              </Text>
+            ) : null}
+          </View>
+          <View className="bg-surface-raised h-1 overflow-hidden rounded-full">
+            <View
+              className="bg-tint h-1 rounded-full"
+              style={{ width: `${Math.max(4, percent)}%` }}
+            />
+          </View>
+        </View>
       ) : null}
-      {pill ? <Pill label={pill} tone="accent" /> : null}
-      {memberSince ? (
-        <Text className="text-label-secondary" style={textStyles.caption}>
-          {t('rhythm.profile.memberSince', { date: memberSince })}
-        </Text>
-      ) : null}
-    </View>
+    </Card>
   );
 }
 
