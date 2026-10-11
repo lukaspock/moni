@@ -95,6 +95,7 @@
     "serving": "1 Portion ({{grams}} g)",
     "addAndScan": "Weiter scannen",
     "addAndReview": "Fertig",
+    "addToRecipe": "Zum Rezept hinzufügen",
     "scanLabelInstead": "Nährwerttabelle scannen",
     "scanAgain": "Erneut scannen",
     "modeBarcode": "Barcode",
@@ -120,6 +121,8 @@
     "ingredientNamePlaceholder": "Zutat",
     "grams": "g",
     "limitReachedBody": "Die kostenlosen Analysen für heute sind aufgebraucht. Beschreiben, Barcode und Stammgerichte gehen immer weiter.",
+    "busyTitle": "Die KI braucht eine kurze Pause",
+    "busyBody": "Gerade kommen sehr viele Anfragen gleichzeitig an. Versuch es in einer Minute noch einmal oder trag die Mahlzeit selbst ein.",
     "errorCode": "Fehlercode: {{code}}",
     "getPremium": "Premium holen",
     "saveWithKcal": "Speichern · {{kcal}} kcal",
@@ -164,6 +167,10 @@
     "labelError": {
       "title": "Die Analyse hat nicht geklappt",
       "body": "Die Nährwerttabelle konnte nicht ausgewertet werden. Nichts ist verloren, versuch es nochmal."
+    },
+    "labelBusy": {
+      "title": "Die KI braucht eine kurze Pause",
+      "body": "Gerade kommen sehr viele Anfragen gleichzeitig an. Versuch es in einer Minute noch einmal oder trag die Werte selbst ein."
     }
   },
   "voice": {
@@ -221,12 +228,14 @@
       "ingredients": "Zutaten",
       "addPlaceholder": "200 g Haferflocken",
       "addA11y": "Zutat hinzufügen",
+      "scanA11y": "Zutat per Barcode scannen",
       "addHint": "Menge und Zutat eintippen. Bekanntes kommt aus deinem Verlauf, Neues schätzt møni.",
       "fromHistory": "Aus deinem Verlauf",
       "historyItem": "{{grams}} g · {{kcal}} kcal",
       "manual": "Manuell eintragen",
       "analyzing": "Wird geschätzt …",
       "analyzeError": "Die Zutat ließ sich nicht schätzen. Trag sie manuell ein.",
+      "busy": "Die KI ist gerade ausgelastet. Versuch es in einer Minute noch einmal oder nimm eine Zutat aus deinem Verlauf.",
       "limitReached": "Die KI-Schätzungen für heute sind aufgebraucht. Nimm Zutaten aus deinem Verlauf oder trag sie manuell ein.",
       "noIngredients": "Noch keine Zutaten.",
       "save": "Gericht speichern",

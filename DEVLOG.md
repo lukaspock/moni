@@ -263,6 +263,7 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - 2026-10-10 · docs · CLAUDE.md (folder structure, theme v2 section, new "Identity conventions" section, notifications contract incl. foreground handler, Skia colors, release-build note, setup status), `docs/design-system.md` rewritten for identity v2, `docs/identity-release.md` (German owner report). Release build of this branch is **not done yet** (only a Debug device build from 2026-10-09 exists in `ios/build/device`).
 - 2026-10-11 · calm-today · Calmer Today tab (branch `feat/calm-today`). New order: header (one ‹ › capsule; back-to-today only when ≥ 2 days back) → hero → one `CaptureRow` (wide photo "+" · mic · "…" = log sheet with describe/barcode/label/regulars/manual) → compact `WaterRow` (one line + level line, tap = glass, long-press = sizes) → ONE smart-slot card picked by pure `src/domain/todaySlot.ts::pickTodaySlot` (+10 tests; firstRun > care > nextStep > trainingPlanned > fit > restDay > trainingDone (lead moved restDay down); other days only trainingDone) → lighter meal lines (no icon tiles, quiet "+") → quiet week footer (glyphs; triad on tap). Removed `QuickLogBar`/`QuickCarousel` (regulars one-tap list lives in the log sheet); `CareCard` dismissal lifted into `useCareDismissal`; `features/water/ui/WaterCard.tsx` is now unused (owner `water`). New keys `identity.today.capture|captureMore|weekHint`.
 - 2026-10-11 · calm-profile · Profile tab calmed down (branch `feat/calm-profile`). `profile/index.tsx` is now one `ProfileIdentityCard` (merged monogram/name/goal/member-since + stage, thin progress, rhythm counter; replaces `MyMoeniHeader`) + three `ListRow` cards: Ziele & Plan / Körper & Daten · Rhythmus (hint "Pause" when active) / Stempel (count) · Einstellungen. No inline editors left. New sub-screens: `profile/goals` (today's targets, goal picker + rate slider + goal weight, activity level, training days), `profile/body` (`PersonalSection`: name/motivation/diet/experience; height, log weight), `profile/rhythm` (`StageCard` + `RhythmSettingsGroup`), `profile/settings` (units, language, eat-back slider, haptics, rows to notifications/Apple Health, sign out). Logic moved unchanged; shared `useUpdateProfile()` + `GoalWeightRow` (split out of `PersonalSection`) in `src/features/auth/components/`. Meal-reminder toggle removed from `PersonalSection` (duplicate of the notifications screen). Legacy aliases migrated in `profile/**`. New keys `account.profile.rows.*`, `sections.general|training`, `statusOn|Off` (de+en). typecheck/lint/format/854 tests green; simulator check pending (lead).
+- 2026-10-11 · handoff-fixes · Small handoff items (branch `fix/handoff-items`, NOT simulator/device-verified; typecheck/lint/format/jest green): (1) weight chart: pure `axisLabelLayout` (charts.logic, tested) hides y-tick labels that would collide with the target caption and flips the caption above the line near the bottom edge. (2) notification taps navigate: pure `notificationRoute.ts` (meal reminder → `/log-food?meal=`, nudges per kind: eveningNote/proteinBridge → log-food, trainingMorning → training, sundayReview → insights/week, monthReview → insights, weighIn → weight-entry, rhythm → Today) + `useNotificationRouting()` (cold start via `getLastNotificationResponse` + response listener, dedupe per response, only the default tap action), called from `useNudgeScheduler` so it runs inside the signed-in tabs without touching `app/_layout.tsx`. (3) `503 ai_rate_limited` gets its own calm "short break" text on the review error screen (derived from the draft `errorCode` via `isRateLimitedErrorCode`, so the Today camera path is covered too), in the label scanner (`labelBusy`) and the recipe editor (`food.recipe.editor.busy`). (4) 84 unused `workout.*` keys removed (`active`, `training`, `routine`, most of `exercisePicker`, a few `history`/`summary`/`progress`), checked against literal and dynamic (`workout.category.${…}`) references; account keys left for their owner. (5) recipe editor: barcode button in the ingredient field → `barcode-scanner?target=recipe` → products delivered through `useRecipeScanInbox` (plain Zustand) into the open editor.
 
 ## Open items / blockers (identity v2)
 
@@ -270,8 +271,7 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 - Achievement ids: code/i18n use camelCase catalog ids (`plusTen`, `firstRhythm` …), Doc 05 still says `plus_10` / `first_takt` — update Doc 05 or keep a mapping note; don't rename persisted ids (`achvUnlocked` in MMKV) without a migration.
 - Care card (`src/features/today/CareCard.tsx`, `identity.care.*`): body text + "find help" target need a legal/owner-approved text and link before release.
 - Mascot (D5/D13) postponed — based on the discarded old mark, needs a new design derived from "Insel im Pegel".
-- `/log-food` has no `mealType` param — meal groups / next-step card can't preselect a meal type (meal type is still suggested by time of day).
-- Tapping a nudge / meal-reminder notification does not navigate (`handleNudgeResponse` only records the outcome; meal reminders carry `data.url` that nothing reads yet).
+- ~~Tapping a nudge / meal-reminder notification does not navigate~~ — done 2026-10-11 (handoff-fixes, `useNotificationRouting`); verify on device (cold start from a tapped notification).
 - `assets/moni.icon`: check Light/Dark/Tinted appearances in the Icon Composer GUI (generated by script, never opened in the GUI).
 - Exercise detail screen (`app/(tabs)/training/exercise/[id].tsx`) not redesigned yet (still list + plain bars).
 - "Compared to last time" (previous session values per exercise during a workout) not implemented.
@@ -294,7 +294,7 @@ State: everything is merged to `main` and pushed (repo moved to `github.com/luka
      - answers fast → our request is the problem: test without `responseSchema`/image, or migrate to the **Interactions API** Google recommends.
      - hangs/errors → key/project problem: owner sets up billing in AI Studio ("Abrechnung einrichten") and/or creates a fresh key; then retest.
   2. Optional diagnostic idea (owner stopped it, do NOT do it without asking): temporary token-protected edge function that uses the server-side key and returns only status codes/timings; delete it afterwards.
-  3. Consider pinning `GEMINI_MODEL` (Supabase secret) once a working model is known; the app's error screen could show a dedicated text for `ai_rate_limited`.
+  3. Consider pinning `GEMINI_MODEL` (Supabase secret) once a working model is known. (Dedicated `ai_rate_limited` error text: done 2026-10-11.)
 
 ### 2. Owner-side to-dos
 
@@ -311,9 +311,9 @@ State: everything is merged to `main` and pushed (repo moved to `github.com/luka
 
 ### 4. Small open UI/feature items
 
-- Insights weight chart: y-axis tick label (e.g. "78.5") overlaps the "Ziel: 80 kg" label.
-- Recipe editor: barcode scan for ingredients not built (needs `?target=recipe` in `app/barcode-scanner.tsx` + inbox store).
+- [x] Insights weight chart: y-axis tick label overlapped the "Ziel: 80 kg" label — fixed 2026-10-11 (`axisLabelLayout`), check on device.
+- [x] Recipe editor: barcode scan for ingredients — built 2026-10-11 (`barcode-scanner?target=recipe` + `useRecipeScanInbox`), check on device.
 - Native tab bar taps were laggy/misrouted in the **simulator** only (input injection) — check on device, probably fine.
 - Undo toast now sits above the tab bar (`src/features/today/UndoToast.tsx`, `TAB_BAR_CLEARANCE = 84`) — verify the spacing on a real iPhone 15.
-- Old unused i18n keys (`workout.active.*`, `workout.training.*`, `account.auth.signIn.signUpTitle` …) can be removed.
+- [x] Old unused `workout.*` i18n keys removed 2026-10-11. Still open: unused keys in other namespaces (e.g. `account.auth.signIn.signUpTitle`) — left for the account/profile owners.
 - Apple Watch app: deliberately not started (needs a Watch to test + own native target).

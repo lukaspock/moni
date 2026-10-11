@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -30,6 +30,7 @@ import {
   useIngredientCatalog,
   useIngredientLookup,
   useRecipe,
+  useRecipeScanInbox,
   useSaveRecipe,
   type Recipe,
 } from '@/features/food';
@@ -97,7 +98,7 @@ function RecipeForm({ recipe }: { recipe: Recipe | null }) {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [line, setLine] = useState('');
   const [lookupError, setLookupError] = useState<
-    'ai_limit_reached' | 'generic' | null
+    'ai_limit_reached' | 'ai_rate_limited' | 'generic' | null
   >(null);
 
   const { catalog } = useIngredientCatalog();
@@ -117,6 +118,18 @@ function RecipeForm({ recipe }: { recipe: Recipe | null }) {
     haptic.itemAdded();
     setItems((prev) => [...prev, ...added.map(withKey)]);
   };
+
+  // Products scanned via `barcode-scanner?target=recipe` arrive through the inbox store.
+  useEffect(() => {
+    const inbox = useRecipeScanInbox;
+    inbox.getState().clear();
+    return inbox.subscribe((s) => {
+      if (s.items.length === 0) return;
+      const scanned = inbox.getState().take();
+      haptic.itemAdded();
+      setItems((prev) => [...prev, ...scanned.map(withKey)]);
+    });
+  }, []);
 
   const submitLine = async () => {
     const text = line.trim();
@@ -371,15 +384,35 @@ function RecipeForm({ recipe }: { recipe: Recipe | null }) {
                     tintColor={themeColor('accent')}
                   />
                 </Pressable>
-              ) : null
+              ) : (
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: '/barcode-scanner',
+                      params: { target: 'recipe' },
+                    })
+                  }
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('food.recipe.editor.scanA11y')}
+                >
+                  <SymbolView
+                    name="barcode.viewfinder"
+                    size={26}
+                    tintColor={themeColor('accent')}
+                  />
+                </Pressable>
+              )
             }
           />
           <Text className="text-label-secondary px-1 text-[13px]">
             {lookupError === 'ai_limit_reached'
               ? t('food.recipe.editor.limitReached')
-              : lookupError === 'generic'
-                ? t('food.recipe.editor.analyzeError')
-                : t('food.recipe.editor.addHint')}
+              : lookupError === 'ai_rate_limited'
+                ? t('food.recipe.editor.busy')
+                : lookupError === 'generic'
+                  ? t('food.recipe.editor.analyzeError')
+                  : t('food.recipe.editor.addHint')}
           </Text>
 
           {suggestions.length > 0 && (

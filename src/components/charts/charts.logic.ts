@@ -204,3 +204,39 @@ export function withAlpha(hex: string, alpha: number): string {
   const n = parseInt(m[1], 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${clamp01(alpha)})`;
 }
+
+export interface AxisLabelLayout {
+  /** one flag per tick: false = hidden, it would collide with the target caption */
+  tickVisible: boolean[];
+  /** top offset of the target caption (null without a target) */
+  targetLabelTop: number | null;
+}
+
+/**
+ * Collision-free layout of the right-aligned y-axis tick labels and the target
+ * caption (both sit at the right edge). Tick labels sit directly *above* their
+ * grid line (`[y - labelH, y]`); the target caption sits below its line, or
+ * above it when it would leave the chart. Ticks whose label box comes closer
+ * than `gap` to the caption box are hidden — the target caption wins.
+ */
+export function axisLabelLayout(
+  tickYs: readonly number[],
+  targetY: number | null,
+  height: number,
+  labelH: number,
+  gap: number,
+): AxisLabelLayout {
+  'worklet';
+  if (targetY == null) {
+    return { tickVisible: tickYs.map(() => true), targetLabelTop: null };
+  }
+  const below = targetY + 2;
+  const top = below + labelH > height ? targetY - 2 - labelH : below;
+  const bottom = top + labelH;
+  return {
+    tickVisible: tickYs.map(
+      (y) => y - labelH >= bottom + gap || y <= top - gap,
+    ),
+    targetLabelTop: top,
+  };
+}

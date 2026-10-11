@@ -25,6 +25,7 @@ import { expoNudgeNotifier, registerNudgeCategory } from './nudgeNotifier';
 import { rescheduleNudges } from './nudgeScheduler';
 import { ensureNudgeMigration, snapshot } from './nudgeEvents';
 import { useNudgeStore } from './nudgeStore';
+import { useNotificationRouting } from './useNotificationRouting';
 
 function monthNameFor(language: string) {
   return (isoDate: string) => {
@@ -40,6 +41,9 @@ function monthNameFor(language: string) {
  * comes to the foreground, the data/prefs/language change; settles sent/ignored nudges.
  */
 export function useNudgeScheduler(): void {
+  // Tap → screen routing rides along here: this hook is the one mount point
+  // inside the signed-in tabs (see `useNotificationRouting`).
+  useNotificationRouting();
   const { i18n } = useTranslation();
   const language = i18n.language;
   const ledger = useLedger();

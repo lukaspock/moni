@@ -9,6 +9,7 @@ import {
   NUDGE_ID_PREFIX,
 } from './nudgeLogic';
 import type { NudgeNotifier } from './nudgeScheduler';
+import { NUDGE_ROUTE } from './notificationRoute';
 
 /** (Re-)registers the action buttons in the current language. */
 export async function registerNudgeCategory(): Promise<void> {
@@ -45,7 +46,7 @@ export const expoNudgeNotifier: NudgeNotifier = {
         body,
         categoryIdentifier: NUDGE_CATEGORY_ID,
         interruptionLevel: 'passive',
-        data: { url: '/', kind: 'nudge', nudge: kind },
+        data: { url: NUDGE_ROUTE[kind].pathname, kind: 'nudge', nudge: kind },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
