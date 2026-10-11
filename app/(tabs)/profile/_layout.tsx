@@ -6,7 +6,10 @@ export default function ProfileStackLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: false, title: t('profile.title') }}
+      />
       <Stack.Screen
         name="goals"
         options={{ title: t('account.profile.rows.goals') }}

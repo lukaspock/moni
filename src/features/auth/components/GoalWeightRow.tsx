@@ -86,7 +86,9 @@ export function GoalWeightRow({ profile }: { profile: ProfileRow }) {
           onEndEditing={saveTarget}
           placeholder={t('account.profile.personal.notSet')}
           keyboardType="decimal-pad"
-          className="text-label-secondary min-w-20 text-right text-base"
+          className="text-label-secondary min-w-20 text-right"
+          // no lineHeight: on iOS a TextInput with lineHeight sits lower than the unit label
+          style={{ fontSize: 16, paddingVertical: 0 }}
         />
         {targetText ? (
           <Text className="text-label-secondary text-base">
