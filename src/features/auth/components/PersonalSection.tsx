@@ -1,4 +1,4 @@
-import { Host, Picker, Text as UIText, Toggle } from '@expo/ui/swift-ui';
+import { Host, Picker, Text as UIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
@@ -6,16 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Text, TextInput, View } from 'react-native';
 
 import {
-  isAcceptableTargetWeight,
-  kgToLb,
-  lbToKg,
-  roundTo,
   type Diet,
   type Motivation,
   type TrainingExperience,
 } from '../../../domain';
 import { supabase } from '../../../lib/supabase';
-import { useMealReminders } from '../../notifications';
 import { SettingsGroup } from './SettingsGroup';
 import type { Database } from '../../../types/database';
 import { haptic } from '@/lib/haptics';
@@ -81,30 +76,17 @@ function MenuPicker<T extends string>({
 }
 
 /**
- * Profile tab "Personal" section (onboarding v2 data): name, motivation,
- * diet, training experience, goal weight + the device-local meal-reminder
- * switch. Self-contained (own writes + cache invalidation) so the profile
- * screen only renders `<PersonalSection profile={profile} />`.
+ * Profile "Personal" section (onboarding v2 data): name, motivation, diet,
+ * training experience. Goal weight lives in `GoalWeightRow` (goals screen),
+ * meal reminders in the notifications screen. Self-contained (own writes +
+ * cache invalidation) so the screen only renders
+ * `<PersonalSection profile={profile} />`.
  */
 export function PersonalSection({ profile }: { profile: ProfileRow }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const reminders = useMealReminders();
-  const isImperial = profile.unit_system === 'imperial';
 
   const [name, setName] = useState(profile.display_name ?? '');
-  const [targetText, setTargetText] = useState(() =>
-    profile.target_weight_kg != null
-      ? String(
-          roundTo(
-            isImperial
-              ? kgToLb(profile.target_weight_kg)
-              : profile.target_weight_kg,
-            1,
-          ),
-        )
-      : '',
-  );
 
   async function save(patch: ProfileUpdate) {
     const { error } = await supabase
@@ -123,58 +105,6 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
     const trimmed = name.trim().slice(0, 40);
     if (trimmed === (profile.display_name ?? '')) return;
     void save({ display_name: trimmed || null });
-  }
-
-  function saveTarget() {
-    const raw = targetText.trim().replace(',', '.');
-    if (raw === '') {
-      if (profile.target_weight_kg != null)
-        void save({ target_weight_kg: null });
-      return;
-    }
-    const value = Number(raw);
-    const kg = Number.isNaN(value)
-      ? NaN
-      : roundTo(isImperial ? lbToKg(value) : value, 1);
-    if (
-      !profile.height_cm ||
-      Number.isNaN(kg) ||
-      !isAcceptableTargetWeight(kg, profile.height_cm)
-    ) {
-      Alert.alert(t('account.onboarding.targetWeight.warnTooLow'));
-      setTargetText(
-        profile.target_weight_kg != null
-          ? String(
-              roundTo(
-                isImperial
-                  ? kgToLb(profile.target_weight_kg)
-                  : profile.target_weight_kg,
-                1,
-              ),
-            )
-          : '',
-      );
-      return;
-    }
-    if (kg !== profile.target_weight_kg) void save({ target_weight_kg: kg });
-  }
-
-  // The native Toggle keeps its own visual state: if the store value doesn't
-  // change (permission denied → stays false), SwiftUI would leave the switch
-  // "on". Show the requested value while the permission prompt is up, then
-  // remount the Toggle (key bump) so it re-syncs to the real store value.
-  const [pendingReminders, setPendingReminders] = useState<boolean | null>(
-    null,
-  );
-  const [reminderToggleKey, setReminderToggleKey] = useState(0);
-
-  async function toggleReminders(value: boolean) {
-    setPendingReminders(value);
-    const enabled = await reminders.setEnabled(value);
-    setPendingReminders(null);
-    if (enabled !== value) setReminderToggleKey((k) => k + 1);
-    if (value && !enabled)
-      Alert.alert(t('account.profile.personal.remindersDenied'));
   }
 
   const motivationLabels: Record<Motivation, string> = {
@@ -237,32 +167,6 @@ export function PersonalSection({ profile }: { profile: ProfileRow }) {
           labelFor={(v) => experienceLabels[v]}
           onChange={(v) => void save({ training_experience: v })}
         />
-      </Row>
-      <Row label={t('account.profile.personal.targetWeight')}>
-        <View className="flex-row items-center gap-1">
-          <TextInput
-            value={targetText}
-            onChangeText={setTargetText}
-            onEndEditing={saveTarget}
-            placeholder={t('account.profile.personal.notSet')}
-            keyboardType="decimal-pad"
-            className="text-label-secondary min-w-20 text-right text-base"
-          />
-          {targetText ? (
-            <Text className="text-label-secondary text-base">
-              {isImperial ? 'lb' : 'kg'}
-            </Text>
-          ) : null}
-        </View>
-      </Row>
-      <Row label={t('account.profile.personal.reminders')}>
-        <Host matchContents>
-          <Toggle
-            key={reminderToggleKey}
-            isOn={pendingReminders ?? reminders.enabled}
-            onIsOnChange={(v) => void toggleReminders(v)}
-          />
-        </Host>
       </Row>
     </SettingsGroup>
   );

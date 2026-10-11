@@ -42,7 +42,7 @@ function fmt(minutes: number): string {
 
 function Footnote({ children }: { children: React.ReactNode }) {
   return (
-    <Text className="text-secondary-label px-1 pt-2 text-xs">{children}</Text>
+    <Text className="text-label-secondary px-1 pt-2 text-xs">{children}</Text>
   );
 }
 
@@ -65,7 +65,7 @@ function SwitchRow({
         <Toggle isOn={value} label={label} onIsOnChange={onChange} />
       </Host>
       {hint ? (
-        <Text className="text-secondary-label pb-1 text-xs">{hint}</Text>
+        <Text className="text-label-secondary pb-1 text-xs">{hint}</Text>
       ) : null}
     </View>
   );
@@ -127,7 +127,7 @@ export default function NotificationSettingsScreen() {
 
   return (
     <ScrollView
-      className="bg-system-background flex-1"
+      className="bg-bg flex-1"
       contentContainerClassName="px-4 pb-12 pt-4"
     >
       <Text className="text-label text-base">
@@ -196,11 +196,11 @@ export default function NotificationSettingsScreen() {
             ))}
           </View>
           {quietUntilLabel ? (
-            <Text className="text-secondary-label text-xs">
+            <Text className="text-label-secondary text-xs">
               {quietUntilLabel}
             </Text>
           ) : (
-            <Text className="text-secondary-label text-xs">
+            <Text className="text-label-secondary text-xs">
               {t('nudges.settings.quietModeHint')}
             </Text>
           )}
@@ -209,7 +209,7 @@ export default function NotificationSettingsScreen() {
           <Text className="text-label text-base">
             {t('nudges.settings.quietHours')}
           </Text>
-          <Text className="text-secondary-label text-xs">
+          <Text className="text-label-secondary text-xs">
             {t('nudges.settings.earliest')}
           </Text>
           <View className="flex-row flex-wrap gap-2">
@@ -223,7 +223,7 @@ export default function NotificationSettingsScreen() {
               />
             ))}
           </View>
-          <Text className="text-secondary-label text-xs">
+          <Text className="text-label-secondary text-xs">
             {t('nudges.settings.latest')}
           </Text>
           <View className="flex-row flex-wrap gap-2">
@@ -237,7 +237,7 @@ export default function NotificationSettingsScreen() {
               />
             ))}
           </View>
-          <Text className="text-secondary-label text-xs">
+          <Text className="text-label-secondary text-xs">
             {t('nudges.settings.quietHoursHint')}
           </Text>
         </View>

@@ -34,7 +34,7 @@ iOS deployment target **26** (via `expo-build-properties`). Platform: iOS only.
 app/                 expo-router routes (see PLAN.md §4)
   _layout.tsx         root: QueryClientProvider, i18n init, initNotifications(), useFonts (Bricolage), auth gate, Stack + modal registrations
   (tabs)/_layout.tsx   NativeTabs (index/training/insights/profile), SF Symbols; mounts useHealthAutoSync() + useNudgeScheduler()
-  (tabs)/<tab>/        each tab is its own folder: _layout.tsx (Stack) + index.tsx (+ sub-screens, e.g. insights/week, profile/achievements|notifications|health)
+  (tabs)/<tab>/        each tab is its own folder: _layout.tsx (Stack) + index.tsx (+ sub-screens, e.g. insights/week, profile/goals|body|rhythm|settings|achievements|notifications|health)
 src/domain/          PURE calculation logic (no RN/Expo imports) + *.test.ts — incl. identity logic: ledger, rhythm, stage, achievements, rituals, weeklyReview, nudges, care, shareCard, kcalRing
 src/features/        auth/, food/, workout/, targets/, health/ (contract), notifications/ (meal reminders + nudges), insights/, subscription/,
                      rhythm/ (client-side ledger, rhythm, stamps), today/ (Today-tab building blocks), review/ (Gezeitentafel, "Mein møni", share text)

@@ -1,185 +1,46 @@
-import {
-  Host,
-  Picker,
-  Slider,
-  Toggle,
-  Text as UIText,
-} from '@expo/ui/swift-ui';
-import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
-import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
-import { ListRow, ScreenTitle } from '@/components/ui';
-import { useAchievements } from '@/features/rhythm';
-import {
-  MyMoeniHeader,
-  RhythmSettingsGroup,
-  StageCard,
-  achievementCopy,
-} from '@/features/review';
-import type { ActivityLevel, Goal, UnitSystem } from '@/domain';
-import { cmToFeetInches, roundTo } from '@/domain';
-import { signOut, useSession } from '@/features/auth';
-import { useHealthSettings } from '@/features/health';
-import { PersonalSection } from '@/features/auth/components/PersonalSection';
-import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
-import { useDailyTargets, useProfile, type Profile } from '@/features/targets';
-import { toISODate } from '@/lib/date';
-import { haptic, useHapticsSetting } from '@/lib/haptics';
-import { supabase } from '@/lib/supabase';
-import { fallbackLanguage, supportedLanguages } from '@/i18n';
+import { Card, ListRow, ScreenTitle } from '@/components/ui';
+import type { Goal } from '@/domain';
+import { useAchievements, useRhythm } from '@/features/rhythm';
+import { ProfileIdentityCard } from '@/features/review';
+import { useProfile } from '@/features/targets';
+import { textStyles } from '@/theme/typography';
 
-const ACTIVITY_LEVELS: ActivityLevel[] = [
-  'sedentary',
-  'light',
-  'moderate',
-  'active',
-];
-const GOALS: Goal[] = ['lose', 'maintain', 'gain'];
-const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
-
-function Row({
-  label,
-  value,
-  onPress,
-}: {
-  label: string;
-  value?: string;
-  onPress?: () => void;
-}) {
-  const Wrapper = onPress ? Pressable : View;
+/** Short text hint on the right of a navigation row (before the chevron). */
+function RowHint({ label }: { label: string }) {
   return (
-    <Wrapper
-      onPress={onPress}
-      className="min-h-12 flex-row items-center justify-between px-4 py-3"
+    <Text
+      maxFontSizeMultiplier={1.4}
+      numberOfLines={1}
+      className="text-label-secondary max-w-[45%]"
+      style={textStyles.callout}
     >
-      <Text className="text-label text-base">{label}</Text>
-      {value ? (
-        <Text className="text-secondary-label text-base">{value}</Text>
-      ) : null}
-    </Wrapper>
+      {label}
+    </Text>
   );
 }
 
+/**
+ * Profile tab root: one identity card + a short list of navigation rows into
+ * focused sub-screens (iOS-Settings-like). No inline editors here — pickers,
+ * sliders and toggles live in `goals`, `body`, `rhythm` and `settings`.
+ */
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
-  const { userId } = useSession();
   const { profile, isLoading } = useProfile();
-  const { targets } = useDailyTargets(toISODate());
-  const queryClient = useQueryClient();
-  const { enabled: healthEnabled } = useHealthSettings();
-  const { enabled: hapticsOn, setEnabled: setHapticsOn } = useHapticsSetting();
   const achievements = useAchievements();
-  const copy = achievementCopy(t);
-  const nextStamp = achievements.statuses
-    .filter((st) => !st.unlocked && st.progress)
-    .sort(
-      (a, b) =>
-        b.progress!.current / b.progress!.target -
-        a.progress!.current / a.progress!.target,
-    )[0];
-
-  const isImperial = profile?.unit_system === 'imperial';
-
-  async function updateProfile(patch: Partial<Profile>) {
-    if (!userId) return;
-    const { error } = await supabase
-      .from('profiles')
-      .update(patch)
-      .eq('id', userId);
-    if (error) {
-      Alert.alert(t('account.auth.signIn.errors.generic'), error.message);
-      return;
-    }
-    void queryClient.invalidateQueries({ queryKey: ['profile', userId] });
-  }
-
-  async function toggleWeekday(day: number, current: number[]) {
-    haptic.select();
-    const next = current.includes(day)
-      ? current.filter((d) => d !== day)
-      : [...current, day].sort();
-
-    if (!userId) return;
-    // Keep training_plan_days consistent with the plain weekday toggle: this
-    // mirrors applyOnboardingDraft.ts's upsert/cleanup, kept lightweight here.
-    if (current.includes(day)) {
-      await supabase
-        .from('training_plan_days')
-        .delete()
-        .eq('user_id', userId)
-        .eq('weekday', day);
-    } else {
-      await supabase.from('training_plan_days').upsert(
-        {
-          user_id: userId,
-          weekday: day,
-          routine_id: null,
-          expected_kcal: null,
-        },
-        { onConflict: 'user_id,weekday' },
-      );
-    }
-    void queryClient.invalidateQueries({ queryKey: ['plannedDay'] });
-    setTrainingWeekdaysLocal(next);
-  }
-
-  const [trainingWeekdaysLocal, setTrainingWeekdaysLocal] = useState<number[]>(
-    [],
-  );
-  useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from('training_plan_days')
-      .select('weekday')
-      .eq('user_id', userId)
-      .then(({ data }) =>
-        setTrainingWeekdaysLocal((data ?? []).map((r) => r.weekday)),
-      );
-  }, [userId]);
-
-  function handleSignOut() {
-    Alert.alert(
-      t('account.profile.signOutConfirmTitle'),
-      t('account.profile.signOutConfirmMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('account.profile.signOut'),
-          style: 'destructive',
-          onPress: () => void signOut(),
-        },
-      ],
-    );
-  }
-
-  const weekdayLabels: Record<number, string> = {
-    0: t('account.onboarding.schedule.weekday.0'),
-    1: t('account.onboarding.schedule.weekday.1'),
-    2: t('account.onboarding.schedule.weekday.2'),
-    3: t('account.onboarding.schedule.weekday.3'),
-    4: t('account.onboarding.schedule.weekday.4'),
-    5: t('account.onboarding.schedule.weekday.5'),
-    6: t('account.onboarding.schedule.weekday.6'),
-  };
+  const rhythm = useRhythm();
 
   if (isLoading || !profile) {
     return (
-      <View className="bg-system-background flex-1">
+      <View className="bg-bg flex-1">
         <ScreenTitle title={t('profile.title')} />
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator />
-          <Text className="text-secondary-label mt-3 text-base">
+          <Text className="text-label-secondary mt-3" style={textStyles.body}>
             {t('account.profile.loading')}
           </Text>
         </View>
@@ -187,16 +48,29 @@ export default function ProfileScreen() {
     );
   }
 
+  const goal = (profile.goal ?? null) as Goal | null;
+  const goalLabel =
+    goal === 'lose'
+      ? t('account.onboarding.goal.lose')
+      : goal === 'gain'
+        ? t('account.onboarding.goal.gain')
+        : goal === 'maintain'
+          ? t('account.onboarding.goal.maintain')
+          : null;
+  const pauseActive = rhythm.pauses.some(
+    (p) => rhythm.today >= p.from && rhythm.today <= p.to,
+  );
+
   return (
-    <View className="bg-system-background flex-1">
+    <View className="bg-bg flex-1">
       <ScreenTitle title={t('profile.title')} />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-12 pt-6"
+        contentContainerClassName="gap-5 px-4 pb-12 pt-4"
       >
-        <MyMoeniHeader
+        <ProfileIdentityCard
           name={profile.display_name}
-          goal={(profile.goal ?? null) as Goal | null}
+          goal={goal}
           rateKgPerWeek={profile.goal_rate_kg_per_week ?? null}
           memberSince={
             profile.created_at
@@ -207,268 +81,59 @@ export default function ProfileScreen() {
               : null
           }
         />
-        <StageCard />
-        <View className="pt-5">
-          <View className="bg-surface overflow-hidden rounded-3xl">
-            <ListRow
-              title={t('rhythm.profile.achievementsRow')}
-              subtitle={
-                nextStamp
-                  ? t('rhythm.profile.achievementsNext', {
-                      name: copy[nextStamp.id].name,
-                    })
-                  : undefined
-              }
-              symbol="seal.fill"
-              value={t('achievements.shelf.count', {
-                unlocked: achievements.unlockedCount,
-                total: achievements.total,
-              })}
-              onPress={() => router.push('/profile/achievements')}
-            />
-          </View>
-        </View>
-        <RhythmSettingsGroup />
 
-        {/* Today's target */}
-        <SettingsGroup title={t('account.profile.todayTargets')}>
-          <Row
-            label={
-              targets?.isTrainingDay
-                ? t('account.profile.trainingDayLimit')
-                : t('account.profile.restDayLimit')
+        <Card className="gap-0 overflow-hidden p-0">
+          <ListRow
+            title={t('account.profile.rows.goals')}
+            symbol="target"
+            trailing={goalLabel ? <RowHint label={goalLabel} /> : undefined}
+            onPress={() => router.push('/profile/goals')}
+            separator
+          />
+          <ListRow
+            title={t('account.profile.rows.body')}
+            symbol="figure.stand"
+            onPress={() => router.push('/profile/body')}
+          />
+        </Card>
+
+        <Card className="gap-0 overflow-hidden p-0">
+          <ListRow
+            title={t('rhythm.title')}
+            symbol="metronome"
+            trailing={
+              pauseActive ? (
+                <RowHint label={t('rhythm.pause.title')} />
+              ) : undefined
             }
-            value={targets ? `${Math.round(targets.totalKcal)} kcal` : '—'}
+            onPress={() => router.push('/profile/rhythm')}
+            separator
           />
-          {targets ? (
-            <Row
-              label={t('account.onboarding.result.protein')}
-              value={`${Math.round(targets.proteinG)} g`}
-            />
-          ) : null}
-        </SettingsGroup>
-
-        {/* Personal (onboarding v2: name, motivation, diet, experience, goal weight, reminders) */}
-        <PersonalSection key={profile.id} profile={profile} />
-
-        {/* Body / weight */}
-        <SettingsGroup title={t('account.profile.sections.body')}>
-          <Row
-            label={t('account.profile.height')}
-            value={
-              !profile.height_cm
-                ? '—'
-                : isImperial
-                  ? `${cmToFeetInches(profile.height_cm).feet}' ${cmToFeetInches(profile.height_cm).inches}"`
-                  : `${profile.height_cm} cm`
-            }
-          />
-          <Row
-            label={t('account.profile.logWeight')}
-            value={t('account.profile.logWeightCta')}
-            onPress={() => router.push('/insights/weight-entry')}
-          />
-        </SettingsGroup>
-
-        {/* Goal */}
-        <SettingsGroup title={t('account.profile.sections.goals')}>
-          <View className="px-4 py-3">
-            <Host matchContents>
-              <Picker
-                selection={profile.goal ?? 'maintain'}
-                onSelectionChange={(v) => updateProfile({ goal: v as Goal })}
-                modifiers={[pickerStyle('segmented')]}
-              >
-                {GOALS.map((g) => (
-                  <UIText key={g} modifiers={[tag(g)]}>
-                    {t(`account.onboarding.goal.${g}`)}
-                  </UIText>
-                ))}
-              </Picker>
-            </Host>
-          </View>
-          {profile.goal && profile.goal !== 'maintain' ? (
-            <View className="gap-2 px-4 py-3">
-              <Text className="text-label text-base">
-                {t('account.profile.goalRate')}:{' '}
-                {t('account.onboarding.rate.perWeek', {
-                  value: roundTo(profile.goal_rate_kg_per_week ?? 0, 2),
-                })}
-              </Text>
-              <Host style={{ width: '100%', height: 44 }}>
-                <Slider
-                  value={Math.abs(profile.goal_rate_kg_per_week ?? 0.5)}
-                  min={0.1}
-                  max={1.0}
-                  step={0.05}
-                  onEditingChanged={(editing) => {
-                    if (editing) return;
-                  }}
-                  onValueChange={(value) =>
-                    updateProfile({
-                      goal_rate_kg_per_week:
-                        profile.goal === 'lose' ? -value : value,
-                    })
-                  }
+          <ListRow
+            title={t('rhythm.profile.achievementsRow')}
+            symbol="seal.fill"
+            trailing={
+              achievements.isReady ? (
+                <RowHint
+                  label={t('achievements.shelf.count', {
+                    unlocked: achievements.unlockedCount,
+                    total: achievements.total,
+                  })}
                 />
-              </Host>
-            </View>
-          ) : null}
-        </SettingsGroup>
-
-        {/* Activity & training */}
-        <SettingsGroup title={t('account.profile.sections.activity')}>
-          <View className="px-4 py-3">
-            <Host matchContents>
-              <Picker
-                selection={profile.activity_level ?? 'moderate'}
-                onSelectionChange={(v) =>
-                  updateProfile({ activity_level: v as ActivityLevel })
-                }
-                modifiers={[pickerStyle('segmented')]}
-              >
-                {ACTIVITY_LEVELS.map((level) => (
-                  <UIText key={level} modifiers={[tag(level)]}>
-                    {t(`account.onboarding.activity.${level}`)}
-                  </UIText>
-                ))}
-              </Picker>
-            </Host>
-          </View>
-          <View className="gap-2 px-4 py-3">
-            <Text className="text-secondary-label text-sm font-medium">
-              {t('account.profile.trainingDays')}
-            </Text>
-            <View className="flex-row justify-between gap-2">
-              {WEEKDAYS.map((day) => {
-                const selected = trainingWeekdaysLocal.includes(day);
-                return (
-                  <Pressable
-                    key={day}
-                    onPress={() => toggleWeekday(day, trainingWeekdaysLocal)}
-                    className={`h-11 flex-1 items-center justify-center rounded-xl border ${
-                      selected
-                        ? 'border-tint bg-tint'
-                        : 'border-separator bg-system-background'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-semibold ${selected ? 'text-system-background' : 'text-label'}`}
-                    >
-                      {weekdayLabels[day]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </SettingsGroup>
-
-        {/* Preferences */}
-        <SettingsGroup title={t('account.profile.sections.preferences')}>
-          <View className="px-4 py-3">
-            <Text className="text-secondary-label pb-2 text-sm font-medium">
-              {t('account.profile.unitSystem')}
-            </Text>
-            <Host matchContents>
-              <Picker
-                selection={profile.unit_system}
-                onSelectionChange={(v) =>
-                  updateProfile({ unit_system: v as UnitSystem })
-                }
-                modifiers={[pickerStyle('segmented')]}
-              >
-                <UIText modifiers={[tag('metric')]}>
-                  {t('account.onboarding.body.unitMetric')}
-                </UIText>
-                <UIText modifiers={[tag('imperial')]}>
-                  {t('account.onboarding.body.unitImperial')}
-                </UIText>
-              </Picker>
-            </Host>
-          </View>
-          <View className="px-4 py-3">
-            <Text className="text-secondary-label pb-2 text-sm font-medium">
-              {t('account.profile.language')}
-            </Text>
-            <Host matchContents>
-              <Picker
-                selection={profile.locale ?? fallbackLanguage}
-                onSelectionChange={(v) => {
-                  void i18n.changeLanguage(v);
-                  void updateProfile({ locale: v });
-                }}
-                modifiers={[pickerStyle('segmented')]}
-              >
-                {supportedLanguages.map((lang) => (
-                  <UIText key={lang} modifiers={[tag(lang)]}>
-                    {lang.toUpperCase()}
-                  </UIText>
-                ))}
-              </Picker>
-            </Host>
-          </View>
-          <View className="gap-2 px-4 py-3">
-            <Text className="text-label text-base">
-              {t('account.profile.eatBackFactor')}:{' '}
-              {Math.round(profile.eat_back_factor * 100)}%
-            </Text>
-            <Text className="text-secondary-label text-xs">
-              {t('account.profile.eatBackFactorDescription')}
-            </Text>
-            <Host style={{ width: '100%', height: 44 }}>
-              <Slider
-                value={profile.eat_back_factor}
-                min={0}
-                max={1}
-                step={0.05}
-                onValueChange={(value) =>
-                  updateProfile({ eat_back_factor: roundTo(value, 2) })
-                }
-              />
-            </Host>
-          </View>
-          <Row
-            label={t('health.settings.rowLabel')}
-            value={
-              healthEnabled
-                ? t('health.settings.statusOn')
-                : t('health.settings.statusOff')
+              ) : undefined
             }
-            onPress={() => router.push('/profile/health')}
+            onPress={() => router.push('/profile/achievements')}
           />
-        </SettingsGroup>
+        </Card>
 
-        <SettingsGroup title={t('rhythm.profile.sections.app')}>
-          <View className="gap-1 px-4 py-2">
-            <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
-              <Toggle
-                isOn={hapticsOn}
-                label={t('rhythm.profile.hapticsTitle')}
-                onIsOnChange={(v) => setHapticsOn(v)}
-              />
-            </Host>
-            <Text className="text-secondary-label text-xs">
-              {t('rhythm.profile.hapticsHint')}
-            </Text>
-          </View>
-          <Row
-            label={t('rhythm.profile.notificationsRow')}
-            onPress={() => router.push('/profile/notifications')}
+        <Card className="gap-0 overflow-hidden p-0">
+          <ListRow
+            title={t('account.profile.rows.settings')}
+            symbol="gearshape.fill"
+            iconTone="neutral"
+            onPress={() => router.push('/profile/settings')}
           />
-        </SettingsGroup>
-
-        {/* Account */}
-        <SettingsGroup title={t('account.profile.sections.account')}>
-          <Pressable
-            onPress={handleSignOut}
-            className="min-h-12 items-center justify-center px-4 py-3"
-          >
-            <Text className="text-destructive text-base font-semibold">
-              {t('account.profile.signOut')}
-            </Text>
-          </Pressable>
-        </SettingsGroup>
+        </Card>
       </ScrollView>
     </View>
   );

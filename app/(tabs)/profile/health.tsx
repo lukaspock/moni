@@ -24,7 +24,7 @@ import { themeColor } from '@/theme/colors';
 
 function Footnote({ children }: { children: React.ReactNode }) {
   return (
-    <Text className="text-secondary-label px-1 pt-2 text-xs">{children}</Text>
+    <Text className="text-label-secondary px-1 pt-2 text-xs">{children}</Text>
   );
 }
 
@@ -78,7 +78,7 @@ export default function HealthSettingsScreen() {
         <Text className="text-label" style={textStyles.body}>
           {t('health.settings.intro')}
         </Text>
-        <Text className="text-secondary-label pt-4 text-base">
+        <Text className="text-label-secondary pt-4 text-base">
           {t('health.settings.unavailable')}
         </Text>
       </ScrollView>
@@ -139,7 +139,7 @@ export default function HealthSettingsScreen() {
           className="min-h-12 flex-row items-center justify-between px-4 py-3"
         >
           <Text
-            className={enabled ? 'text-base' : 'text-secondary-label text-base'}
+            className={enabled ? 'text-base' : 'text-label-secondary text-base'}
             style={enabled ? { color: themeColor('accent') } : undefined}
           >
             {isSyncing
@@ -160,7 +160,7 @@ export default function HealthSettingsScreen() {
           <Text className="text-label text-sm">
             {t('health.settings.writes')}
           </Text>
-          <Text className="text-secondary-label text-sm">
+          <Text className="text-label-secondary text-sm">
             {t('health.settings.bonusHint')}
           </Text>
         </View>
