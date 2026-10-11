@@ -51,7 +51,9 @@ export function useLegacyWeeklyPlan(enabled: boolean = true): {
   }, [query.data]);
   return {
     planByWeekday,
-    isLoading: !!userId && enabled && query.isLoading,
+    // `!isFetched` (not `isLoading`): right after `enabled` flips on, the query
+    // hasn't started yet and `isLoading` is still false for one render.
+    isLoading: !!userId && enabled && !query.isFetched,
   };
 }
 

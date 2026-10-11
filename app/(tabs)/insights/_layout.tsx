@@ -8,7 +8,10 @@ export default function InsightsStackLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: false, title: t('tabs.insights') }}
+      />
       <Stack.Screen
         name="weight-history"
         options={{ title: t('insights.history.title') }}

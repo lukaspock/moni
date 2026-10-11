@@ -79,7 +79,16 @@ export function TrainingPlanEditor() {
         )
       : resizeCycle([], DEFAULT_CYCLE_LENGTH);
 
-  return <EditorBody initial={initial} routines={routines} today={today} />;
+  // Re-key on the loaded plan so a later refetch with different data resets
+  // the draft instead of silently keeping a stale initial state.
+  return (
+    <EditorBody
+      key={JSON.stringify(initial)}
+      initial={initial}
+      routines={routines}
+      today={today}
+    />
+  );
 }
 
 function EditorBody({

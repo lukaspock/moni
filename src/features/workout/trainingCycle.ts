@@ -111,7 +111,9 @@ export function useTrainingCycle(): {
   });
   return {
     cycle: query.data ?? null,
-    isLoading: !!userId && query.isLoading,
+    // Until the first fetch settles (also while retrying an error) callers must
+    // not treat "no data" as "no cycle" — the editor would start from an empty plan.
+    isLoading: !!userId && !query.isFetched,
   };
 }
 
