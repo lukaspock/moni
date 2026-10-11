@@ -32,7 +32,7 @@ export default function ProfileBodyScreen() {
   return (
     <ScrollView
       className="bg-bg flex-1"
-      contentContainerClassName="px-4 pb-12 pt-1"
+      contentContainerClassName="px-4 pb-32 pt-1"
       keyboardShouldPersistTaps="handled"
     >
       <PersonalSection key={profile.id} profile={profile} />

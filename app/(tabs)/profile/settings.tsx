@@ -1,10 +1,4 @@
-import {
-  Host,
-  Picker,
-  Slider,
-  Toggle,
-  Text as UIText,
-} from '@expo/ui/swift-ui';
+import { Host, Picker, Toggle, Text as UIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +6,6 @@ import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 
 import { ListRow } from '@/components/ui';
 import type { UnitSystem } from '@/domain';
-import { roundTo } from '@/domain';
 import { signOut } from '@/features/auth';
 import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
 import { useUpdateProfile } from '@/features/auth/components/useUpdateProfile';
@@ -23,7 +16,7 @@ import { useHapticsSetting } from '@/lib/haptics';
 import { fallbackLanguage, supportedLanguages } from '@/i18n';
 import { textStyles } from '@/theme/typography';
 
-/** Settings: units, language, eat-back factor, haptics, notifications, Apple Health, sign out. */
+/** Settings: units, language, haptics, notifications, Apple Health, sign out. */
 export default function ProfileSettingsScreen() {
   const { t, i18n } = useTranslation();
   const { profile, isLoading } = useProfile();
@@ -57,7 +50,7 @@ export default function ProfileSettingsScreen() {
   return (
     <ScrollView
       className="bg-bg flex-1"
-      contentContainerClassName="px-4 pb-12 pt-1"
+      contentContainerClassName="px-4 pb-32 pt-1"
     >
       <SettingsGroup title={t('account.profile.sections.general')}>
         <View className="gap-2 px-4 py-3">
@@ -100,29 +93,6 @@ export default function ProfileSettingsScreen() {
                 </UIText>
               ))}
             </Picker>
-          </Host>
-        </View>
-      </SettingsGroup>
-
-      <SettingsGroup title={t('account.profile.sections.training')}>
-        <View className="gap-2 px-4 py-3">
-          <Text className="text-label" style={textStyles.body}>
-            {t('account.profile.eatBackFactor')}:{' '}
-            {Math.round(profile.eat_back_factor * 100)}%
-          </Text>
-          <Text className="text-label-secondary" style={textStyles.caption}>
-            {t('account.profile.eatBackFactorDescription')}
-          </Text>
-          <Host style={{ width: '100%', height: 44 }}>
-            <Slider
-              value={profile.eat_back_factor}
-              min={0}
-              max={1}
-              step={0.05}
-              onValueChange={(value) =>
-                updateProfile({ eat_back_factor: roundTo(value, 2) })
-              }
-            />
           </Host>
         </View>
       </SettingsGroup>

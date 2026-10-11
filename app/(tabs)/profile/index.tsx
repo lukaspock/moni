@@ -66,7 +66,7 @@ export default function ProfileScreen() {
       <ScreenTitle title={t('profile.title')} />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-5 px-4 pb-12 pt-4"
+        contentContainerClassName="gap-5 px-4 pb-32 pt-4"
       >
         <ProfileIdentityCard
           name={profile.display_name}

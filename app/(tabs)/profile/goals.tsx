@@ -119,7 +119,7 @@ export default function ProfileGoalsScreen() {
   return (
     <ScrollView
       className="bg-bg flex-1"
-      contentContainerClassName="px-4 pb-12 pt-1"
+      contentContainerClassName="px-4 pb-32 pt-1"
       keyboardShouldPersistTaps="handled"
     >
       <SettingsGroup title={t('account.profile.todayTargets')}>
@@ -232,6 +232,26 @@ export default function ProfileGoalsScreen() {
               );
             })}
           </View>
+        </View>
+        <View className="gap-2 px-4 py-3">
+          <Text className="text-label" style={textStyles.body}>
+            {t('account.profile.eatBackFactor')}:{' '}
+            {Math.round(profile.eat_back_factor * 100)}%
+          </Text>
+          <Text className="text-label-secondary" style={textStyles.caption}>
+            {t('account.profile.eatBackFactorDescription')}
+          </Text>
+          <Host style={{ width: '100%', height: 44 }}>
+            <Slider
+              value={profile.eat_back_factor}
+              min={0}
+              max={1}
+              step={0.05}
+              onValueChange={(value) =>
+                updateProfile({ eat_back_factor: roundTo(value, 2) })
+              }
+            />
+          </Host>
         </View>
       </SettingsGroup>
     </ScrollView>

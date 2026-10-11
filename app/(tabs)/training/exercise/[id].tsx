@@ -43,7 +43,10 @@ export default function ExerciseProgressScreen() {
   );
 
   return (
-    <ScrollView className="bg-bg flex-1" contentContainerClassName="gap-4 p-4">
+    <ScrollView
+      className="bg-bg flex-1"
+      contentContainerClassName="gap-4 p-4 pb-32"
+    >
       {exercise && (
         <Text className="text-label text-lg font-semibold">
           {exerciseDisplayName(exercise, t)}

@@ -268,7 +268,7 @@ export default function InsightsScreen() {
       <ScreenTitle title={t('insights.title')} />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-5 px-4 pb-10 pt-4"
+        contentContainerClassName="gap-5 px-4 pb-32 pt-4"
       >
         {/* Weekly review entry */}
         <Reveal index={0}>

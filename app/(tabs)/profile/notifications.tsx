@@ -128,7 +128,7 @@ export default function NotificationSettingsScreen() {
   return (
     <ScrollView
       className="bg-bg flex-1"
-      contentContainerClassName="px-4 pb-12 pt-4"
+      contentContainerClassName="px-4 pb-32 pt-4"
     >
       <Text className="text-label text-base">
         {t('nudges.settings.explainer')}
