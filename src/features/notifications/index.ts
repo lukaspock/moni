@@ -89,7 +89,8 @@ export async function scheduleMealReminders(
         identifier: `${ID_PREFIX}${r.meal}`,
         content: {
           ...reminderContent(r.meal),
-          data: { url: '/', kind: 'meal-reminder', meal: r.meal },
+          // Tap routing derives the screen from `kind`/`meal` (notificationRoute.ts); `url` is informational.
+          data: { url: '/log-food', kind: 'meal-reminder', meal: r.meal },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,

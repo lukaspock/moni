@@ -27,6 +27,7 @@ import {
   lookupBarcode,
   useFoodAnalysis,
   useFoodDraftStore,
+  useRecipeScanInbox,
   type AnalysisFailure,
   type DraftFoodItem,
 } from '@/features/food';
@@ -48,13 +49,24 @@ interface ScanProduct {
 
 /** Why the last scan did not produce a product; drives the fallback panel. */
 type Problem =
-  'notFound' | 'incomplete' | 'offline' | 'labelUnreadable' | 'labelError';
+  | 'notFound'
+  | 'incomplete'
+  | 'offline'
+  | 'labelUnreadable'
+  | 'labelError'
+  | 'labelBusy';
 
 const RESCAN_COOLDOWN_MS = 2500;
 
 export default function BarcodeScannerScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ mode?: string; date?: string }>();
+  const params = useLocalSearchParams<{
+    mode?: string;
+    date?: string;
+    target?: string;
+  }>();
+  // `?target=recipe`: products become recipe-editor ingredients instead of a food log.
+  const forRecipe = params.target === 'recipe';
   const [permission, requestPermission] = useCameraPermissions();
 
   const [mode, setMode] = useState<ScanMode>(
@@ -127,6 +139,11 @@ export default function BarcodeScannerScreen() {
         return {
           title: t('food.problem.labelError.title'),
           body: t('food.problem.labelError.body'),
+        };
+      case 'labelBusy':
+        return {
+          title: t('food.problem.labelBusy.title'),
+          body: t('food.problem.labelBusy.body'),
         };
     }
   };
@@ -216,7 +233,11 @@ export default function BarcodeScannerScreen() {
       return;
     }
     setProblem(
-      failure === 'label_not_readable' ? 'labelUnreadable' : 'labelError',
+      failure === 'label_not_readable'
+        ? 'labelUnreadable'
+        : failure === 'ai_rate_limited'
+          ? 'labelBusy'
+          : 'labelError',
     );
   };
 
@@ -241,6 +262,22 @@ export default function BarcodeScannerScreen() {
   };
 
   const openReview = (items: DraftFoodItem[]) => {
+    if (forRecipe) {
+      useRecipeScanInbox.getState().deliver(
+        items
+          .filter((i) => i.name.trim() !== '')
+          .map((i) => ({
+            name: i.name,
+            grams: i.grams,
+            kcal: i.kcal,
+            proteinG: i.proteinG,
+            carbsG: i.carbsG,
+            fatG: i.fatG,
+          })),
+      );
+      router.back();
+      return;
+    }
     start({
       date: resolveLogDate(params.date, toISODate()),
       source: mode === 'label' ? 'label' : 'barcode',
@@ -273,6 +310,11 @@ export default function BarcodeScannerScreen() {
   };
 
   const enterManually = () => {
+    // Recipe: the editor has its own manual entry; hand over what was scanned so far.
+    if (forRecipe) {
+      openReview(added);
+      return;
+    }
     openReview(
       added.length > 0
         ? added
@@ -420,7 +462,9 @@ export default function BarcodeScannerScreen() {
                 onPress={() => switchMode('label')}
               />
             )}
-            {(problem === 'labelUnreadable' || problem === 'labelError') && (
+            {(problem === 'labelUnreadable' ||
+              problem === 'labelError' ||
+              problem === 'labelBusy') && (
               <PanelButton
                 primary
                 icon="camera.fill"
@@ -522,7 +566,11 @@ export default function BarcodeScannerScreen() {
               pointerEvents={grams > 0 ? 'auto' : 'none'}
             >
               <GlassActionButton
-                label={t('food.barcode.addAndReview')}
+                label={
+                  forRecipe
+                    ? t('food.barcode.addToRecipe')
+                    : t('food.barcode.addAndReview')
+                }
                 symbol="checkmark"
                 onPress={addAndReview}
               />

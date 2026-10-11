@@ -29,6 +29,7 @@ import { duration, easing, REDUCE } from '@/theme/motion';
 import { fontFamily, maxFontSizeMultiplier } from '@/theme/typography';
 
 import {
+  axisLabelLayout,
   paddedDomain,
   smoothSegments,
   withAlpha,
@@ -37,6 +38,9 @@ import {
 
 const PAD_X = 8;
 const PAD_Y = 14;
+/** line height of an 11 pt axis / target caption */
+const LABEL_H = 14;
+const LABEL_GAP = 2;
 
 export interface WeightTrendChartProps {
   /** daily raw points (range-filtered), ascending */
@@ -134,6 +138,7 @@ export function WeightTrendChart({
       (raw.length > 0
         ? { x: x(raw[raw.length - 1].date), y: y(raw[raw.length - 1].weightKg) }
         : null);
+    const gridYs = [0, 1, 2].map((i) => PAD_Y + (i / 2) * plotH);
     return {
       trendPath,
       areaPath,
@@ -141,10 +146,17 @@ export function WeightTrendChart({
       targetY,
       headPt,
       dots: raw.map((p) => ({ cx: x(p.date), cy: y(p.weightKg) })),
-      gridYs: [0, 1, 2].map((i) => PAD_Y + (i / 2) * plotH),
+      gridYs,
       gridValues: [0, 1, 2].map((i) => max - (i / 2) * (max - min)),
+      labels: axisLabelLayout(
+        gridYs,
+        targetKg != null && targetLabel != null ? targetY : null,
+        height,
+        LABEL_H,
+        LABEL_GAP,
+      ),
     };
-  }, [width, height, raw, trend, targetKg]);
+  }, [width, height, raw, trend, targetKg, targetLabel]);
 
   // Draw-in: line traces left → right, area + head fade in after it.
   const progress = useSharedValue(0);
@@ -258,29 +270,31 @@ export function WeightTrendChart({
               </>
             )}
           </Canvas>
-          {geometry.gridYs.map((gy, i) => (
-            <Text
-              key={gy}
-              pointerEvents="none"
-              className="absolute right-2"
-              style={{
-                top: gy - 14,
-                color: axisColor,
-                fontFamily: fontFamily.display,
-                fontSize: 11,
-                fontVariant: ['tabular-nums'],
-              }}
-              maxFontSizeMultiplier={maxFontSizeMultiplier.numeric}
-            >
-              {formatWeight(geometry.gridValues[i])}
-            </Text>
-          ))}
+          {geometry.gridYs.map((gy, i) =>
+            !geometry.labels.tickVisible[i] ? null : (
+              <Text
+                key={gy}
+                pointerEvents="none"
+                className="absolute right-2"
+                style={{
+                  top: gy - LABEL_H,
+                  color: axisColor,
+                  fontFamily: fontFamily.display,
+                  fontSize: 11,
+                  fontVariant: ['tabular-nums'],
+                }}
+                maxFontSizeMultiplier={maxFontSizeMultiplier.numeric}
+              >
+                {formatWeight(geometry.gridValues[i])}
+              </Text>
+            ),
+          )}
           {targetKg != null && targetLabel != null && (
             <Text
               pointerEvents="none"
               className="absolute right-2"
               style={{
-                top: geometry.targetY + 2,
+                top: geometry.labels.targetLabelTop ?? geometry.targetY + 2,
                 color: targetColor,
                 fontSize: 11,
                 fontVariant: ['tabular-nums'],

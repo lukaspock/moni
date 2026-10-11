@@ -95,6 +95,7 @@
     "serving": "1 serving ({{grams}} g)",
     "addAndScan": "Scan next",
     "addAndReview": "Done",
+    "addToRecipe": "Add to recipe",
     "scanLabelInstead": "Scan nutrition label",
     "scanAgain": "Scan again",
     "modeBarcode": "Barcode",
@@ -120,6 +121,8 @@
     "ingredientNamePlaceholder": "Ingredient",
     "grams": "g",
     "limitReachedBody": "The free analyses for today are used up. Describing, barcode and regulars keep working.",
+    "busyTitle": "The AI needs a short break",
+    "busyBody": "A lot of requests are arriving at once right now. Try again in a minute or enter the meal yourself.",
     "errorCode": "Error code: {{code}}",
     "getPremium": "Get Premium",
     "saveWithKcal": "Save · {{kcal}} kcal",
@@ -164,6 +167,10 @@
     "labelError": {
       "title": "The analysis didn’t work",
       "body": "The nutrition table couldn’t be read. Nothing is lost; try again."
+    },
+    "labelBusy": {
+      "title": "The AI needs a short break",
+      "body": "A lot of requests are arriving at once right now. Try again in a minute or enter the values yourself."
     }
   },
   "voice": {
@@ -221,12 +228,14 @@
       "ingredients": "Ingredients",
       "addPlaceholder": "200 g oats",
       "addA11y": "Add ingredient",
+      "scanA11y": "Scan an ingredient's barcode",
       "addHint": "Type amount and ingredient. Known items come from your history, new ones are estimated by møni.",
       "fromHistory": "From your history",
       "historyItem": "{{grams}} g · {{kcal}} kcal",
       "manual": "Enter manually",
       "analyzing": "Estimating …",
       "analyzeError": "This ingredient couldn't be estimated. Enter it manually.",
+      "busy": "The AI is busy right now. Try again in a minute or pick an ingredient from your history.",
       "limitReached": "Today's AI estimates are used up. Pick ingredients from your history or enter them manually.",
       "noIngredients": "No ingredients yet.",
       "save": "Save dish",

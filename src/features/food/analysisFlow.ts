@@ -6,6 +6,7 @@ import type { MealType } from '@/domain';
 import { useSession } from '@/features/auth';
 import type { Json } from '@/types/database';
 
+import { AI_RATE_LIMITED } from './analysisErrors';
 import { useFoodDraftStore, type DraftFoodItem } from './draftStore';
 import {
   AnalyzeFoodError,
@@ -17,11 +18,12 @@ import {
 } from './queries';
 
 export type AnalysisFailure =
-  'ai_limit_reached' | 'label_not_readable' | 'generic';
+  'ai_limit_reached' | 'ai_rate_limited' | 'label_not_readable' | 'generic';
 
 function failureKind(error: unknown): AnalysisFailure {
   if (error instanceof AnalyzeFoodError) {
     if (error.status === 402) return 'ai_limit_reached';
+    if (error.code === AI_RATE_LIMITED) return 'ai_rate_limited';
     if (error.code === 'label_not_readable') return 'label_not_readable';
   }
   return 'generic';

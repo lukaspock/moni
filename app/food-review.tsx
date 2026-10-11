@@ -33,6 +33,7 @@ import {
   sumFoodItems,
 } from '@/domain';
 import {
+  isRateLimitedErrorCode,
   useFoodDraftStore,
   useFoodLogById,
   useSaveFoodDraft,
@@ -225,6 +226,8 @@ export default function FoodReviewScreen() {
 
   if (draft.status === 'error') {
     const limit = draft.errorKind === 'ai_limit_reached';
+    // 503 ai_rate_limited: temporary throttling, gets its own calm "short break" text.
+    const busy = !limit && isRateLimitedErrorCode(draft.errorCode);
     return (
       <SheetScreen title={title}>
         <View className="items-center gap-4 pt-4">
@@ -236,12 +239,16 @@ export default function FoodReviewScreen() {
           >
             {limit
               ? t('food.paywall.title')
-              : t('food.logFood.analyzeErrorTitle')}
+              : busy
+                ? t('food.review.busyTitle')
+                : t('food.logFood.analyzeErrorTitle')}
           </Text>
           <Text className="text-label-secondary text-center text-base">
             {limit
               ? t('food.review.limitReachedBody')
-              : t('food.logFood.analyzeErrorBody')}
+              : busy
+                ? t('food.review.busyBody')
+                : t('food.logFood.analyzeErrorBody')}
           </Text>
           {draft.errorCode && !limit && (
             <Text

@@ -1,4 +1,5 @@
 import {
+  axisLabelLayout,
   barHeightPx,
   bonusCapStart,
   bonusTrackEnd,
@@ -110,5 +111,43 @@ describe('line', () => {
   it('withAlpha', () => {
     expect(withAlpha('#C6F135', 0.5)).toBe('rgba(198,241,53,0.5)');
     expect(withAlpha('rgba(1,2,3,0.1)', 0.5)).toBe('rgba(1,2,3,0.1)');
+  });
+});
+
+describe('axisLabelLayout', () => {
+  const ticks = [14, 100, 186];
+  it('shows every tick without a target', () => {
+    expect(axisLabelLayout(ticks, null, 200, 14, 2)).toEqual({
+      tickVisible: [true, true, true],
+      targetLabelTop: null,
+    });
+  });
+  it('hides a tick whose label would overlap the target caption', () => {
+    // caption below the target line at 85 → [87, 101]; tick 100 label [86, 100]
+    const l = axisLabelLayout(ticks, 85, 200, 14, 2);
+    expect(l.targetLabelTop).toBe(87);
+    expect(l.tickVisible).toEqual([true, false, true]);
+  });
+  it('keeps ticks that are far enough away', () => {
+    // caption [42, 56]; tick labels [0, 14], [86, 100], [172, 186]
+    expect(axisLabelLayout(ticks, 40, 200, 14, 2).tickVisible).toEqual([
+      true,
+      true,
+      true,
+    ]);
+  });
+  it('hides a tick just below the caption too', () => {
+    // caption [72, 86]; tick 100 label [86, 100] is within the 2 pt gap
+    expect(axisLabelLayout(ticks, 70, 200, 14, 2).tickVisible).toEqual([
+      true,
+      false,
+      true,
+    ]);
+  });
+  it('moves the caption above the line near the bottom edge', () => {
+    const l = axisLabelLayout(ticks, 192, 200, 14, 2);
+    expect(l.targetLabelTop).toBe(176);
+    // caption [176, 190] collides with tick 186 label [172, 186]
+    expect(l.tickVisible).toEqual([true, true, false]);
   });
 });

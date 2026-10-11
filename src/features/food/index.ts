@@ -58,6 +58,7 @@ export type {
 } from './openFoodFacts';
 export { useFoodAnalysis } from './analysisFlow';
 export type { AnalysisFailure } from './analysisFlow';
+export { AI_RATE_LIMITED, isRateLimitedErrorCode } from './analysisErrors';
 export {
   useQuickLogEntries,
   useQuickLogMeal,
@@ -75,6 +76,8 @@ export { foodKeys } from './keys';
 
 // UI bridge: the food sheets queue a "+kcal" meal flight, Today consumes it (see flightStore.ts).
 export { useMealFlightBridge } from './flightStore';
+// barcode-scanner?target=recipe → recipe editor ingredient hand-off (see recipeScanInbox.ts).
+export { useRecipeScanInbox } from './recipeScanInbox';
 export type { FlightPoint, PendingMealFlight } from './flightStore';
 
 // Own dishes / recipes (stored as favorite_meals with per-serving items, see recipes.ts).

@@ -25,6 +25,7 @@ import { toISODate } from '@/lib/date';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
 
+import { AI_RATE_LIMITED } from './analysisErrors';
 import type { DraftFoodItem } from './draftStore';
 import { foodKeys } from './keys';
 import {
@@ -229,7 +230,10 @@ export function useIngredientCatalog(): {
 
 export type IngredientLookupResult =
   | { ok: true; items: RecipeIngredient[]; fromCatalog: boolean }
-  | { ok: false; failure: 'ai_limit_reached' | 'generic' };
+  | {
+      ok: false;
+      failure: 'ai_limit_reached' | 'ai_rate_limited' | 'generic';
+    };
 
 /**
  * Resolves one free-text line ("200 g Haferflocken") into ingredient(s). An exact match in the
@@ -272,10 +276,13 @@ export function useIngredientLookup(catalog: IngredientCatalogEntry[]) {
         console.warn('analyze ingredient failed', error);
         return {
           ok: false,
-          failure:
-            error instanceof AnalyzeFoodError && error.status === 402
+          failure: !(error instanceof AnalyzeFoodError)
+            ? 'generic'
+            : error.status === 402
               ? 'ai_limit_reached'
-              : 'generic',
+              : error.code === AI_RATE_LIMITED
+                ? 'ai_rate_limited'
+                : 'generic',
         };
       }
     },
