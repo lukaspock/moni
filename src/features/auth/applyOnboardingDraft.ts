@@ -1,12 +1,16 @@
 import i18n from '../../i18n';
-import { estimateDefaultWorkoutExpectedKcal } from '../../domain';
+import {
+  anchorForSavedCycle,
+  estimateDefaultWorkoutExpectedKcal,
+  weeklyCycleFromWeekdays,
+} from '../../domain';
 import { toISODate } from '../../lib/date';
 import { supabase } from '../../lib/supabase';
 import { isDraftComplete, useOnboardingStore } from './onboardingStore';
 import { isProfileComplete } from './profileStatus';
 
 export type ApplyDraftResult =
-  /** draft written to profiles/training_plan_days/weight_logs */
+  /** draft written to profiles/training_plan_days/training_cycles/weight_logs */
   | 'applied'
   /** the account already had a complete profile — left untouched (existing user signed in) */
   | 'skippedExisting'
@@ -102,6 +106,32 @@ async function applyImpl(userId: string): Promise<ApplyDraftResult> {
   if (cleanupError) throw cleanupError;
 
   const today = toISODate();
+
+  // Training cycle (the plan the app reads): 7 days from this week's Monday,
+  // training days without a routine yet (= rotation once routines exist).
+  if (weekdays.length > 0) {
+    const { error: cycleError } = await supabase.from('training_cycles').upsert(
+      {
+        user_id: userId,
+        length: 7,
+        anchor_date: anchorForSavedCycle(7, today),
+      },
+      { onConflict: 'user_id' },
+    );
+    if (cycleError) throw cycleError;
+    const slotRows = weeklyCycleFromWeekdays(weekdays).map(
+      (slot, position) => ({
+        user_id: userId,
+        position,
+        kind: slot.kind,
+        routine_id: slot.kind === 'training' ? slot.routineId : null,
+      }),
+    );
+    const { error: slotsError } = await supabase
+      .from('training_cycle_slots')
+      .upsert(slotRows, { onConflict: 'user_id,position' });
+    if (slotsError) throw slotsError;
+  }
   const { data: existingWeightLog, error: existingWeightError } = await supabase
     .from('weight_logs')
     .select('id')

@@ -1,0 +1,50 @@
+{
+  "title": "Training plan",
+  "rowSubtitle_one": "{{count}} session in {{days}} days",
+  "rowSubtitle_other": "{{count}} sessions in {{days}} days",
+  "rowSubtitleNone": "Not set yet",
+  "rest": "Rest",
+  "rotation": "Next routine",
+  "dayN": "Day {{n}}",
+  "today": "today",
+  "editor": {
+    "lengthTitle": "Length",
+    "lengthValue_one": "{{count}} day",
+    "lengthValue_other": "{{count}} days",
+    "lengthHintWeek": "7 days read like a week, Monday first.",
+    "lengthHintCycle": "Day 1 is today. Then the plan repeats.",
+    "decrease": "One day less",
+    "increase": "One day more",
+    "daysTitle": "Days",
+    "pickTitle": "What's on?",
+    "rotationHint": "“Next routine” cycles through your routines in order.",
+    "cancel": "Cancel",
+    "previewTitle": "The next two weeks",
+    "save": "Save plan",
+    "saveFailed": "Saving didn't work. Please try again.",
+    "resetNote": "Saving restarts the plan. Any shifts are dropped.",
+    "noRoutines": "No routines yet. Training days then simply take the next routine."
+  },
+  "week": {
+    "title": "Your plan",
+    "edit": "Edit",
+    "setup": "Set up training plan",
+    "setupSubtitle": "Spread your routines over the days",
+    "a11yDay": "{{day}}: {{plan}}"
+  },
+  "actions": {
+    "postpone": "Not today",
+    "pullForward": "Train anyway",
+    "undo": "Undo",
+    "postponed": "Moved to tomorrow.",
+    "pulledForward": "Moved up to today.",
+    "failed": "That didn't work. Please try again."
+  },
+  "hero": {
+    "restEyebrow": "Today",
+    "restTitle": "Rest day",
+    "restNext": "Next session: {{name}} · {{day}}",
+    "restNextFree": "Next session: {{day}}",
+    "tomorrow": "tomorrow"
+  }
+}

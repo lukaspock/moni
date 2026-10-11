@@ -8,6 +8,10 @@ export default function TrainingStackLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
+        name="plan"
+        options={{ headerShown: true, title: t('trainingPlan.title') }}
+      />
+      <Stack.Screen
         name="history"
         options={{ headerShown: true, title: t('workout.history.title') }}
       />

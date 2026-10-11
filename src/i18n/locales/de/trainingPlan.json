@@ -1,0 +1,50 @@
+{
+  "title": "Trainingsplan",
+  "rowSubtitle_one": "{{count}} Einheit in {{days}} Tagen",
+  "rowSubtitle_other": "{{count}} Einheiten in {{days}} Tagen",
+  "rowSubtitleNone": "Noch nicht festgelegt",
+  "rest": "Pause",
+  "rotation": "Nächste Routine",
+  "dayN": "Tag {{n}}",
+  "today": "heute",
+  "editor": {
+    "lengthTitle": "Länge",
+    "lengthValue_one": "{{count}} Tag",
+    "lengthValue_other": "{{count}} Tage",
+    "lengthHintWeek": "7 Tage lesen sich wie eine Woche, Montag zuerst.",
+    "lengthHintCycle": "Tag 1 ist heute. Danach wiederholt sich der Plan.",
+    "decrease": "Einen Tag weniger",
+    "increase": "Einen Tag mehr",
+    "daysTitle": "Tage",
+    "pickTitle": "Was steht an?",
+    "rotationHint": "„Nächste Routine“ wechselt der Reihe nach durch deine Routinen.",
+    "cancel": "Abbrechen",
+    "previewTitle": "Die nächsten zwei Wochen",
+    "save": "Plan speichern",
+    "saveFailed": "Speichern hat nicht geklappt. Versuch es noch einmal.",
+    "resetNote": "Speichern startet den Plan neu. Verschiebungen fallen dabei weg.",
+    "noRoutines": "Noch keine Routinen. Trainingstage nehmen dann einfach die nächste Routine."
+  },
+  "week": {
+    "title": "Dein Plan",
+    "edit": "Bearbeiten",
+    "setup": "Trainingsplan festlegen",
+    "setupSubtitle": "Routinen auf Tage verteilen",
+    "a11yDay": "{{day}}: {{plan}}"
+  },
+  "actions": {
+    "postpone": "Heute nicht",
+    "pullForward": "Doch trainieren",
+    "undo": "Rückgängig",
+    "postponed": "Auf morgen verschoben.",
+    "pulledForward": "Auf heute vorgezogen.",
+    "failed": "Das hat nicht geklappt. Versuch es noch einmal."
+  },
+  "hero": {
+    "restEyebrow": "Heute",
+    "restTitle": "Ruhetag",
+    "restNext": "Nächste Einheit: {{name}} · {{day}}",
+    "restNextFree": "Nächste Einheit: {{day}}",
+    "tomorrow": "morgen"
+  }
+}

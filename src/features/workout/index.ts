@@ -1,7 +1,9 @@
 // CONTRACT (owner: `workout` agent). Signatures are fixed, implementation is replaced.
 import { useSession } from '@/features/auth';
 import { useWorkoutsForDateImpl } from './history';
-import { useWeeklyPlan } from './plan';
+import { useLegacyWeeklyPlan } from './plan';
+import { useRoutines } from './routines';
+import { usePlanForDate, useTrainingCycle } from './trainingCycle';
 import { weekdayOf } from '@/lib/date';
 
 export type WorkoutSummary = {
@@ -31,26 +33,48 @@ export function useWorkoutsForDate(date: string): {
 }
 
 /**
- * Training-day entry for that date's weekday, or null = rest day. A
- * `training_plan_days` row *is* the flag: rows written by the profile's weekday
- * toggles have neither a routine nor expected kcal, and must still count
- * (previously such rows were treated as rest days). `routineName` is always
- * null now — the plan no longer links routines in the UI.
+ * Training-day entry for that date, or null = rest day. With a training cycle
+ * this is the effective (shifted) cycle plan: `routineId`/`routineName` are the
+ * slot's routine (both null when the slot uses the rotation or its routine was
+ * deleted). Without a cycle the legacy `training_plan_days` row for the date's
+ * weekday is the flag (rows from the old weekday toggles have neither a
+ * routine nor expected kcal and still count). `expectedKcal` only comes from
+ * legacy rows (0 otherwise) — the bonus is real data only.
  */
 export function usePlannedDay(date: string): {
   plannedDay: PlannedDay | null;
   isLoading: boolean;
 } {
-  const { planByWeekday, isLoading } = useWeeklyPlan();
-  const row = planByWeekday.get(weekdayOf(date));
-  if (!row) return { plannedDay: null, isLoading };
+  const { cycle, isLoading: cycleLoading } = useTrainingCycle();
+  const { day } = usePlanForDate(date);
+  const { routines } = useRoutines();
+  const legacy = useLegacyWeeklyPlan(!cycleLoading && !cycle);
+  if (cycleLoading) return { plannedDay: null, isLoading: true };
+  if (cycle) {
+    if (!day || day.kind !== 'training') {
+      return { plannedDay: null, isLoading: false };
+    }
+    const routine = day.routineId
+      ? (routines.find((r) => r.id === day.routineId) ?? null)
+      : null;
+    return {
+      plannedDay: {
+        routineId: routine?.id ?? null,
+        routineName: routine?.name ?? null,
+        expectedKcal: 0,
+      },
+      isLoading: false,
+    };
+  }
+  const row = legacy.planByWeekday.get(weekdayOf(date));
+  if (!row) return { plannedDay: null, isLoading: legacy.isLoading };
   return {
     plannedDay: {
       routineId: row.routine_id,
       routineName: null,
       expectedKcal: row.expected_kcal ?? 0,
     },
-    isLoading,
+    isLoading: legacy.isLoading,
   };
 }
 
@@ -64,6 +88,9 @@ export * from './pickerStore';
 export { ExercisePickerView } from './ExercisePickerView';
 export * from './routines';
 export * from './plan';
+export * from './trainingCycle';
+export { PlanStrip } from './cycle/PlanStrip';
+export * from './cycle/usePlanShiftActions';
 export * from './session';
 export * from './start';
 export * from './finish';

@@ -52,8 +52,10 @@ import { WeekStrip } from '@/features/today/WeekStrip';
 import { WeightQuickLog } from '@/features/today/WeightQuickLog';
 import { WaterRow, type WaterAddedInfo } from '@/features/today/WaterRow';
 import {
+  usePlanShiftActions,
   usePlannedDay,
   useStartWorkout,
+  useTodayPlan,
   useWorkoutsForDate,
 } from '@/features/workout';
 import { addDays, toISODate } from '@/lib/date';
@@ -75,13 +77,21 @@ export default function TodayScreen() {
   const { workouts } = useWorkoutsForDate(date);
   const { plannedDay } = usePlannedDay(date);
   const deleteFoodLog = useDeleteFoodLog();
-  const { startEmpty } = useStartWorkout();
+  const { startEmpty, startFromRoutine } = useStartWorkout();
+  const todayPlan = useTodayPlan();
   const { favorites, recents } = useQuickLogEntries();
   const quickLog = useQuickLogMeal();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<UndoToastState | null>(null);
   const hideToast = useCallback(() => setToast(null), [setToast]);
+  const shiftActions = usePlanShiftActions(
+    useCallback(
+      (next: Omit<UndoToastState, 'id'>) =>
+        setToast({ id: Date.now(), ...next }),
+      [setToast],
+    ),
+  );
   // Regulars feed "still fits"; the one-tap list itself lives in the log sheet.
   const allQuickEntries = useMemo(() => {
     const seen = new Set<string>();
@@ -272,6 +282,32 @@ export default function TodayScreen() {
     restDayOpen: !plannedDay && !restConfirmed,
     fitAvailable: fits.visible,
   });
+  // Quiet training-plan action for today (cycle only): undo today's shift,
+  // "Heute nicht" on a planned day, "Doch trainieren" on a rest day.
+  const workoutDone = workouts.some((w) => w.endedAt);
+  const planSecondary =
+    !isToday || workoutDone
+      ? null
+      : shiftActions.state.todayShift
+        ? {
+            label: t('trainingPlan.actions.undo'),
+            onPress: shiftActions.undoToday,
+          }
+        : plannedDay && shiftActions.state.canPostpone
+          ? {
+              label: t('trainingPlan.actions.postpone'),
+              onPress: shiftActions.postpone,
+            }
+          : !plannedDay && shiftActions.state.canPullForward
+            ? {
+                label: t('trainingPlan.actions.pullForward'),
+                onPress: shiftActions.pullForward,
+              }
+            : null;
+  const todayRoutine = isToday ? todayPlan.routine : null;
+  const startPlanned = () =>
+    todayRoutine ? startFromRoutine(todayRoutine) : startEmpty();
+
   // Back-to-today only when one chevron tap wouldn't get there anyway.
   const farFromToday = date < addDays(today, -1);
   const color = themeColor('labelSecondary');
@@ -286,7 +322,7 @@ export default function TodayScreen() {
     ) : slot === 'care' ? (
       <CareCard onDismiss={care.dismiss} />
     ) : slot === 'restDay' ? (
-      <RestDayAction />
+      <RestDayAction secondary={planSecondary} />
     ) : slot === 'nextStep' ? (
       <NextStepCard
         step={rituals.nextStep}
@@ -297,8 +333,10 @@ export default function TodayScreen() {
       <TrainingCard
         isToday={isToday}
         plannedDay={plannedDay}
+        routineName={todayRoutine?.name ?? null}
         workouts={workouts}
-        onStart={startEmpty}
+        onStart={startPlanned}
+        secondary={planSecondary}
       />
     ) : slot === 'fit' ? (
       <FitCard result={fits} disabled={quickLog.isPending} onLog={onQuickLog} />

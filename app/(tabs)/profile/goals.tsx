@@ -1,7 +1,5 @@
 import { Host, Picker, Slider, Text as UIText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -10,17 +8,18 @@ import {
   Text,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 
 import type { ActivityLevel, Goal } from '@/domain';
-import { roundTo } from '@/domain';
-import { useSession } from '@/features/auth';
+import { roundTo, trainingDayCount } from '@/domain';
 import { GoalWeightRow } from '@/features/auth/components/GoalWeightRow';
 import { SettingsGroup } from '@/features/auth/components/SettingsGroup';
 import { useUpdateProfile } from '@/features/auth/components/useUpdateProfile';
 import { useDailyTargets, useProfile } from '@/features/targets';
+import { useLegacyWeeklyPlan, useTrainingCycle } from '@/features/workout';
 import { toISODate } from '@/lib/date';
-import { haptic } from '@/lib/haptics';
-import { supabase } from '@/lib/supabase';
+import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
 
 const ACTIVITY_LEVELS: ActivityLevel[] = [
@@ -30,7 +29,6 @@ const ACTIVITY_LEVELS: ActivityLevel[] = [
   'active',
 ];
 const GOALS: Goal[] = ['lose', 'maintain', 'gain'];
-const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 function ValueRow({ label, value }: { label: string; value: string }) {
   return (
@@ -45,68 +43,26 @@ function ValueRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Goals & plan: today's targets, goal + rate + goal weight, activity level, training days. */
+/** Goals & plan: today's targets, goal + rate + goal weight, activity level, training plan (→ editor). */
 export default function ProfileGoalsScreen() {
   const { t } = useTranslation();
-  const { userId } = useSession();
   const { profile, isLoading } = useProfile();
   const { targets } = useDailyTargets(toISODate());
-  const queryClient = useQueryClient();
   const updateProfile = useUpdateProfile();
 
-  const [trainingWeekdaysLocal, setTrainingWeekdaysLocal] = useState<number[]>(
-    [],
-  );
-  useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from('training_plan_days')
-      .select('weekday')
-      .eq('user_id', userId)
-      .then(({ data }) =>
-        setTrainingWeekdaysLocal((data ?? []).map((r) => r.weekday)),
-      );
-  }, [userId]);
-
-  async function toggleWeekday(day: number, current: number[]) {
-    haptic.select();
-    const next = current.includes(day)
-      ? current.filter((d) => d !== day)
-      : [...current, day].sort();
-
-    if (!userId) return;
-    // Keep training_plan_days consistent with the plain weekday toggle: this
-    // mirrors applyOnboardingDraft.ts's upsert/cleanup, kept lightweight here.
-    if (current.includes(day)) {
-      await supabase
-        .from('training_plan_days')
-        .delete()
-        .eq('user_id', userId)
-        .eq('weekday', day);
-    } else {
-      await supabase.from('training_plan_days').upsert(
-        {
-          user_id: userId,
-          weekday: day,
-          routine_id: null,
-          expected_kcal: null,
-        },
-        { onConflict: 'user_id,weekday' },
-      );
-    }
-    void queryClient.invalidateQueries({ queryKey: ['plannedDay'] });
-    setTrainingWeekdaysLocal(next);
-  }
-
-  const weekdayLabels: Record<number, string> = {
-    0: t('account.onboarding.schedule.weekday.0'),
-    1: t('account.onboarding.schedule.weekday.1'),
-    2: t('account.onboarding.schedule.weekday.2'),
-    3: t('account.onboarding.schedule.weekday.3'),
-    4: t('account.onboarding.schedule.weekday.4'),
-    5: t('account.onboarding.schedule.weekday.5'),
-    6: t('account.onboarding.schedule.weekday.6'),
-  };
+  const { cycle } = useTrainingCycle();
+  const legacy = useLegacyWeeklyPlan(!cycle);
+  const planDays = cycle ? cycle.length : 7;
+  const planTrainingDays = cycle
+    ? trainingDayCount(cycle.slots)
+    : legacy.planByWeekday.size;
+  const planSummary =
+    planTrainingDays > 0
+      ? t('trainingPlan.rowSubtitle', {
+          count: planTrainingDays,
+          days: planDays,
+        })
+      : t('trainingPlan.rowSubtitleNone');
 
   if (isLoading || !profile) {
     return (
@@ -206,33 +162,27 @@ export default function ProfileGoalsScreen() {
             </Picker>
           </Host>
         </View>
-        <View className="gap-2 px-4 py-3">
-          <Text className="text-label-secondary" style={textStyles.caption}>
-            {t('account.profile.trainingDays')}
-          </Text>
-          <View className="flex-row justify-between gap-2">
-            {WEEKDAYS.map((day) => {
-              const selected = trainingWeekdaysLocal.includes(day);
-              return (
-                <Pressable
-                  key={day}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  onPress={() => toggleWeekday(day, trainingWeekdaysLocal)}
-                  className={`h-11 flex-1 items-center justify-center rounded-xl border ${
-                    selected ? 'border-tint bg-tint' : 'border-line bg-bg'
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-semibold ${selected ? 'text-on-tint' : 'text-label'}`}
-                  >
-                    {weekdayLabels[day]}
-                  </Text>
-                </Pressable>
-              );
-            })}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('trainingPlan.title')}, ${planSummary}`}
+          onPress={() => router.push('/(tabs)/profile/training-plan')}
+          className="min-h-12 flex-row items-center gap-3 px-4 py-3"
+        >
+          <View className="flex-1 gap-0.5">
+            <Text className="text-label" style={textStyles.body}>
+              {t('trainingPlan.title')}
+            </Text>
+            <Text className="text-label-secondary" style={textStyles.caption}>
+              {planSummary}
+            </Text>
           </View>
-        </View>
+          <SymbolView
+            name="chevron.right"
+            size={13}
+            weight="semibold"
+            tintColor={themeColor('labelTertiary')}
+          />
+        </Pressable>
         <View className="gap-2 px-4 py-3">
           <Text className="text-label" style={textStyles.body}>
             {t('account.profile.eatBackFactor')}:{' '}

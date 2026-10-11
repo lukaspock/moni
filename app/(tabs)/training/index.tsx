@@ -30,27 +30,34 @@ import {
   lastPerformedAt,
   nextRoutine,
 } from '@/domain/trainingPlan';
+import { nextTrainingAfter } from '@/domain/trainingCycle';
 import { useSession } from '@/features/auth';
 import {
   elapsedSeconds,
   useActiveWorkoutStore,
   useDeleteRoutine,
   useExerciseCatalog,
+  usePlanShiftActions,
   useRoutines,
   useStartWorkout,
+  useTodayPlan,
+  useTrainingCycle,
+  useUpcomingPlan,
   useWorkoutHistory,
   useWorkoutsForDate,
+  PlanStrip,
   type Exercise,
   type Routine,
   type WorkoutSummary,
 } from '@/features/workout';
+import { UndoToast, type UndoToastState } from '@/features/today/UndoToast';
 import { WorkoutHistoryRow } from '@/features/workout/WorkoutHistoryRow';
 import {
   hasPromptedTrainingSetup,
   markTrainingSetupPrompted,
   openTrainingSetup,
 } from '@/features/workout/setup';
-import { toISODate } from '@/lib/date';
+import { addDays, toISODate } from '@/lib/date';
 
 const RECENT_COUNT = 3;
 /** Enough history to find the last routine session for the rotation. */
@@ -113,7 +120,85 @@ export default function TrainingScreen() {
     }, [userId, routinesLoading, routines.length, running]),
   );
 
-  const next = nextRoutine(routines, history);
+  const today = toISODate();
+  const todayPlan = useTodayPlan();
+  const { cycle } = useTrainingCycle();
+  const { days: week } = useUpcomingPlan(7);
+  const [toast, setToast] = useState<UndoToastState | null>(null);
+  const hideToast = useCallback(() => setToast(null), []);
+  const shiftActions = usePlanShiftActions(
+    useCallback(
+      (next: Omit<UndoToastState, 'id'>) =>
+        setToast({ id: Date.now(), ...next }),
+      [],
+    ),
+  );
+  const rotationNext = nextRoutine(routines, history);
+  const isRestDay = todayPlan.hasCycle && todayPlan.day?.kind === 'rest';
+  // With a cycle the plan decides today's routine; without one the rotation does.
+  const next = todayPlan.hasCycle ? todayPlan.routine : rotationNext;
+  const doneToday = todaysWorkouts.some((w) => w.endedAt);
+
+  const routineNameById = useMemo(
+    () => new Map(routines.map((r) => [r.id, r.name])),
+    [routines],
+  );
+  const planRoutineLabel = useCallback(
+    (routineId: string | null) =>
+      (routineId ? routineNameById.get(routineId) : undefined) ??
+      t('trainingPlan.rotation'),
+    [routineNameById, t],
+  );
+  const openPlan = () => router.push('/(tabs)/training/plan');
+
+  // Rest day: name the next planned session ("Nächste Einheit: Push · morgen").
+  let restBody: string | null = null;
+  if (isRestDay && cycle) {
+    const upcoming = nextTrainingAfter(
+      cycle.slots,
+      cycle.anchorDate,
+      cycle.shifts,
+      today,
+    );
+    if (upcoming && upcoming.day.kind === 'training') {
+      const dayText =
+        upcoming.date === addDays(today, 1)
+          ? t('trainingPlan.hero.tomorrow')
+          : new Date(`${upcoming.date}T12:00:00`).toLocaleDateString(
+              i18n.language,
+              { weekday: 'long' },
+            );
+      const name =
+        (upcoming.day.routineId
+          ? routineNameById.get(upcoming.day.routineId)
+          : undefined) ?? rotationNext?.name;
+      restBody = name
+        ? t('trainingPlan.hero.restNext', { name, day: dayText })
+        : t('trainingPlan.hero.restNextFree', { day: dayText });
+    }
+  }
+
+  // One quiet secondary action under the hero: undo today's shift, or shift.
+  let secondary: { label: string; onPress: () => void } | null = null;
+  if (!running && !doneToday) {
+    if (shiftActions.state.todayShift) {
+      secondary = {
+        label: t('trainingPlan.actions.undo'),
+        onPress: shiftActions.undoToday,
+      };
+    } else if (shiftActions.state.canPostpone) {
+      secondary = {
+        label: t('trainingPlan.actions.postpone'),
+        onPress: shiftActions.postpone,
+      };
+    } else if (shiftActions.state.canPullForward) {
+      secondary = {
+        label: t('trainingPlan.actions.pullForward'),
+        onPress: shiftActions.pullForward,
+      };
+    }
+  }
+
   const others = routines.filter((r) => r.id !== next?.id);
   const recent = history.slice(0, RECENT_COUNT);
 
@@ -197,7 +282,9 @@ export default function TrainingScreen() {
             runningName={
               routines.find((r) => r.id === runningRoutineId)?.name ?? null
             }
-            next={next}
+            next={isRestDay ? null : next}
+            rest={isRestDay ? { body: restBody } : null}
+            secondary={secondary}
             doneToday={todaysWorkouts.length > 0}
             meta={
               next
@@ -219,6 +306,37 @@ export default function TrainingScreen() {
             onLongPress={() => next && openRoutineMenu(next)}
           />
         </Reveal>
+
+        {cycle ? (
+          <Reveal index={1} style={{ paddingHorizontal: 16 }}>
+            <View className="gap-2">
+              <SectionHeader
+                title={t('trainingPlan.week.title')}
+                actionLabel={t('trainingPlan.week.edit')}
+                onActionPress={openPlan}
+              />
+              <Card>
+                <PlanStrip
+                  days={week}
+                  today={today}
+                  routineLabel={planRoutineLabel}
+                />
+              </Card>
+            </View>
+          </Reveal>
+        ) : routines.length > 0 ? (
+          <Reveal index={1} style={{ paddingHorizontal: 16 }}>
+            <Card className="gap-0 overflow-hidden p-0">
+              <ListRow
+                title={t('trainingPlan.week.setup')}
+                subtitle={t('trainingPlan.week.setupSubtitle')}
+                symbol="calendar"
+                iconTone="accent"
+                onPress={openPlan}
+              />
+            </Card>
+          </Reveal>
+        ) : null}
 
         {routines.length > 0 && (
           // Plain View, not <Reveal>: an entering animation around a horizontal
@@ -283,6 +401,7 @@ export default function TrainingScreen() {
           </Reveal>
         )}
       </ScrollView>
+      <UndoToast toast={toast} onHide={hideToast} />
     </View>
   );
 }
@@ -292,6 +411,8 @@ function TrainingHero({
   elapsed,
   runningName,
   next,
+  rest,
+  secondary,
   doneToday,
   meta,
   loading,
@@ -304,6 +425,10 @@ function TrainingHero({
   elapsed: number;
   runningName: string | null;
   next: Routine | null;
+  /** Planned rest day (cycle): calm rest state instead of a start button. */
+  rest: { body: string | null } | null;
+  /** Quiet text action under the CTA ("Heute nicht", "Doch trainieren", "Rückgängig"). */
+  secondary: { label: string; onPress: () => void } | null;
   doneToday: boolean;
   meta: string | null;
   loading: boolean;
@@ -333,6 +458,11 @@ function TrainingHero({
       symbol: 'play.fill',
       onPress: onResume,
     };
+  } else if (rest) {
+    eyebrow = t('trainingPlan.hero.restEyebrow');
+    title = t('trainingPlan.hero.restTitle');
+    body = rest.body;
+    cta = null;
   } else if (next) {
     eyebrow = doneToday
       ? t('trainingSetup.tab.heroDoneToday')
@@ -404,12 +534,32 @@ function TrainingHero({
             </Text>
           ) : null}
         </View>
-        {cta ? (
-          <GlassActionButton
-            label={cta.label}
-            symbol={cta.symbol}
-            onPress={cta.onPress}
-          />
+        {cta || secondary ? (
+          <View className="gap-1">
+            {cta ? (
+              <GlassActionButton
+                label={cta.label}
+                symbol={cta.symbol}
+                onPress={cta.onPress}
+              />
+            ) : null}
+            {secondary ? (
+              <Pressable
+                onPress={secondary.onPress}
+                accessibilityRole="button"
+                accessibilityLabel={secondary.label}
+                hitSlop={6}
+                className={`h-11 justify-center ${cta ? 'items-center' : 'items-start'}`}
+              >
+                <Text
+                  maxFontSizeMultiplier={1.4}
+                  style={{ ...textStyles.button, color: ink, opacity: 0.7 }}
+                >
+                  {secondary.label}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
       </LinearGradient>
     </Pressable>

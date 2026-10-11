@@ -16,6 +16,7 @@ import deRhythm from './locales/de/rhythm.json';
 import deWorkout from './locales/de/workout.json';
 import deRoutineEditor from './locales/de/routineEditor.json';
 import deTrainingSetup from './locales/de/trainingSetup.json';
+import deTrainingPlan from './locales/de/trainingPlan.json';
 import deWorkoutLive from './locales/de/workoutLive.json';
 import en from './locales/en.json';
 import enAccount from './locales/en/account.json';
@@ -31,6 +32,7 @@ import enRhythm from './locales/en/rhythm.json';
 import enWorkout from './locales/en/workout.json';
 import enRoutineEditor from './locales/en/routineEditor.json';
 import enTrainingSetup from './locales/en/trainingSetup.json';
+import enTrainingPlan from './locales/en/trainingPlan.json';
 import enWorkoutLive from './locales/en/workoutLive.json';
 
 /**
@@ -54,6 +56,7 @@ export const deTranslation = {
   workout: deWorkout,
   routineEditor: deRoutineEditor,
   trainingSetup: deTrainingSetup,
+  trainingPlan: deTrainingPlan,
   workoutLive: deWorkoutLive,
 };
 
@@ -72,6 +75,7 @@ const enTranslation = {
   workout: enWorkout,
   routineEditor: enRoutineEditor,
   trainingSetup: enTrainingSetup,
+  trainingPlan: enTrainingPlan,
   workoutLive: enWorkoutLive,
 };
 

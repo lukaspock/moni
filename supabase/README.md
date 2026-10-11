@@ -51,6 +51,13 @@ Finally: `generate_typescript_types` → `src/types/database.ts`.
 - **`ai_usage` / `entitlements`**: RLS grants `select` to `authenticated` for their own row
   only; there is **no** insert/update/delete policy for `authenticated` on either table. All
   writes happen through Edge Functions using the **service role** key, which bypasses RLS.
+- **Training cycle** (`20261011120000_training_cycle.sql`): `training_cycles` (one row per
+  user: `length` 1–14, `anchor_date`), `training_cycle_slots` (`(user_id, position)`, `kind`
+  training|rest, `routine_id` → routines `on delete set null`; null on a training day = rotation)
+  and `training_plan_shifts` (event log of "postpone"/"pullForward", client-generated ids). Plain
+  owner RLS. The migration backfills a 7-day cycle (anchored on this week's Monday) for every user
+  with `training_plan_days` rows, routines round-robin. `training_plan_days` is kept but only read
+  by the app for users without a cycle. Semantics: `src/domain/trainingCycle.ts`.
 - **Views** `v_daily_summary` / `v_exercise_progress` are created `with (security_invoker =
 true)` so they run with the querying user's RLS, not the view owner's — otherwise they'd leak
   all users' data. See the Supabase RLS/view security linter docs referenced in

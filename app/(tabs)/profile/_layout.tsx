@@ -15,6 +15,10 @@ export default function ProfileStackLayout() {
         options={{ title: t('account.profile.rows.goals') }}
       />
       <Stack.Screen
+        name="training-plan"
+        options={{ title: t('trainingPlan.title') }}
+      />
+      <Stack.Screen
         name="body"
         options={{ title: t('account.profile.rows.body') }}
       />

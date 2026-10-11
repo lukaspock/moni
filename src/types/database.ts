@@ -442,6 +442,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      training_cycle_slots: {
+        Row: {
+          kind: string;
+          position: number;
+          routine_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          kind: string;
+          position: number;
+          routine_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          kind?: string;
+          position?: number;
+          routine_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'training_cycle_slots_routine_id_fkey';
+            columns: ['routine_id'];
+            isOneToOne: false;
+            referencedRelation: 'routines';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      training_cycles: {
+        Row: {
+          anchor_date: string;
+          created_at: string;
+          length: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          anchor_date: string;
+          created_at?: string;
+          length?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          anchor_date?: string;
+          created_at?: string;
+          length?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       training_plan_days: {
         Row: {
           expected_kcal: number | null;
@@ -470,6 +523,30 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      training_plan_shifts: {
+        Row: {
+          created_at: string;
+          date: string;
+          id: string;
+          kind: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          date: string;
+          id?: string;
+          kind: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          date?: string;
+          id?: string;
+          kind?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       water_logs: {
         Row: {

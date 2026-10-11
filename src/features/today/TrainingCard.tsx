@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { Card, ListRow, Pill } from '@/components/ui';
 import type { PlannedDay, WorkoutSummary } from '@/features/workout';
 
-import { RestDayAction } from './RestDayAction';
+import { RestDayAction, type PlanSecondaryAction } from './RestDayAction';
+import { textStyles } from '@/theme/typography';
 
 function minutes(w: WorkoutSummary): number | null {
   if (!w.endedAt) return null;
@@ -16,13 +17,19 @@ function minutes(w: WorkoutSummary): number | null {
 export function TrainingCard({
   isToday,
   plannedDay,
+  routineName = null,
   workouts,
   onStart,
+  secondary = null,
 }: {
   isToday: boolean;
   plannedDay: PlannedDay | null;
+  /** Routine to start today (plan or rotation); falls back to `plannedDay.routineName`. */
+  routineName?: string | null;
   workouts: WorkoutSummary[];
   onStart: () => void;
+  /** Quiet plan action under the row ("Heute nicht" / "Doch trainieren" / "Rückgängig"). */
+  secondary?: PlanSecondaryAction | null;
 }) {
   const { t } = useTranslation();
   const done = workouts.filter((w) => w.endedAt);
@@ -64,6 +71,7 @@ export function TrainingCard({
           title={t('food.dashboard.trainingCardTitle')}
           subtitle={
             plannedDay.routineName ??
+            routineName ??
             t('food.dashboard.trainingPlannedFreeform')
           }
           trailing={
@@ -72,12 +80,25 @@ export function TrainingCard({
           onPress={onStart}
           accessibilityLabel={`${t('food.dashboard.trainingCardTitle')}, ${t('food.dashboard.startWorkout')}`}
         />
+        {secondary ? (
+          <Pressable
+            onPress={secondary.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={secondary.label}
+            className="h-11 justify-center px-4"
+            style={{ paddingLeft: 68 }}
+          >
+            <Text className="text-label-secondary" style={textStyles.button}>
+              {secondary.label}
+            </Text>
+          </Pressable>
+        ) : null}
       </Card>
     );
   }
   return (
     <View>
-      <RestDayAction />
+      <RestDayAction secondary={secondary} />
     </View>
   );
 }
