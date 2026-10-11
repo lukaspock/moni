@@ -281,7 +281,7 @@ Foundation (`lead`): [x] DB live · [x] functions deployed · [x] typed client �
 
 ## HANDOFF 2026-10-10 (late) – READ FIRST, open items for the next agent
 
-State: everything is merged to `main` and pushed (repo moved to `github.com/lukaspock/moni`). Owner's iPhone has a **Release** build (free team profile, expires **2026-10-17 22:54**) from commit `f84df5c` — it does NOT yet contain the later analyze-food client timeout (`f383a21`/`33bd438`), rebuild before the profile expires. Migrations `water_logs` and `routine_exercise_groups` are applied (advisors clean except the Auth item below).
+State: everything is merged to `main` and pushed (repo moved to `github.com/lukaspock/moni`). Owner's iPhone has a **Release** build (free team profile, expires **2026-10-17 22:54**) from commit `3a66752` (calm Today/Profile + handoff fixes, installed 2026-10-11) — rebuild before the profile expires. Migrations `water_logs` and `routine_exercise_groups` are applied (advisors clean except the Auth item below).
 
 ### 1. BLOCKER – AI food analysis gets no answer from Gemini (owner can't log food via photo/text/voice)
 
