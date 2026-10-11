@@ -130,7 +130,10 @@
     "dayOpen": "offen",
     "dayPaused": "pausiert",
     "dayFuture": "kommt noch",
-    "dayRest": "Ruhetag"
+    "dayRest": "Ruhetag",
+    "capture": "Erfassen",
+    "captureMore": "Weitere Wege zum Eintragen",
+    "weekHint": "Zeigt die Wochenziele"
   },
   "dayKind": {
     "training": "Trainingstag",

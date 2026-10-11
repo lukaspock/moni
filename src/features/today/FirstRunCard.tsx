@@ -28,7 +28,7 @@ export function FirstRunCard({
   return (
     <View className="gap-4">
       <Card className="items-center gap-3">
-        <Illustration name="emptyMeals" size={170} />
+        <Illustration name="emptyMeals" size={120} />
         <Text
           className="text-label text-center"
           style={textStyles.title}

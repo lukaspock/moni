@@ -4,13 +4,13 @@ import { Text, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 
 import { PressableScale } from '@/components/motion';
-import { Card, SectionHeader } from '@/components/ui';
+import { Card } from '@/components/ui';
 import type { FitMacro, FitSuggestion } from '@/domain';
 import type { QuickLogEntry } from '@/features/food';
 import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
 
-import type { QuickPoint } from './QuickCarousel';
+import type { QuickPoint } from './model';
 import type { FitSuggestionsResult } from './useFitSuggestions';
 
 const Row = memo(function Row({
@@ -120,26 +120,33 @@ export function FitCard({
           : t('identity.fits.subtitle.none', { kcal });
 
   return (
-    <View className="gap-2">
-      <SectionHeader title={t('identity.fits.title')} />
-      <Text
-        className="text-label-secondary px-1"
-        style={textStyles.callout}
-        maxFontSizeMultiplier={1.4}
-      >
-        {subtitle}
-      </Text>
-      <Card className="gap-0 overflow-hidden p-0">
-        {result.suggestions.map((s, i) => (
-          <Row
-            key={s.candidate.key}
-            suggestion={s}
-            separator={i < result.suggestions.length - 1}
-            disabled={disabled}
-            onLog={onLog}
-          />
-        ))}
-      </Card>
-    </View>
+    <Card className="gap-0 overflow-hidden p-0">
+      <View className="gap-0.5 px-5 pb-1 pt-4">
+        <Text
+          accessibilityRole="header"
+          className="text-label"
+          style={textStyles.headline}
+          maxFontSizeMultiplier={1.4}
+        >
+          {t('identity.fits.title')}
+        </Text>
+        <Text
+          className="text-label-secondary"
+          style={textStyles.caption}
+          maxFontSizeMultiplier={1.4}
+        >
+          {subtitle}
+        </Text>
+      </View>
+      {result.suggestions.map((s, i) => (
+        <Row
+          key={s.candidate.key}
+          suggestion={s}
+          separator={i < result.suggestions.length - 1}
+          disabled={disabled}
+          onLog={onLog}
+        />
+      ))}
+    </Card>
   );
 }

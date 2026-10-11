@@ -124,7 +124,10 @@
     "dayOpen": "open",
     "dayPaused": "paused",
     "dayFuture": "still to come",
-    "dayRest": "rest day"
+    "dayRest": "rest day",
+    "capture": "Log",
+    "captureMore": "More ways to log",
+    "weekHint": "Shows the weekly goals"
   },
   "dayKind": {
     "training": "training day",

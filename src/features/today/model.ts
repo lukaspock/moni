@@ -68,6 +68,12 @@ export function daysBetween(fromIso: string, toIso: string): number {
   return daysAwayFrom(fromIso, toIso);
 }
 
+/** Window point a quick-logged entry flies from (MealFlight start). */
+export interface QuickPoint {
+  x: number;
+  y: number;
+}
+
 export interface StartStep {
   id: 'meal' | 'weight' | 'training';
   done: boolean;

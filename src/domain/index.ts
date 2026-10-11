@@ -28,3 +28,4 @@ export * from './shareCard';
 export * from './water';
 export * from './fitSuggestions';
 export * from './recipe';
+export * from './todaySlot';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native';
 
@@ -17,11 +17,26 @@ function dismissedOn(): string | null {
   }
 }
 
-/** Calm care hint instead of the day sentence; dismissible for the rest of the day. */
-export function CareCard({ today }: { today: string }) {
+/** Whether the care hint was dismissed for `today` (device-local, MMKV). */
+export function useCareDismissal(today: string): {
+  dismissed: boolean;
+  dismiss: () => void;
+} {
+  const [day, setDay] = useState(() => dismissedOn());
+  const dismiss = useCallback(() => {
+    try {
+      storage.set(KEY, today);
+    } catch {
+      // ignore
+    }
+    setDay(today);
+  }, [today]);
+  return { dismissed: day === today, dismiss };
+}
+
+/** Calm care hint (smart slot); dismissible for the rest of the day. */
+export function CareCard({ onDismiss }: { onDismiss: () => void }) {
   const { t } = useTranslation();
-  const [hidden, setHidden] = useState(() => dismissedOn() === today);
-  if (hidden) return null;
   return (
     <Card variant="inset" className="gap-2 p-4">
       <Text
@@ -39,14 +54,7 @@ export function CareCard({ today }: { today: string }) {
         {t('identity.care.body')}
       </Text>
       <PressableScale
-        onPress={() => {
-          try {
-            storage.set(KEY, today);
-          } catch {
-            // ignore
-          }
-          setHidden(true);
-        }}
+        onPress={onDismiss}
         accessibilityLabel={t('identity.care.dismiss')}
         className="h-11 justify-center self-start"
       >

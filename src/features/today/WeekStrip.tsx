@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Svg, { Circle, Line } from 'react-native-svg';
+import { SymbolView } from 'expo-symbols';
 
-import { Card, SectionHeader } from '@/components/ui';
+import { SectionHeader } from '@/components/ui';
 import { useRhythm, useWeekTally, type WeekTallyDay } from '@/features/rhythm';
-import { useThemeHex } from '@/theme/colors';
+import { haptic } from '@/lib/haptics';
+import { themeColor, useThemeHex } from '@/theme/colors';
+import { REDUCE, duration } from '@/theme/motion';
 import { textStyles } from '@/theme/typography';
 
 function DayGlyph({ day, label }: { day: WeekTallyDay; label: string }) {
@@ -109,9 +114,13 @@ function RingStat({
   );
 }
 
-/** Seven day glyphs + the weekly triad; the rhythm number only when the user wants it. */
+/**
+ * Quiet week footer: seven day glyphs; the weekly triad opens on tap. The
+ * rhythm number only when the user wants it.
+ */
 export function WeekStrip() {
   const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
   const tally = useWeekTally();
   const rhythm = useRhythm();
   const fmt = new Intl.DateTimeFormat(i18n.language, { weekday: 'narrow' });
@@ -122,28 +131,50 @@ export function WeekStrip() {
   const count = rhythm.state.current;
   const { rings } = tally;
   return (
-    <View className="gap-2">
-      <View className="flex-row items-center justify-between">
+    <View className="gap-3">
+      <Pressable
+        onPress={() => {
+          haptic.select();
+          setOpen((v) => !v);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={t('identity.today.thisWeek')}
+        accessibilityState={{ expanded: open }}
+        accessibilityHint={t('identity.today.weekHint')}
+        className="min-h-[44px] flex-row items-center justify-between"
+      >
         <View className="flex-1">
           <SectionHeader title={t('identity.today.thisWeek')} />
         </View>
-        {rhythm.showRhythm ? (
-          <Text
-            className="text-label-secondary px-1"
-            style={textStyles.caption}
-            maxFontSizeMultiplier={1.2}
-          >
-            {count > 0 ? t('rhythm.counter', { count }) : t('rhythm.begin')}
-          </Text>
-        ) : null}
-      </View>
-      <Card className="gap-3 p-4">
-        <View className="flex-row justify-between">
-          {tally.days.map((d) => (
-            <DayGlyph key={d.date} day={d} label={label(d.date)} />
-          ))}
+        <View className="flex-row items-center gap-2 px-1">
+          {rhythm.showRhythm ? (
+            <Text
+              className="text-label-secondary"
+              style={textStyles.caption}
+              maxFontSizeMultiplier={1.2}
+            >
+              {count > 0 ? t('rhythm.counter', { count }) : t('rhythm.begin')}
+            </Text>
+          ) : null}
+          <SymbolView
+            name={open ? 'chevron.up' : 'chevron.down'}
+            size={12}
+            weight="semibold"
+            tintColor={themeColor('labelTertiary')}
+          />
         </View>
-        <View className="flex-row gap-3">
+      </Pressable>
+      <View className="flex-row justify-between px-1">
+        {tally.days.map((d) => (
+          <DayGlyph key={d.date} day={d} label={label(d.date)} />
+        ))}
+      </View>
+      {open ? (
+        <Animated.View
+          entering={FadeIn.duration(duration.fast).reduceMotion(REDUCE)}
+          exiting={FadeOut.duration(duration.instant).reduceMotion(REDUCE)}
+          className="flex-row gap-3 px-1"
+        >
           <RingStat
             name={t('rhythm.rings.food')}
             done={rings.food.done}
@@ -164,8 +195,8 @@ export function WeekStrip() {
             goal={rings.protein.goal}
             closed={rings.protein.closed}
           />
-        </View>
-      </Card>
+        </Animated.View>
+      ) : null}
     </View>
   );
 }

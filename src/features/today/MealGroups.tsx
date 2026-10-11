@@ -1,10 +1,10 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { SymbolView } from 'expo-symbols';
 
 import { Card, ListRow } from '@/components/ui';
 import type { MealType } from '@/domain';
@@ -14,14 +14,93 @@ import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
-const MEAL_SYMBOL: Record<MealType, SymbolViewProps['name']> = {
-  breakfast: 'cup.and.saucer.fill',
-  lunch: 'fork.knife',
-  dinner: 'moon.stars.fill',
-  snack: 'leaf.fill',
-};
 
-/** Meals as grouped rows in one flat card; empty meals invite with a plus. */
+/**
+ * One meal line: name, kcal (when logged) and a quiet "+". Empty meals stay
+ * secondary; tapping a logged meal opens its entries.
+ */
+function MealRow({
+  name,
+  kcal,
+  open,
+  onToggle,
+  onAdd,
+  separator,
+}: {
+  name: string;
+  kcal: number | null;
+  open: boolean;
+  onToggle: () => void;
+  onAdd: () => void;
+  separator: boolean;
+}) {
+  const { t } = useTranslation();
+  const logged = kcal !== null;
+  const addButton = (
+    <Pressable
+      onPress={onAdd}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel={t('identity.today.addToMeal', { meal: name })}
+      className="h-11 w-9 items-center justify-center"
+    >
+      <SymbolView
+        name="plus"
+        size={17}
+        weight="semibold"
+        tintColor={themeColor('accent')}
+      />
+    </Pressable>
+  );
+  return (
+    <View>
+      <View className="min-h-[56px] flex-row items-center gap-3 pl-5 pr-2">
+        <Pressable
+          onPress={logged ? onToggle : onAdd}
+          accessibilityRole="button"
+          accessibilityLabel={
+            logged
+              ? `${name}, ${kcal} ${t('food.dashboard.kcalUnit')}`
+              : t('identity.today.addToMeal', { meal: name })
+          }
+          accessibilityState={logged ? { expanded: open } : undefined}
+          className="min-h-[56px] flex-1 flex-row items-center gap-3"
+        >
+          <Text
+            className={`flex-1 ${logged ? 'text-label' : 'text-label-secondary'}`}
+            style={textStyles.body}
+            maxFontSizeMultiplier={1.4}
+          >
+            {name}
+          </Text>
+          {logged ? (
+            <View className="flex-row items-baseline gap-1">
+              <Text
+                className="text-label"
+                style={textStyles.numericS}
+                maxFontSizeMultiplier={1.15}
+              >
+                {kcal}
+              </Text>
+              <Text className="text-label-secondary" style={textStyles.caption}>
+                {t('food.dashboard.kcalUnit')}
+              </Text>
+            </View>
+          ) : null}
+        </Pressable>
+        {addButton}
+      </View>
+      {separator ? (
+        <View
+          className="bg-line"
+          style={{ height: StyleSheet.hairlineWidth, marginLeft: 20 }}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+/** Meals as quiet lines in one flat card; each meal has a small plus. */
 export const MealGroups = memo(function MealGroups({
   logs,
   onAdd,
@@ -54,71 +133,17 @@ export const MealGroups = memo(function MealGroups({
         const last = i === MEAL_ORDER.length - 1;
         return (
           <View key={type}>
-            {list.length === 0 ? (
-              <ListRow
-                symbol={MEAL_SYMBOL[type]}
-                iconTone="neutral"
-                title={names[type]}
-                trailing={
-                  <SymbolView
-                    name="plus.circle.fill"
-                    size={26}
-                    tintColor={themeColor('accent')}
-                  />
-                }
-                onPress={() => onAdd(type)}
-                chevron={false}
-                accessibilityLabel={t('identity.today.addToMeal', {
-                  meal: names[type],
-                })}
-                separator={!last}
-              />
-            ) : (
-              <ListRow
-                symbol={MEAL_SYMBOL[type]}
-                iconTone="accent"
-                title={names[type]}
-                trailing={
-                  <View className="flex-row items-center gap-3">
-                    <View className="flex-row items-baseline gap-1">
-                      <Text
-                        className="text-label"
-                        style={textStyles.numericS}
-                        maxFontSizeMultiplier={1.15}
-                      >
-                        {kcal}
-                      </Text>
-                      <Text
-                        className="text-label-secondary"
-                        style={textStyles.caption}
-                      >
-                        {t('food.dashboard.kcalUnit')}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={() => onAdd(type)}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel={t('identity.today.addToMeal', {
-                        meal: names[type],
-                      })}
-                    >
-                      <SymbolView
-                        name="plus.circle.fill"
-                        size={26}
-                        tintColor={themeColor('accent')}
-                      />
-                    </Pressable>
-                  </View>
-                }
-                onPress={() => {
-                  haptic.select();
-                  setOpen(isOpen ? null : type);
-                }}
-                chevron={false}
-                separator={!last || isOpen}
-              />
-            )}
+            <MealRow
+              name={names[type]}
+              kcal={list.length > 0 ? kcal : null}
+              open={isOpen}
+              onToggle={() => {
+                haptic.select();
+                setOpen(isOpen ? null : type);
+              }}
+              onAdd={() => onAdd(type)}
+              separator={!last || isOpen}
+            />
             {isOpen ? (
               <Animated.View
                 entering={FadeIn.duration(180)}

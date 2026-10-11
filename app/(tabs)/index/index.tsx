@@ -20,7 +20,7 @@ import {
   useMealFlight,
 } from '@/components/motion';
 import { Card, ScreenTitle, SectionHeader } from '@/components/ui';
-import type { MealType } from '@/domain';
+import { pickTodaySlot, type MealType } from '@/domain';
 import {
   useDeleteFoodLog,
   useFoodLogsForDate,
@@ -29,18 +29,19 @@ import {
   useQuickLogMeal,
   type QuickLogEntry,
 } from '@/features/food';
-import { invalidateLedger } from '@/features/rhythm';
+import { invalidateLedger, useLedger } from '@/features/rhythm';
 import { useMealFlightBridge } from '@/features/food';
 import { useDailyTargets } from '@/features/targets';
 import { AchievementOverlay } from '@/features/today/AchievementOverlay';
-import { CareCard } from '@/features/today/CareCard';
+import { CaptureRow } from '@/features/today/CaptureRow';
+import { CareCard, useCareDismissal } from '@/features/today/CareCard';
 import { greetingText } from '@/features/today/copy';
 import { FirstRunCard } from '@/features/today/FirstRunCard';
 import { FitCard } from '@/features/today/FitCard';
 import { MealGroups } from '@/features/today/MealGroups';
 import { NextStepCard } from '@/features/today/NextStepCard';
-import { QuickCarousel, type QuickPoint } from '@/features/today/QuickCarousel';
-import { QuickLogBar } from '@/features/today/QuickLogBar';
+import type { QuickPoint } from '@/features/today/model';
+import { RestDayAction } from '@/features/today/RestDayAction';
 import { UndoToast, type UndoToastState } from '@/features/today/UndoToast';
 import { TodayHero } from '@/features/today/TodayHero';
 import { TrainingCard } from '@/features/today/TrainingCard';
@@ -49,13 +50,13 @@ import { useFitSuggestions } from '@/features/today/useFitSuggestions';
 import { useTodayRituals } from '@/features/today/useTodayRituals';
 import { WeekStrip } from '@/features/today/WeekStrip';
 import { WeightQuickLog } from '@/features/today/WeightQuickLog';
-import { WaterCard, type WaterAddedInfo } from '@/features/water/ui/WaterCard';
+import { WaterRow, type WaterAddedInfo } from '@/features/today/WaterRow';
 import {
   usePlannedDay,
   useStartWorkout,
   useWorkoutsForDate,
 } from '@/features/workout';
-import { addDays, toISODate, weekdayOf } from '@/lib/date';
+import { addDays, toISODate } from '@/lib/date';
 import { haptic } from '@/lib/haptics';
 import { themeColor } from '@/theme/colors';
 import { textStyles } from '@/theme/typography';
@@ -81,16 +82,13 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<UndoToastState | null>(null);
   const hideToast = useCallback(() => setToast(null), [setToast]);
+  // Regulars feed "still fits"; the one-tap list itself lives in the log sheet.
   const allQuickEntries = useMemo(() => {
     const seen = new Set<string>();
     return [...favorites, ...recents].filter((e) =>
       seen.has(e.key) ? false : (seen.add(e.key), true),
     );
   }, [favorites, recents]);
-  const quickEntries = useMemo(
-    () => allQuickEntries.slice(0, 8),
-    [allQuickEntries],
-  );
   const fits = useFitSuggestions({
     enabled: isToday,
     hour: now.getHours(),
@@ -258,14 +256,59 @@ export default function TodayScreen() {
   const needsWeight =
     !targets && !targetsLoading && rituals.weightsLoaded && !rituals.hasWeight;
   const firstRun = isToday && !rituals.hasAnyFood && logs.length === 0;
+  const care = useCareDismissal(today);
+  const ledger = useLedger();
+  const restConfirmed =
+    ledger.days.find((d) => d.date === ledger.today)?.restConfirmed ?? false;
+  // The one contextual card under the capture row (priority: src/domain/todaySlot).
+  const slot = pickTodaySlot({
+    isToday,
+    hasTargets: !!targets,
+    firstRun,
+    careOpen: rituals.careFlagged && !care.dismissed,
+    nextStep: rituals.nextStep.kind,
+    trainingPlanned: !!plannedDay,
+    workoutDone: workouts.some((w) => w.endedAt),
+    restDayOpen: !plannedDay && !restConfirmed,
+    fitAvailable: fits.visible,
+  });
+  // Back-to-today only when one chevron tap wouldn't get there anyway.
+  const farFromToday = date < addDays(today, -1);
   const color = themeColor('labelSecondary');
   const insets = useSafeAreaInsets();
+
+  const slotCard =
+    slot === 'firstRun' ? (
+      <FirstRunCard
+        steps={rituals.checklist.steps}
+        showSteps={rituals.checklist.visible}
+      />
+    ) : slot === 'care' ? (
+      <CareCard onDismiss={care.dismiss} />
+    ) : slot === 'restDay' ? (
+      <RestDayAction />
+    ) : slot === 'nextStep' ? (
+      <NextStepCard
+        step={rituals.nextStep}
+        onLogMeal={openLog}
+        onStartWorkout={startEmpty}
+      />
+    ) : slot === 'trainingPlanned' || slot === 'trainingDone' ? (
+      <TrainingCard
+        isToday={isToday}
+        plannedDay={plannedDay}
+        workouts={workouts}
+        onStart={startEmpty}
+      />
+    ) : slot === 'fit' ? (
+      <FitCard result={fits} disabled={quickLog.isPending} onLog={onQuickLog} />
+    ) : null;
 
   return (
     <View className="bg-bg flex-1">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-7 px-5 pb-32 pt-3"
+        contentContainerClassName="gap-8 px-5 pb-32 pt-3"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -280,8 +323,8 @@ export default function TodayScreen() {
             title={headerTitle}
             subtitle={subtitle}
             right={
-              <View className="flex-row items-center">
-                {!isToday ? (
+              <View className="flex-row items-center gap-1">
+                {farFromToday ? (
                   <Pressable
                     onPress={() => setDate(today)}
                     hitSlop={8}
@@ -297,43 +340,46 @@ export default function TodayScreen() {
                     />
                   </Pressable>
                 ) : null}
-                <Pressable
-                  onPress={goPrevDay}
-                  hitSlop={4}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('identity.today.prevDay')}
-                  className="h-11 w-9 items-center justify-center"
+                {/* Day switcher: one quiet capsule; swiping the hero works too. */}
+                <View
+                  className="bg-surface flex-row items-center rounded-full"
+                  style={{ borderCurve: 'continuous' }}
                 >
-                  <SymbolView
-                    name="chevron.left"
-                    size={17}
-                    weight="semibold"
-                    tintColor={color}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={goNextDay}
-                  hitSlop={4}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('identity.today.nextDay')}
-                  className="h-11 w-9 items-center justify-center"
-                >
-                  <SymbolView
-                    name="chevron.right"
-                    size={17}
-                    weight="semibold"
-                    tintColor={color}
-                  />
-                </Pressable>
+                  <Pressable
+                    onPress={goPrevDay}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('identity.today.prevDay')}
+                    className="h-11 w-10 items-center justify-center"
+                  >
+                    <SymbolView
+                      name="chevron.left"
+                      size={15}
+                      weight="semibold"
+                      tintColor={color}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={goNextDay}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('identity.today.nextDay')}
+                    className="h-11 w-10 items-center justify-center"
+                  >
+                    <SymbolView
+                      name="chevron.right"
+                      size={15}
+                      weight="semibold"
+                      tintColor={color}
+                    />
+                  </Pressable>
+                </View>
               </View>
             }
           />
         </View>
         <GestureDetector gesture={swipeGesture}>
-          <View className="gap-6">
-            {/* Owner: no daily sentence on Today; only the care card stays. */}
-            {isToday && rituals.careFlagged ? <CareCard today={today} /> : null}
-
+          <View className="gap-5">
             {targets ? (
               <Reveal index={0} once="today-hero">
                 <TodayHero
@@ -381,58 +427,26 @@ export default function TodayScreen() {
               </Card>
             )}
 
-            <QuickLogBar date={date} />
+            <CaptureRow date={date} />
           </View>
         </GestureDetector>
 
-        <QuickCarousel
-          entries={quickEntries}
-          disabled={quickLog.isPending}
-          onLog={onQuickLog}
-        />
-
-        <WaterCard
+        <WaterRow
           date={date}
           isTrainingDay={!!targets?.isTrainingDay}
           onAdded={onWaterAdded}
         />
 
-        <FitCard
-          result={fits}
-          disabled={quickLog.isPending}
-          onLog={onQuickLog}
-        />
-
-        {firstRun ? (
-          <FirstRunCard
-            steps={rituals.checklist.steps}
-            showSteps={rituals.checklist.visible}
-          />
-        ) : null}
-
-        {isToday && targets && !rituals.careFlagged ? (
-          <NextStepCard
-            step={rituals.nextStep}
-            onLogMeal={openLog}
-            onStartWorkout={startEmpty}
-          />
-        ) : null}
-
-        {isToday ? <WeekStrip /> : null}
-
-        {isToday || workouts.length > 0 ? (
-          <TrainingCard
-            isToday={isToday && weekdayOf(date) >= 0}
-            plannedDay={plannedDay}
-            workouts={workouts}
-            onStart={startEmpty}
-          />
+        {slotCard ? (
+          <Reveal key={slot} index={1}>
+            {slotCard}
+          </Reveal>
         ) : null}
 
         <View className="gap-2">
           <SectionHeader title={t('identity.today.meals')} />
           {logsLoading && logs.length === 0 ? (
-            <SkeletonBlock width="100%" height={240} radius={24} />
+            <SkeletonBlock width="100%" height={224} radius={24} />
           ) : (
             <MealGroups
               logs={logs}
@@ -441,6 +455,8 @@ export default function TodayScreen() {
             />
           )}
         </View>
+
+        {isToday ? <WeekStrip /> : null}
       </ScrollView>
       {/* Keeps scrolled content from showing under the status bar. */}
       <View
