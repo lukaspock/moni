@@ -6,8 +6,12 @@ export const SHEET_OPTIONS = {
   headerShown: false,
 };
 
-/** Same sheet, but opens full height (long forms, active workouts). */
+/**
+ * Full-height popup (long forms). Native page sheet (`modal`), swipe-down to
+ * dismiss. Not a `formSheet` with `sheetAllowedDetents: [1]`: with a single
+ * detent react-native-screens 4.26 on iOS 26 lays out an empty sheet.
+ */
 export const FULL_SHEET_OPTIONS = {
-  ...SHEET_OPTIONS,
-  sheetAllowedDetents: [1],
+  presentation: 'modal' as const,
+  headerShown: false,
 };

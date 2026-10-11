@@ -46,7 +46,7 @@ Pass `onPress` for a tappable card (spring press + highlight). A `p-*` class rep
 
 ## Sheets & modals
 
-- Every popup = `formSheet` with grabber and **no native header**: register with `SHEET_OPTIONS` (detents 0.75/1) or `FULL_SHEET_OPTIONS` (full height) in `app/_layout.tsx`; body = `<SheetScreen title subtitle?>` (centered title, 20 pt padding/gap, scrollable). Swipe down closes.
+- Every popup = `formSheet` with grabber and **no native header**: register with `SHEET_OPTIONS` (detents 0.75/1) or `FULL_SHEET_OPTIONS` (full height; native page sheet `modal`, because a `formSheet` with the single detent `[1]` renders empty on iOS 26 / react-native-screens 4.26) in `app/_layout.tsx`; body = `<SheetScreen title subtitle?>` (centered title, 20 pt padding/gap, scrollable). Swipe down closes.
 - `workout/*` stays `fullScreenModal` (no drag-to-dismiss during a workout) with the same look; routes outside the tabs that need their own bar use `ModalTopBar`.
 
 ## Charts (`src/components/charts`)
