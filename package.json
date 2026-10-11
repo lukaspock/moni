@@ -18,7 +18,7 @@
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo/ui": "~57.0.20",
     "@hookform/resolvers": "^5.9.1",
-    "@kingstinct/react-native-healthkit": "^16.0.0",
+    "@kingstinct/react-native-healthkit": "^16.1.0",
     "@react-native-community/netinfo": "12.0.1",
     "@shopify/react-native-skia": "2.6.2",
     "@supabase/supabase-js": "^2.117.2",
