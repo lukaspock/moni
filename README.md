@@ -6,6 +6,14 @@
 
 > **How this was built:** implemented with [Claude Code](https://claude.com/claude-code). The product plan, architecture and structure were defined and reviewed by me, and I reviewed the generated code.
 
+<p align="center">
+  <img src="docs/screenshots/welcome.png" width="19%" alt="Sign in" />
+  <img src="docs/screenshots/today.png" width="19%" alt="Today with daily limit ring and macros" />
+  <img src="docs/screenshots/review.png" width="19%" alt="AI food review with macros and portion" />
+  <img src="docs/screenshots/training.png" width="19%" alt="Training plan and routines" />
+  <img src="docs/screenshots/insights.png" width="19%" alt="Insights with weight trend" />
+</p>
+
 ## The idea
 
 Most apps do one half of the job. Calorie trackers do not know that you trained today, and workout trackers do not know what you ate. møni treats both as one system:
